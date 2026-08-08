@@ -62,6 +62,22 @@ describe('formatCopyReference', () => {
     expect(formatCopyReference(input)).toBe('`src/index.ts:1`');
   });
 
+  it('relativizes Windows file URI paths when only the drive-letter case differs', () => {
+    const input = editorInput(
+      resource(
+        'file',
+        '',
+        '/d:/work/project/README.md',
+        String.raw`d:\work\project\README.md`,
+      ),
+      { line: 0, character: 0 },
+      { line: 0, character: 0 },
+      [resource('file', '', '/D:/work/project', String.raw`D:\work\project`)],
+    );
+
+    expect(formatCopyReference(input)).toBe('`README.md:1`');
+  });
+
   it('uses a sanitized absolute URI when a virtual resource cannot be relativized', () => {
     const input = editorInput(
       resource('memfs', 'repo', '/src/main.ts', 'memfs://repo/src/main.ts'),

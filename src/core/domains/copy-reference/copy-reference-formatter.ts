@@ -56,8 +56,8 @@ function isResourceInsideWorkspace(
     return false;
   }
 
-  const resourcePath = normalizedPath(resource.path);
-  const workspacePath = normalizedPath(workspace.path);
+  const resourcePath = normalizedPathForComparison(resource);
+  const workspacePath = normalizedPathForComparison(workspace);
   return (
     resourcePath === workspacePath ||
     (workspacePath === '/'
@@ -109,4 +109,13 @@ function normalizedPath(value: string): string {
     return value;
   }
   return value.replace(/\/+$/u, '');
+}
+
+function normalizedPathForComparison(resource: ResourceSnapshot): string {
+  const path = normalizedPath(resource.path);
+  // Windows 文件 URI 的盘符会被 VS Code 规范化，工作区 URI 则可能保留原始大小写。
+  // 仅在可识别的本地盘符路径上忽略大小写，避免破坏区分大小写的远程 URI。
+  return resource.scheme === 'file' && /^\/[A-Za-z]:\//u.test(path)
+    ? path.toLowerCase()
+    : path;
 }

@@ -50,7 +50,7 @@ suite('Git blame annotations integration', () => {
       await vscode.commands.executeCommand('vscodeToolboxNamewta.gitBlame.hide');
     } finally {
       await vscode.commands.executeCommand('workbench.action.closeAllGroups');
-      await rm(repository, { recursive: true, force: true });
+      await removeRepository(repository);
     }
   });
 });
@@ -70,4 +70,18 @@ async function createRepository(): Promise<string> {
 
 async function git(cwd: string, args: readonly string[]): Promise<void> {
   await executeFile('git', args, { cwd });
+}
+
+async function removeRepository(repository: string): Promise<void> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      await rm(repository, { maxRetries: 3, recursive: true, retryDelay: 100 });
+      return;
+    } catch (error: unknown) {
+      lastError = error;
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+    }
+  }
+  throw lastError;
 }
