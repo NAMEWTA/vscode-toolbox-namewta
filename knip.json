@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/extension/extension.ts",
+    "src/webview/main.tsx",
+    "src/core/domains/**/public-api.ts",
+    "src/**/*.test.{ts,tsx}",
+    "tests/integration/**/*.ts",
+    "build/*.mjs",
+    ".vscode-test.mjs",
+    "scripts/*.mjs"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "tests/**/*.ts", "build/*.mjs", "scripts/*.mjs"],
+  "ignore": ["src/core/contracts/index.ts", "src/core/orchestration/public-api.ts"],
+  "ignoreDependencies": ["@vscode/test-electron"],
+  "ignoreExportsUsedInFile": {
+    "interface": true,
+    "type": true
+  }
+}

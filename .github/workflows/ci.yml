@@ -1,0 +1,68 @@
+name: 持续集成
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: 质量门禁
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+
+  extension-integration:
+    name: 扩展宿主集成测试（${{ matrix.os }}）
+    needs: quality
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm build:tests
+      - name: 运行扩展宿主测试
+        if: runner.os != 'Linux'
+        run: pnpm exec vscode-test
+      - name: 在 Linux 上运行扩展宿主测试
+        if: runner.os == 'Linux'
+        run: xvfb-run -a pnpm exec vscode-test
+
+  package:
+    name: 生成 VSIX 扩展包
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm package:list
+      - run: pnpm package:vsix
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vscode-toolbox-namewta-vsix
+          path: artifacts/*.vsix
+          if-no-files-found: error

@@ -1,0 +1,117 @@
+:root {
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  font-family: var(--vscode-font-family, system-ui, sans-serif);
+  font-size: var(--vscode-font-size, 13px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 260px;
+}
+
+button {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.45rem 0.8rem;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: var(--vscode-button-hoverBackground);
+}
+
+button:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.toolbox-shell {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.toolbox-hero {
+  margin-bottom: 1.5rem;
+}
+
+.toolbox-hero h1 {
+  margin: 0.2rem 0 0.5rem;
+  font-size: 2rem;
+}
+
+.toolbox-eyebrow {
+  margin: 0;
+  color: var(--vscode-descriptionForeground);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+.toolbox-card {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  padding: 1rem;
+  background: var(--vscode-sideBar-background);
+}
+
+.toolbox-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.toolbox-card__header h2 {
+  margin: 0;
+}
+
+.runtime-details {
+  margin: 1rem 0 0;
+}
+
+.runtime-details__row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1fr) minmax(0, 2fr);
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--vscode-panel-border);
+}
+
+.runtime-details__row dt {
+  color: var(--vscode-descriptionForeground);
+}
+
+.runtime-details__row dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.toolbox-error {
+  color: var(--vscode-errorForeground);
+}
+
+@media (max-width: 480px) {
+  .toolbox-shell {
+    padding: 1rem;
+  }
+
+  .toolbox-card__header,
+  .runtime-details__row {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+}

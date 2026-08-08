@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "开发：监听构建",
+      "type": "shell",
+      "command": "pnpm dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "esbuild",
+        "pattern": [
+          {
+            "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "正在监听扩展",
+          "endsPattern": "正在监听扩展与 Webview 源码"
+        }
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "构建",
+      "type": "shell",
+      "command": "pnpm build",
+      "problemMatcher": []
+    },
+    {
+      "label": "构建：测试",
+      "type": "shell",
+      "command": "pnpm build:tests",
+      "problemMatcher": []
+    },
+    {
+      "label": "构建：扩展宿主测试",
+      "dependsOrder": "sequence",
+      "dependsOn": ["构建", "构建：测试"],
+      "problemMatcher": []
+    },
+    {
+      "label": "测试：单元测试",
+      "type": "shell",
+      "command": "pnpm test:unit",
+      "problemMatcher": []
+    },
+    {
+      "label": "检查：完整门禁",
+      "type": "shell",
+      "command": "pnpm check",
+      "problemMatcher": []
+    }
+  ]
+}

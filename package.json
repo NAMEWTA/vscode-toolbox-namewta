@@ -1,0 +1,273 @@
+{
+  "name": "vscode-toolbox-namewta",
+  "displayName": "vscode-toolbox-namewta",
+  "description": "%extension.description%",
+  "version": "0.1.0",
+  "publisher": "NAMEWTA",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NAMEWTA/vscode-toolbox-namewta.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NAMEWTA/vscode-toolbox-namewta/issues"
+  },
+  "homepage": "https://github.com/NAMEWTA/vscode-toolbox-namewta#readme",
+  "type": "commonjs",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "vscode": "^1.100.0",
+    "node": ">=22.0.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "developer tools",
+    "toolbox",
+    "utilities",
+    "webview"
+  ],
+  "main": "./dist/extension/extension.cjs",
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "%capabilities.untrustedWorkspaces%",
+      "restrictedConfigurations": []
+    },
+    "virtualWorkspaces": {
+      "supported": true,
+      "description": "%capabilities.virtualWorkspaces%"
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscodeToolboxNamewta.openToolbox",
+        "title": "%commands.openToolbox%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.showRuntimeInfo",
+        "title": "%commands.showRuntimeInfo%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.copyReference.relative",
+        "title": "%commands.copyReference.relative%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.copyReference.absolute",
+        "title": "%commands.copyReference.absolute%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitBlame.toggle",
+        "title": "%commands.gitBlame.toggle%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitBlame.show",
+        "title": "%commands.gitBlame.show%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitBlame.hide",
+        "title": "%commands.gitBlame.hide%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitBlame.refresh",
+        "title": "%commands.gitBlame.refresh%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitBlame.viewLineHistory",
+        "title": "%commands.gitBlame.viewLineHistory%",
+        "category": "%extension.category%"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "vscodeToolboxNamewta.copyReference.relative",
+          "group": "navigation@90"
+        },
+        {
+          "command": "vscodeToolboxNamewta.copyReference.absolute",
+          "group": "navigation@91"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "vscodeToolboxNamewta.copyReference.relative",
+          "when": "resourceScheme != untitled",
+          "group": "navigation@90"
+        },
+        {
+          "command": "vscodeToolboxNamewta.copyReference.absolute",
+          "when": "resourceScheme != untitled",
+          "group": "navigation@91"
+        },
+        {
+          "command": "vscodeToolboxNamewta.gitBlame.toggle",
+          "when": "resourceScheme == file",
+          "group": "navigation@92"
+        }
+      ],
+      "editor/lineNumber/context": [
+        {
+          "command": "vscodeToolboxNamewta.gitBlame.toggle",
+          "when": "resourceScheme == file",
+          "group": "navigation@92"
+        },
+        {
+          "command": "vscodeToolboxNamewta.gitBlame.viewLineHistory",
+          "when": "resourceScheme == file",
+          "group": "navigation@93"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "vscodeToolboxNamewta.gitBlame.toggle",
+        "key": "ctrl+alt+b",
+        "mac": "cmd+alt+b",
+        "when": "editorTextFocus && resourceScheme == file"
+      }
+    ],
+    "configuration": {
+      "title": "%configuration.title%",
+      "properties": {
+        "vscodeToolboxNamewta.logging.level": {
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ],
+          "default": "info",
+          "scope": "window",
+          "description": "%configuration.logging.level%"
+        },
+        "vscodeToolboxNamewta.webview.requestTimeoutMs": {
+          "type": "number",
+          "default": 10000,
+          "minimum": 1000,
+          "maximum": 120000,
+          "scope": "window",
+          "description": "%configuration.webview.requestTimeoutMs%"
+        },
+        "vscodeToolboxNamewta.gitBlame.dateFormatStyle": {
+          "type": "string",
+          "enum": [
+            "Y/M/D",
+            "YYYY-MM-DD",
+            "DD.MM.YYYY",
+            "relative"
+          ],
+          "default": "Y/M/D",
+          "scope": "window",
+          "description": "%configuration.gitBlame.dateFormatStyle%"
+        },
+        "vscodeToolboxNamewta.gitBlame.authorNameStyle": {
+          "type": "string",
+          "enum": [
+            "full",
+            "first",
+            "last"
+          ],
+          "default": "full",
+          "scope": "window",
+          "description": "%configuration.gitBlame.authorNameStyle%"
+        },
+        "vscodeToolboxNamewta.gitBlame.mergeCommitLines": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window",
+          "description": "%configuration.gitBlame.mergeCommitLines%"
+        },
+        "vscodeToolboxNamewta.gitBlame.highlightCurrentCommit": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window",
+          "description": "%configuration.gitBlame.highlightCurrentCommit%"
+        },
+        "vscodeToolboxNamewta.gitBlame.ignoreWhitespace": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window",
+          "description": "%configuration.gitBlame.ignoreWhitespace%"
+        },
+        "vscodeToolboxNamewta.gitBlame.maxLines": {
+          "type": "integer",
+          "default": 20000,
+          "minimum": 100,
+          "maximum": 200000,
+          "scope": "window",
+          "description": "%configuration.gitBlame.maxLines%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "clean": "node ./build/clean.mjs",
+    "dev": "node ./build/build-all.mjs --watch",
+    "build": "node ./build/build-all.mjs --production",
+    "build:development": "node ./build/build-all.mjs",
+    "build:tests": "node ./build/build-tests.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "lint:dependencies": "depcruise --config dependency-cruiser.config.cjs src",
+    "lint:unused": "knip",
+    "typecheck": "tsc -p tsconfig.core.json --noEmit && tsc -p tsconfig.extension.json --noEmit && tsc -p tsconfig.webview.json --noEmit && tsc -p tsconfig.tests.json --noEmit",
+    "test": "pnpm test:unit",
+    "test:unit": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "pnpm build && pnpm build:tests && vscode-test",
+    "package:vsix": "pnpm build && node ./build/prepare-vsix-output.mjs && vsce package --out ./artifacts/vscode-toolbox-namewta-${npm_package_version}.vsix",
+    "package:list": "pnpm build && vsce ls",
+    "check": "pnpm verify:foundation && pnpm format:check && pnpm lint && pnpm lint:dependencies && pnpm lint:unused && pnpm typecheck && pnpm test:coverage && pnpm build",
+    "check:ci": "pnpm check && pnpm test:integration && pnpm package:list && pnpm package:vsix",
+    "vscode:prepublish": "pnpm build",
+    "verify:foundation": "node ./scripts/verify-foundation.mjs"
+  },
+  "dependencies": {
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.33.0",
+    "@testing-library/jest-dom": "6.8.0",
+    "@testing-library/react": "16.3.0",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.17.2",
+    "@types/react": "19.1.10",
+    "@types/react-dom": "19.1.7",
+    "@types/vscode": "1.100.0",
+    "@vitest/coverage-v8": "3.2.4",
+    "@vscode/test-cli": "0.0.15",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "3.9.2",
+    "dependency-cruiser": "18.1.0",
+    "esbuild": "0.25.9",
+    "eslint": "9.33.0",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "globals": "16.3.0",
+    "jsdom": "26.1.0",
+    "knip": "5.62.0",
+    "mocha": "11.7.1",
+    "prettier": "3.6.2",
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.39.1",
+    "vitest": "3.2.4"
+  }
+}

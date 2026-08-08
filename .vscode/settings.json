@@ -1,0 +1,19 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "eslint.useFlatConfig": true,
+  "eslint.validate": ["typescript", "typescriptreact", "javascript"],
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "files.exclude": {
+    "dist": true,
+    "dist-tests": true,
+    "coverage": true
+  },
+  "search.exclude": {
+    "dist": true,
+    "dist-tests": true,
+    "coverage": true,
+    "node_modules": true
+  }
+}

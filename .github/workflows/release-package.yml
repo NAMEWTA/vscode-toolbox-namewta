@@ -1,0 +1,36 @@
+name: 发布 VSIX 安装包
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 创建 GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: 校验发布标签
+        run: node ./scripts/verify-release-tag.mjs "${{ github.ref_name }}"
+      - run: pnpm check:ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vscode-toolbox-namewta-${{ github.ref_name }}
+          path: artifacts/*.vsix
+          if-no-files-found: error
+      - name: 创建 GitHub Release 并上传 VSIX
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" artifacts/*.vsix --title "${{ github.ref_name }}" --generate-notes --verify-tag

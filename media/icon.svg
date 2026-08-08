@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title description">
+  <title id="title">vscode-toolbox-namewta</title>
+  <desc id="description">A toolbox containing code brackets.</desc>
+  <rect x="12" y="30" width="104" height="78" rx="14" fill="#1f6feb"/>
+  <path d="M43 22h42a9 9 0 0 1 9 9v9H34v-9a9 9 0 0 1 9-9Z" fill="none" stroke="#1f6feb" stroke-width="8"/>
+  <path d="m53 57-15 13 15 13M75 57l15 13-15 13M69 51 59 89" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/>
+</svg>
