@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "artifact": "design-tree",
+  "change": "2026-08-09-review-all-git-changes",
+  "status": "consensus",
+  "round": 4,
+  "nodes": [
+    {
+      "id": "D-001",
+      "title": "审核基线与变更集合",
+      "question": "一键审核默认针对哪一组 Git 变更：当前工作区尚未提交的全部变更、当前分支相对基准分支的全部差异，还是两种模式都支持？",
+      "depends_on": [],
+      "recommendation": "首版默认审核当前工作区的全部未提交变更，包括 staged、unstaged 和 untracked；分支对比分成后续能力，避免一次引入基准分支推断和远端同步语义。",
+      "status": "answered",
+      "round": 1,
+      "answer": "首版默认审核当前仓库工作区的全部未提交变更，包括 staged、unstaged 和 untracked；不包含分支相对基准分支的差异模式。",
+      "log_ref": "LOG-001"
+    },
+    {
+      "id": "D-002",
+      "title": "审核完成语义",
+      "question": "这里的‘审核’要做到哪一级：只按顺序打开所有变更文件；维护已审核/未审核和整体进度；还是还要记录逐行评论、汇总并提交 review？",
+      "depends_on": [],
+      "recommendation": "采用中间层级：形成一次本地 Review Session，维护队列、已审核状态和完成进度，但首版不实现远程评论或提交 review。仅批量开标签页不能可靠表达‘从头到尾审核完成’。",
+      "status": "answered",
+      "round": 1,
+      "answer": "建立本地 Review Session，维护文件队列、当前项、已审核状态和整体进度；首版不记录逐行评论，也不提交远程 review。",
+      "log_ref": "LOG-002"
+    },
+    {
+      "id": "D-003",
+      "title": "审核交互载体",
+      "question": "审核过程应复用 VS Code 原生 diff 编辑器并由插件提供队列导航，还是在独立 Webview 中重做类似 GitHub Files changed 的完整页面，或只是一次性打开全部 diff 标签页？",
+      "depends_on": [],
+      "recommendation": "复用 VS Code 原生 diff 编辑器，插件维护轻量 Review Queue，并提供上一项、下一项、标记已审核和结束审核；这样保留原生 diff、语言能力和大文件体验，同时实现连续流程。",
+      "status": "answered",
+      "round": 1,
+      "answer": "复用 VS Code 原生 diff 编辑器，由插件提供 Review Queue、上一项、下一项、标记已审核和结束审核；不新建完整 diff Webview。",
+      "log_ref": "LOG-003"
+    },
+    {
+      "id": "D-004",
+      "title": "一键入口",
+      "question": "用户从哪里启动这次审核：只提供命令面板命令、同时放到 Source Control 标题工具栏，还是还需要默认快捷键？",
+      "depends_on": [],
+      "recommendation": "同时提供命令面板命令和 Source Control 标题工具栏按钮；首版不占用默认快捷键，避免与用户和其他扩展的键位冲突。",
+      "status": "answered",
+      "round": 1,
+      "answer": "同时提供命令面板命令与 Source Control 标题工具栏按钮，首版不设置默认快捷键。",
+      "log_ref": "LOG-004"
+    },
+    {
+      "id": "D-005",
+      "title": "多仓库工作区范围",
+      "question": "当 VS Code 工作区同时包含多个 Git 仓库时，一次审核应只处理一个明确仓库，还是聚合全部仓库的变更？",
+      "depends_on": [],
+      "recommendation": "一次 Review Session 只绑定一个仓库；能从当前文件或唯一仓库判断时直接启动，存在歧义时让用户选一次，避免不同仓库的基线、排序和状态混在一起。",
+      "status": "answered",
+      "round": 1,
+      "answer": "一次 Review Session 只绑定一个 Git 仓库；能确定唯一仓库时直接启动，存在多个候选且无法从上下文确定时让用户选择。",
+      "log_ref": "LOG-005"
+    },
+    {
+      "id": "D-006",
+      "title": "staged 与 unstaged 的展示单位",
+      "question": "同一文件同时有 staged 和 unstaged 变更时，应合并成相对 HEAD 的一个审核项，还是拆成 staged 与 unstaged 两个审核项？",
+      "depends_on": ["D-001", "D-002"],
+      "recommendation": "相对 HEAD 合并为一个文件审核项，使用户看到最终工作树整体；如果未来加入暂存操作，再提供分层视图。",
+      "status": "answered",
+      "round": 2,
+      "answer": "同一文件的 staged 与 unstaged 变更合并为相对 HEAD 的一个审核项，展示最终工作树的整体变化。",
+      "log_ref": "LOG-006"
+    },
+    {
+      "id": "D-007",
+      "title": "审核队列变化策略",
+      "question": "审核期间 Git 变更集合发生变化时，当前 session 应固定启动时快照、自动实时重算，还是提示用户选择刷新？",
+      "depends_on": ["D-001", "D-002"],
+      "recommendation": "固定启动时的文件队列，但检测变化并明确提示刷新；刷新时保留仍可匹配文件的已审核状态。这样避免用户导航时列表突然跳动。",
+      "status": "answered",
+      "round": 2,
+      "answer": "Review Session 固定启动时的队列；检测到 Git 变化后提示刷新，刷新时仅为内容指纹仍匹配的审核项保留已审核状态。",
+      "log_ref": "LOG-007"
+    },
+    {
+      "id": "D-008",
+      "title": "审核状态持久化",
+      "question": "Review Session 的已审核进度是否需要在 VS Code 重启后恢复，以及当文件内容再次变化时是否自动撤销该文件的已审核状态？",
+      "depends_on": ["D-002"],
+      "recommendation": "首版仅在当前扩展会话内保存进度；文件内容指纹变化后自动回到未审核。后续再根据实际需求增加 workspaceState 恢复，避免陈旧审核状态误导用户。",
+      "status": "answered",
+      "round": 2,
+      "answer": "首版审核进度只保存在当前扩展会话内，不跨 VS Code 重启恢复；文件内容指纹变化时自动撤销该项的已审核状态。",
+      "log_ref": "LOG-008"
+    },
+    {
+      "id": "D-009",
+      "title": "文件类型与异常项",
+      "question": "二进制文件、删除文件、重命名、submodule 和无法打开 diff 的条目应如何进入队列并计入完成？",
+      "depends_on": ["D-001", "D-002", "D-003"],
+      "recommendation": "所有 Git 变更都进入队列；文本使用 diff，删除/重命名保留正确两侧语义，二进制和 submodule 显示可解释的只读摘要，并允许用户显式标记已审核或跳过，不静默排除。",
+      "status": "answered",
+      "round": 2,
+      "answer": "所有 Git 变更都进入队列；文本、删除和重命名使用正确 diff 语义，二进制、submodule 与无法渲染 diff 的条目显示只读摘要，并允许显式标记已审核或跳过。",
+      "log_ref": "LOG-009"
+    },
+    {
+      "id": "D-010",
+      "title": "导航与完成动作",
+      "question": "上一项/下一项是否自动将当前文件标记已审核，完成全部文件后应只显示总结、关闭本次 session，还是执行额外 Git 或远程动作？",
+      "depends_on": ["D-002", "D-003"],
+      "recommendation": "导航不自动代表审核；用户显式执行‘标记已审核并转到下一项’。全部完成后显示本地总结并结束 session，不 stage、commit、push 或调用远程服务。",
+      "status": "answered",
+      "round": 2,
+      "answer": "上一项与下一项仅导航；用户通过‘标记已审核并转到下一项’显式确认。全部审核完成后显示本地总结并结束 session，不执行 stage、commit、push 或远程 review。",
+      "log_ref": "LOG-010"
+    },
+    {
+      "id": "D-011",
+      "title": "无变更与失败行为",
+      "question": "当没有变更、Git 不可用、仓库无法确定、diff 打开失败或工作区不受信任时，应怎样反馈并允许恢复？",
+      "depends_on": ["D-001", "D-003", "D-005"],
+      "recommendation": "使用本地化、可行动的错误提示；不创建空 session；单文件 diff 失败时保留队列并允许重试或显式跳过；不可信工作区遵循现有受限能力策略，不绕过 Workspace Trust。",
+      "status": "answered",
+      "round": 2,
+      "answer": "无变更或无法确定有效仓库时不创建空 session，并显示本地化、可行动的提示；单项失败保留队列，允许重试或显式跳过；工作区不受信任时遵守现有 Workspace Trust 限制。",
+      "log_ref": "LOG-011"
+    },
+    {
+      "id": "D-012",
+      "title": "队列与进度的可见载体",
+      "question": "Review Session 的完整文件队列、当前项、已审核/跳过状态和总体进度应持续显示在哪里：专用侧栏 Tree View、按需打开的 QuickPick，还是只用状态栏与通知配合导航命令？",
+      "depends_on": ["D-002", "D-003", "D-010"],
+      "recommendation": "在 Source Control 容器中贡献专用 Review Queue Tree View，并用状态栏显示紧凑进度；Tree View 提供完整队列和状态且可直接跳转，状态栏保证 diff 聚焦时进度仍可见。QuickPick 可作为后续快捷跳转，不作为唯一载体。",
+      "status": "answered",
+      "round": 3,
+      "answer": "在 Source Control 容器中提供专用 Review Queue Tree View，持续展示完整队列、当前项、已审核/跳过状态并支持直接跳转；状态栏显示紧凑进度。QuickPick 不作为首版必需载体。",
+      "log_ref": "LOG-012"
+    },
+    {
+      "id": "D-013",
+      "title": "验收体验",
+      "question": "哪些可观察结果才算这项功能完成，例如启动耗时、变更顺序、进度可见性、只用键盘完成全流程和中途取消后的清理？",
+      "depends_on": ["D-001", "D-002", "D-003", "D-004", "D-005", "D-006", "D-007", "D-008", "D-009", "D-010", "D-011", "D-012"],
+      "recommendation": "验收至少覆盖：一键启动、稳定且完整的队列、明确进度、键盘可达的上一/下一/标记/结束、所有异常项有去向、取消与扩展停用无资源泄漏，以及不会产生任何 Git 或远程写操作。",
+      "status": "answered",
+      "round": 4,
+      "answer": "接受推荐的首版验收合同：覆盖双入口启动、单仓库完整队列、相对 HEAD 合并语义、稳定导航与显式审核、特殊项与失败恢复、键盘和可访问性、零 Git/远程写操作、资源清理、架构边界及单元与集成测试。",
+      "log_ref": "LOG-013"
+    }
+  ]
+}
