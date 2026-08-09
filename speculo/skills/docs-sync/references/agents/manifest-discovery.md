@@ -9,26 +9,26 @@
 
 一个目录可能同时存在多个 manifest 文件。按优先级选择**主 manifest**，其余作为辅助参考。
 
-| 优先级 | 生态 | Manifest 文件 |
-|--------|------|--------------|
-| 1 | Node.js / TypeScript | `package.json` |
-| 1 | Java / Maven | `pom.xml` |
-| 2 | Java / Gradle | `build.gradle`、`build.gradle.kts` |
-| 1 | Rust | `Cargo.toml` |
-| 1 | Go | `go.mod` |
-| 1 | Python | `pyproject.toml` |
-| 2 | Python（旧） | `setup.py`、`setup.cfg` |
-| 1 | C / C++ / CMake | `CMakeLists.txt` |
-| 3 | C / C++ / 通用 | `Makefile` |
-| 1 | Ruby | `Gemfile` |
-| 1 | Elixir | `mix.exs` |
-| 1 | Dart / Flutter | `pubspec.yaml` |
-| 1 | PHP | `composer.json` |
-| 1 | Zig | `build.zig` |
-| 1 | .NET | `*.csproj`、`*.fsproj` |
-| 1 | Swift | `Package.swift` |
-| 1 | Haskell | `*.cabal`、`stack.yaml` |
-| 1 | Nix | `flake.nix`、`default.nix` |
+| 优先级 | 生态                 | Manifest 文件                      |
+| ------ | -------------------- | ---------------------------------- |
+| 1      | Node.js / TypeScript | `package.json`                     |
+| 1      | Java / Maven         | `pom.xml`                          |
+| 2      | Java / Gradle        | `build.gradle`、`build.gradle.kts` |
+| 1      | Rust                 | `Cargo.toml`                       |
+| 1      | Go                   | `go.mod`                           |
+| 1      | Python               | `pyproject.toml`                   |
+| 2      | Python（旧）         | `setup.py`、`setup.cfg`            |
+| 1      | C / C++ / CMake      | `CMakeLists.txt`                   |
+| 3      | C / C++ / 通用       | `Makefile`                         |
+| 1      | Ruby                 | `Gemfile`                          |
+| 1      | Elixir               | `mix.exs`                          |
+| 1      | Dart / Flutter       | `pubspec.yaml`                     |
+| 1      | PHP                  | `composer.json`                    |
+| 1      | Zig                  | `build.zig`                        |
+| 1      | .NET                 | `*.csproj`、`*.fsproj`             |
+| 1      | Swift                | `Package.swift`                    |
+| 1      | Haskell              | `*.cabal`、`stack.yaml`            |
+| 1      | Nix                  | `flake.nix`、`default.nix`         |
 
 ### 多 manifest 选择规则
 

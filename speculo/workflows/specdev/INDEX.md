@@ -4,7 +4,17 @@ type: workflow
 workflow: specdev
 name: SpecDev Workflow
 description: 以本地工件为唯一开发权威，从来源冻结、诊断、设计、原型、规格、Ticket、编排和审查推进到证据驱动实现、远程 reconcile 与知识归档。
-keywords: [specdev, local-first, 规格驱动开发, decision-complete, prototype, code-review, TDD, 证据]
+keywords:
+  [
+    specdev,
+    local-first,
+    规格驱动开发,
+    decision-complete,
+    prototype,
+    code-review,
+    TDD,
+    证据,
+  ]
 ---
 
 # SpecDev Workflow
@@ -183,20 +193,20 @@ Change 从 active/blocked 转为 completed 时加载 `<Path>{roots.workflows}/sp
 
 ## 场景路由
 
-| 场景 | 入口 | 正常出口 |
-|---|---|---|
-| 远程 Issue、URL、文件或对话摄入 | T-triage intake | D / G / W / P / S / C / T |
-| 本地 change 完成且来源可关闭 | T-triage reconcile | A |
-| 疑难 bug 或性能回归 | D-diagnose-bugs | S / T / I / R / W |
-| 模糊但可通过决策访谈收敛 | G-grill-with-docs | P / S / T / W |
-| 路径超出单次上下文 | W-wayfinder | G / P / D / S / T |
-| 需要用代码回答逻辑/UI 问题 | P-prototype | G / S / T / I |
-| 固定点 diff、branch 或 PR review | C-code-review | completed / T / S / G |
-| 外部行为已清楚 | S-spec | T-tickets |
-| Ready Spec 需要垂直切片 | T-tickets | P-goal-plan / I |
-| 多 Ticket 协调 | P-goal-plan | I / Triage / A |
-| Ready 执行 | I-implement | Triage / A / blocked / deviation |
-| 架构健康扫描 | R-review-architecture | G / T |
+| 场景                             | 入口                  | 正常出口                         |
+| -------------------------------- | --------------------- | -------------------------------- |
+| 远程 Issue、URL、文件或对话摄入  | T-triage intake       | D / G / W / P / S / C / T        |
+| 本地 change 完成且来源可关闭     | T-triage reconcile    | A                                |
+| 疑难 bug 或性能回归              | D-diagnose-bugs       | S / T / I / R / W                |
+| 模糊但可通过决策访谈收敛         | G-grill-with-docs     | P / S / T / W                    |
+| 路径超出单次上下文               | W-wayfinder           | G / P / D / S / T                |
+| 需要用代码回答逻辑/UI 问题       | P-prototype           | G / S / T / I                    |
+| 固定点 diff、branch 或 PR review | C-code-review         | completed / T / S / G            |
+| 外部行为已清楚                   | S-spec                | T-tickets                        |
+| Ready Spec 需要垂直切片          | T-tickets             | P-goal-plan / I                  |
+| 多 Ticket 协调                   | P-goal-plan           | I / Triage / A                   |
+| Ready 执行                       | I-implement           | Triage / A / blocked / deviation |
+| 架构健康扫描                     | R-review-architecture | G / T                            |
 
 同 change 下一阶段需要当前一手推理且上下文健康时继续；切换 repo/person/harness 或旁路时使用 `<Path>{roots.commands}/handoff.md</Path>`；严格限定且可独立派单时使用 Dispatch Packet；其他长上下文以权威工件路径恢复。平台不支持 clear/compact 时不虚构操作。
 

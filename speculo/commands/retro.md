@@ -51,23 +51,30 @@ generated_at: [TODO: ISO-8601]
 # Speculo Retro Report
 
 ## 复盘范围
+
 [TODO: 本次复盘覆盖的 command / workflow 与时间/会话范围。]
 
 ## 信号来源
+
 [TODO: 列出采集到的证据出处：对话节点、`speculo/.speculo/...` 产物路径、`.status.json` 字段、LESSONS。]
 
 ## 改进提案
+
 [TODO: 按优先级倒序列出每条提案：标题 / 类型 / 优先级 / 根因 / 建议改动 / 验收标准 / 受影响资产 / 去重结论。]
 
 ## 丢弃与降级项
+
 [TODO: 列出被合并、丢弃或降级为「仅记教训」的项及原因。]
 
 ## 目标仓库
+
 `NAMEWTA/Speculo`
 
 ## 用户确认记录
+
 [TODO: 记录用户对 issue 清单的确认原文摘要。]
 
 ## 提交结果
+
 [TODO: 列出每条提案对应的 issue 编号/URL，或未提交原因（重复/失败/用户撤回）。]
 ```

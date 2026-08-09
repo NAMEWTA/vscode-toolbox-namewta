@@ -8,26 +8,26 @@
 
 ### 类型标签（必须有一个）
 
-| 标签               | 含义                                    |
-| ------------------ | --------------------------------------- |
-| `bug`              | 功能不符合预期或文档                    |
-| `feature-request`  | 新功能请求                              |
-| `enhancement`      | 现有功能的改进                          |
-| `documentation`    | 文档相关                                |
-| `question`         | 使用类问题（非 bug）                    |
-| `duplicate`        | 与其他 issue/PR 重复                    |
-| `invalid`          | 不适用本项目                            |
-| `wontfix`          | 不会修（给清晰理由）                    |
-| `good-first-issue` | 适合新贡献者                            |
+| 标签               | 含义                 |
+| ------------------ | -------------------- |
+| `bug`              | 功能不符合预期或文档 |
+| `feature-request`  | 新功能请求           |
+| `enhancement`      | 现有功能的改进       |
+| `documentation`    | 文档相关             |
+| `question`         | 使用类问题（非 bug） |
+| `duplicate`        | 与其他 issue/PR 重复 |
+| `invalid`          | 不适用本项目         |
+| `wontfix`          | 不会修（给清晰理由） |
+| `good-first-issue` | 适合新贡献者         |
 
 ### 优先级（可选，用于 bug/feature-request）
 
-| 标签                | 含义                                             |
-| ------------------- | ------------------------------------------------ |
-| `priority:critical` | 生产破坏、安全事件；24h 内响应                   |
-| `priority:high`     | 显著影响主要用户；1 周内处理                     |
-| `priority:medium`   | 影响部分用户或体验；按 sprint 排期                |
-| `priority:low`      | 外观/轻微改进；有空再说                          |
+| 标签                | 含义                               |
+| ------------------- | ---------------------------------- |
+| `priority:critical` | 生产破坏、安全事件；24h 内响应     |
+| `priority:high`     | 显著影响主要用户；1 周内处理       |
+| `priority:medium`   | 影响部分用户或体验；按 sprint 排期 |
+| `priority:low`      | 外观/轻微改进；有空再说            |
 
 ### 模块/领域（自定义）
 
@@ -35,14 +35,14 @@
 
 ### 状态标签
 
-| 标签                | 含义                                        |
-| ------------------- | ------------------------------------------- |
-| `needs-repro`       | 等复现步骤                                  |
-| `needs-design`      | 需要设计讨论再 coding                       |
-| `needs-review`      | PR 等评审                                   |
-| `blocked`           | 被其他 issue/上游依赖阻塞                   |
-| `stale`             | 长时间无活动                                |
-| `closed-stale`      | 因无活动被关闭                              |
+| 标签           | 含义                      |
+| -------------- | ------------------------- |
+| `needs-repro`  | 等复现步骤                |
+| `needs-design` | 需要设计讨论再 coding     |
+| `needs-review` | PR 等评审                 |
+| `blocked`      | 被其他 issue/上游依赖阻塞 |
+| `stale`        | 长时间无活动              |
+| `closed-stale` | 因无活动被关闭            |
 
 ## Issue 分诊流程
 
@@ -59,10 +59,11 @@
 **要求复现**
 
 > Thanks for the report. Could you share a minimal reproduction? Please include:
+>
 > - Command you ran and full output
 > - Node version (`node -v`) and OS
 > - Contents of relevant config files
-> Without this we can't investigate further.
+>   Without this we can't investigate further.
 
 **标记重复**
 

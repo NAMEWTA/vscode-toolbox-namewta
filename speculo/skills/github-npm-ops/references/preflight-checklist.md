@@ -5,19 +5,19 @@
 
 ## 探测矩阵
 
-| # | 项 | 探测命令 | 通过判定 | 失败建议 |
-|---|----|---------|---------|---------|
-| 1 | 当前分支 | `git rev-parse --abbrev-ref HEAD` | 输出 = 仓库声明的发布分支（默认 `main`） | `git checkout main` 后重新触发；或显式声明本仓库的发布分支 |
-| 2 | 工作区干净 | `git status --porcelain` | 输出为空 | 先 stash / commit；不允许 `git stash` 后立刻发版（stash 内容易丢失） |
-| 3 | 远端可达 | `git ls-remote --exit-code origin` | 退出码 0 | 检查网络 / SSH key / `gh auth status` |
-| 4 | gh 已登录 | `gh auth status` | 含 `Logged in to github.com` | `gh auth login` |
-| 5 | gh 仓库权限 | `gh repo view --json viewerCanAdminister` | `viewerCanAdminister == true` 或至少 push 权限 | 联系仓库管理员；或 fork 后申请 PR 流程 |
-| 6 | Node 版本 | `node --version` | ≥ `package.json#engines.node` | `nvm use` / `fnm use` / 升级本机 Node |
-| 7 | 包管理器 | `pnpm --version` (或 `npm` / `yarn`) | 版本 ≥ 仓库 lockfile 隐含版本 | 安装匹配版本；不要随意切换包管理器 |
-| 8 | release.yml 存在 | `test -f .github/workflows/release.yml` | 文件存在 | 转 `github-npm-ops` skill 的 `references/workflow-yaml-reference.md` 先落该文件 |
-| 9 | release.yml 形态 | 见 [publish-detection.md](publish-detection.md) | 输出 `PUBLISH_TO_NPM=true` 或 `false` | 见 publish-detection 文档的判定矩阵 |
-| 10 | docs-sync state | `test -f speculo/.speculo/commands/docs-sync/state.json && jq . speculo/.speculo/commands/docs-sync/state.json` | schema v4、scope 已确认，baseline 可解析 | 不存在/未确认 → 走 docs-sync command bootstrap；旧 schema 或损坏 → 重新运行 `speculo init` 刷新受管理状态后再确认范围 |
-| 11 | tag 名称冲突 | `git rev-parse vX.Y.Z 2>/dev/null` | 退出码非 0（tag 不存在） | 同 tag 已存在：先确认是否真的失败需要重发；若是则 `git tag -d` + `git push origin :refs/tags/vX.Y.Z`，否则 bump 到下一版本 |
+| #   | 项               | 探测命令                                                                                                        | 通过判定                                       | 失败建议                                                                                                                   |
+| --- | ---------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 当前分支         | `git rev-parse --abbrev-ref HEAD`                                                                               | 输出 = 仓库声明的发布分支（默认 `main`）       | `git checkout main` 后重新触发；或显式声明本仓库的发布分支                                                                 |
+| 2   | 工作区干净       | `git status --porcelain`                                                                                        | 输出为空                                       | 先 stash / commit；不允许 `git stash` 后立刻发版（stash 内容易丢失）                                                       |
+| 3   | 远端可达         | `git ls-remote --exit-code origin`                                                                              | 退出码 0                                       | 检查网络 / SSH key / `gh auth status`                                                                                      |
+| 4   | gh 已登录        | `gh auth status`                                                                                                | 含 `Logged in to github.com`                   | `gh auth login`                                                                                                            |
+| 5   | gh 仓库权限      | `gh repo view --json viewerCanAdminister`                                                                       | `viewerCanAdminister == true` 或至少 push 权限 | 联系仓库管理员；或 fork 后申请 PR 流程                                                                                     |
+| 6   | Node 版本        | `node --version`                                                                                                | ≥ `package.json#engines.node`                  | `nvm use` / `fnm use` / 升级本机 Node                                                                                      |
+| 7   | 包管理器         | `pnpm --version` (或 `npm` / `yarn`)                                                                            | 版本 ≥ 仓库 lockfile 隐含版本                  | 安装匹配版本；不要随意切换包管理器                                                                                         |
+| 8   | release.yml 存在 | `test -f .github/workflows/release.yml`                                                                         | 文件存在                                       | 转 `github-npm-ops` skill 的 `references/workflow-yaml-reference.md` 先落该文件                                            |
+| 9   | release.yml 形态 | 见 [publish-detection.md](publish-detection.md)                                                                 | 输出 `PUBLISH_TO_NPM=true` 或 `false`          | 见 publish-detection 文档的判定矩阵                                                                                        |
+| 10  | docs-sync state  | `test -f speculo/.speculo/commands/docs-sync/state.json && jq . speculo/.speculo/commands/docs-sync/state.json` | schema v4、scope 已确认，baseline 可解析       | 不存在/未确认 → 走 docs-sync command bootstrap；旧 schema 或损坏 → 重新运行 `speculo init` 刷新受管理状态后再确认范围      |
+| 11  | tag 名称冲突     | `git rev-parse vX.Y.Z 2>/dev/null`                                                                              | 退出码非 0（tag 不存在）                       | 同 tag 已存在：先确认是否真的失败需要重发；若是则 `git tag -d` + `git push origin :refs/tags/vX.Y.Z`，否则 bump 到下一版本 |
 
 ## 失败处理总策略
 

@@ -37,14 +37,14 @@ gh run view <databaseId> --log-failed 2>&1 \
 
 按错误类型对应：
 
-| 错误类型        | 典型信号                          | 处理方向                                   |
-| --------------- | --------------------------------- | ------------------------------------------ |
-| Lint            | `error TS*` / `Parsing error`     | 在本地 `pnpm lint --fix`，推新 commit      |
-| 类型            | `Type 'X' is not assignable`      | 修类型定义，或在必要处用类型守卫           |
-| 测试逻辑        | 断言失败、期望值不匹配             | 检查最近是否改了被测行为，更新测试或代码   |
-| 环境依赖        | `command not found` / 版本不符    | 对齐 `setup-node` 版本与 `packageManager`  |
-| 依赖冲突        | peer dep 警告 + 运行时错误         | 检查 lockfile 变更，pin 冲突的 transitive  |
-| 构建产物        | `Cannot find module './dist/...'` | 确认构建步骤在测试/发布前执行              |
+| 错误类型 | 典型信号                          | 处理方向                                  |
+| -------- | --------------------------------- | ----------------------------------------- |
+| Lint     | `error TS*` / `Parsing error`     | 在本地 `pnpm lint --fix`，推新 commit     |
+| 类型     | `Type 'X' is not assignable`      | 修类型定义，或在必要处用类型守卫          |
+| 测试逻辑 | 断言失败、期望值不匹配            | 检查最近是否改了被测行为，更新测试或代码  |
+| 环境依赖 | `command not found` / 版本不符    | 对齐 `setup-node` 版本与 `packageManager` |
+| 依赖冲突 | peer dep 警告 + 运行时错误        | 检查 lockfile 变更，pin 冲突的 transitive |
+| 构建产物 | `Cannot find module './dist/...'` | 确认构建步骤在测试/发布前执行             |
 
 ### 第四步：Flaky 的处理
 

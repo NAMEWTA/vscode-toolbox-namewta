@@ -12,10 +12,10 @@
 示例：
 
 ```yaml
-expected_changes: ["<Path>src/auth/session.ts</Path>"]
-writable_paths: ["<Path>src/auth/**</Path>"]
-read_only_paths: ["<Path>src/users/**</Path>"]
-shared_paths: ["<Path>package.json</Path>"]
+expected_changes: ['<Path>src/auth/session.ts</Path>']
+writable_paths: ['<Path>src/auth/**</Path>']
+read_only_paths: ['<Path>src/users/**</Path>']
+shared_paths: ['<Path>package.json</Path>']
 ```
 
 ## 2. 所有权规则

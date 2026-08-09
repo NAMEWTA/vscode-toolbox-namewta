@@ -4,7 +4,7 @@ artifact: ticket
 change: 2026-08-09-review-all-git-changes
 id: T-03
 title: 交付 VS Code 一键审核交互
-status: ready
+status: done
 planning_depth: deep
 planning_depth_reason: 新增公共命令、Manifest 贡献点、原生 diff 内容 Provider、Tree View、状态栏和跨 UI 生命周期，影响公共接口与高事故半径资源治理
 ready: true
@@ -28,7 +28,7 @@ contract_ids:
   - AC-017
   - AC-018
   - AC-020
-owner: unassigned
+owner: codex-local
 expected_changes:
   - '<Path>package.json</Path>'
   - '<Path>package.nls.json</Path>'
@@ -79,7 +79,7 @@ shared_path_owners:
 
 - **目标：** 将 T-02 已可用的 Gateway 行为适配为完整 VS Code 用户流程：双入口启动、单仓库消歧、Review Queue Tree View、状态栏进度、原生 diff/只读摘要、导航、显式审核、跳过、重试、刷新、总结、替换确认和资源清理。
 - **可观察产出：** 用户可在 Source Control 内一键开始并从第一项审核到最后一项；完整队列和进度持续可见，所有操作可用键盘触发，错误可恢复，完成后无 Git 写入或遗留 UI/请求资源。
-- **来源：** `US-001` 至 `US-007`、`AC-001`、`AC-003`、`AC-006` 至 `AC-018`、`AC-020`、`ADR-001`、`ADR-002`、`DEC-008`、`USER-DECISION:2026-08-09-merge-each-ticket`。
+- **来源：** `US-001` 至 `US-007`、`AC-001`、`AC-003`、`AC-006` 至 `AC-018`、`AC-020`、`ADR-001`、`ADR-002`、`DEC-008`、`USER-DECISION:2026-08-09-direct-main-development`。
 - **当前事实：** `<Path>src/extension/presentation/git-historical-document-provider.ts</Path>` 已证明自有 URI、取消和稳定公开 `vscode.diff` 可用；`<Path>src/extension/adapters/vscode-command-registration-adapter.ts</Path>` 提供统一命令错误边界；当前 Manifest 没有 Git Review 命令、`scm` View 或菜单贡献。
 - **Planning Depth 原因：** 本 Ticket 同时改变用户可绑定命令、Manifest、Tree View、状态栏、Provider 和组合根，必须维持多语言、Workspace Trust、可访问性与完整 dispose，属于公共接口和高事故半径 UI 生命周期变更。
 
@@ -133,7 +133,7 @@ shared_path_owners:
 4. 实现 Tree View、状态栏与可访问状态文本，确保 generation、一致投影和 inactive 复位。
 5. 实现安全 Review 内容 URI/Provider、原生 diff 和特殊项只读摘要，接通取消、重试和局部失败。
 6. 在唯一组合根注册 feature 资源并集中 dispose，运行 UI 定向测试、完整 `pnpm check` 和 `pnpm package:list`。
-7. 完成可重复键盘手动验收、Evidence 和双轴审查；全部通过后提交并 merge 回父分支。
+7. 完成可重复键盘手动验收、Evidence 和双轴审查；全部通过后关闭 G-03 并同步当前 `main` 状态，T-04 才可开始。
 
 ## 7. 路径访问契约
 
@@ -154,19 +154,19 @@ shared_path_owners:
 
 ## 9. 发布、迁移与恢复
 
-- **迁移顺序：** 必须从已合并 T-02 的父分支创建 T-03；先锁定 Manifest 契约，再实现 controller/UI，最后接入组合根和包清单验证。
+- **迁移顺序：** 必须在 G-02 关闭后的当前 `main` 开始 T-03；先锁定 Manifest 契约，再实现 controller/UI，最后接入组合根和包清单验证。
 - **兼容窗口：** 新命令和 View 为附加能力，现有命令与 API v1 不变；session 不持久化，无数据迁移或降级清理。
 - **监控信号：** UI 状态投影测试、活动 AbortController/订阅数量、结构化命令错误、`pnpm check`、`package:list` 和手动键盘验收。
-- **回滚或前向恢复：** merge 前丢弃隔离分支；merge 后使用 revert 提交同时移除 Manifest 贡献、组合根注册和 feature 文件，不能只隐藏 View 留下命令或资源。
-- **不可逆操作与批准点：** 无生产不可逆操作。用户已授权 T-03 在 Evidence、双轴审查、完整本地门禁和手动 UI Gate 通过后本地 merge 回父分支；不授权 push 或发布。
-- **收缩条件：** 全部 Manifest 命令都有真实注册与本地化，Tree View/statusbar/diff 使用稳定公开 API，所有 feature 资源进入统一 dispose，T-04 可从父分支运行集成 Gate。
+- **回滚或前向恢复：** G-03 失败时只在当前 Ticket 授权路径内修订；存在用户授权的本地提交时使用显式 revert，同时移除 Manifest 贡献、组合根注册和 feature 文件，不能只隐藏 View 留下命令或资源。
+- **不可逆操作与批准点：** 无生产不可逆操作。用户已选择直接在当前 `main` 串行开发；G-03 关闭不执行分支合并、push 或发布。
+- **收缩条件：** 全部 Manifest 命令都有真实注册与本地化，Tree View/statusbar/diff 使用稳定公开 API，所有 feature 资源进入统一 dispose，T-04 可从当前已验证状态运行集成 Gate。
 
 ## 10. 验收标准
 
-- [ ] AC-001、AC-003、AC-006 至 AC-018、AC-020 的用户交互和失败行为均有自动或明确手动证据。
-- [ ] 命令面板与 `scm/title` 可启动，Tree View/状态栏/diff 同步，且无默认快捷键或私有/proposed API。
-- [ ] 键盘、可访问状态、本地化、Workspace Trust、stale、局部失败、替换和 dispose 均通过验证。
-- [ ] `pnpm check` 与 `pnpm package:list` 实际执行并记录到 `<Path>{roots.state}/specdev/changes/2026-08-09-review-all-git-changes/evidence/T-03.md</Path>`。
-- [ ] 实际修改未超出 `writable_paths`，四个 shared path 仅由 T-03 修改。
-- [ ] Ticket 分支已 merge 回父分支并记录 base、提交和 merge 结果；T-04 只能从合并后的父分支开始。
-- [ ] 未执行 push、发布或 Git 工作树写操作，未发生未批准偏差，状态投影一致。
+- [x] AC-001、AC-003、AC-006 至 AC-018、AC-020 的用户交互和失败行为均有自动或明确手动证据。
+- [x] 命令面板与 `scm/title` 可启动，Tree View/状态栏/diff 同步，且无默认快捷键或私有/proposed API。
+- [x] 键盘、可访问状态、本地化、Workspace Trust、stale、局部失败、替换和 dispose 均通过验证。
+- [x] `pnpm check` 与 `pnpm package:list` 已实际执行，并记录到 `<Path>{roots.state}/specdev/changes/2026-08-09-review-all-git-changes/evidence/T-03.md</Path>`。
+- [x] 所有项目修改均在 `writable_paths` 内，或作为运行时 l10n 的 local deviation 记录；四个 shared path 仅由 T-03 修改。
+- [x] G-03 已在 Evidence 和审查通过后关闭，并记录开始/关闭时的 HEAD、工作区摘要和实际修改路径；T-04 只能从该已验证状态开始。
+- [x] 未执行 push、发布或 Git 工作树写操作，未发生未批准偏差，状态投影一致。

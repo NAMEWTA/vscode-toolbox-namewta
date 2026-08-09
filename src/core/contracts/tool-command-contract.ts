@@ -1,5 +1,13 @@
 import type { RuntimeInfo } from './system-info-contract';
 import {
+  isGitReviewItemContentInput,
+  isGitReviewStartInput,
+  type GitReviewItemContent,
+  type GitReviewItemContentInput,
+  type GitReviewSessionSnapshot,
+  type GitReviewStartInput,
+} from '../domains/git-review/git-review-model';
+import {
   isFullCommitHash,
   isGitBlameAnnotationsInput,
   isGitCommitChangesInput,
@@ -26,6 +34,12 @@ export type {
   GitHistoricalContentResult,
   GitLineHistoryInput,
   GitLineHistoryPage,
+};
+export type {
+  GitReviewItemContent,
+  GitReviewItemContentInput,
+  GitReviewSessionSnapshot,
+  GitReviewStartInput,
 };
 
 export type ResourceSnapshot = {
@@ -89,6 +103,46 @@ export type ToolCommandMap = {
     input: GitCopyCommitHashInput;
     output: string;
   };
+  'gitReview.start': {
+    input: GitReviewStartInput;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.previous': {
+    input: Record<string, never>;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.next': {
+    input: Record<string, never>;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.markReviewedAndNext': {
+    input: Record<string, never>;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.retry': {
+    input: Record<string, never>;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.skip': {
+    input: Record<string, never>;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.refresh': {
+    input: Record<string, never>;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.end': {
+    input: Record<string, never>;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.markStale': {
+    input: Record<string, never>;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.getItemContent': {
+    input: GitReviewItemContentInput;
+    output: GitReviewItemContent;
+  };
   'system.getRuntimeInfo': {
     input: Record<string, never>;
     output: RuntimeInfo;
@@ -116,8 +170,32 @@ const TOOL_COMMAND_IDS = [
   'gitBlame.getCommitChanges',
   'gitBlame.getHistoricalContent',
   'gitBlame.getLineHistory',
+  'gitReview.end',
+  'gitReview.getItemContent',
+  'gitReview.markReviewedAndNext',
+  'gitReview.markStale',
+  'gitReview.next',
+  'gitReview.previous',
+  'gitReview.refresh',
+  'gitReview.retry',
+  'gitReview.skip',
+  'gitReview.start',
   'system.getRuntimeInfo',
 ] as const satisfies readonly ToolCommandId[];
+
+type GitReviewCommandId = Extract<ToolCommandId, `gitReview.${string}`>;
+type NonGitReviewCommandId = Exclude<ToolCommandId, GitReviewCommandId>;
+
+const GIT_REVIEW_EMPTY_INPUT_COMMANDS = new Set<GitReviewCommandId>([
+  'gitReview.previous',
+  'gitReview.next',
+  'gitReview.markReviewedAndNext',
+  'gitReview.retry',
+  'gitReview.skip',
+  'gitReview.refresh',
+  'gitReview.end',
+  'gitReview.markStale',
+]);
 
 export function isToolCommandId(value: unknown): value is ToolCommandId {
   return (
@@ -129,6 +207,16 @@ export function isToolCommandInput<TCommand extends ToolCommandId>(
   command: TCommand,
   input: unknown,
 ): input is ToolCommandInput<TCommand> {
+  if (isGitReviewCommand(command)) {
+    return isGitReviewCommandInput(command, input);
+  }
+  return isNonGitReviewCommandInput(command, input);
+}
+
+function isNonGitReviewCommandInput(
+  command: NonGitReviewCommandId,
+  input: unknown,
+): boolean {
   switch (command) {
     case 'copyReference.copy':
       return isCopyReferenceInput(input);
@@ -145,6 +233,20 @@ export function isToolCommandInput<TCommand extends ToolCommandId>(
     case 'system.getRuntimeInfo':
       return isEmptyRecord(input);
   }
+}
+
+function isGitReviewCommand(command: ToolCommandId): command is GitReviewCommandId {
+  return command.startsWith('gitReview.');
+}
+
+function isGitReviewCommandInput(command: GitReviewCommandId, input: unknown): boolean {
+  if (command === 'gitReview.start') {
+    return isGitReviewStartInput(input);
+  }
+  if (command === 'gitReview.getItemContent') {
+    return isGitReviewItemContentInput(input);
+  }
+  return GIT_REVIEW_EMPTY_INPUT_COMMANDS.has(command) && isEmptyRecord(input);
 }
 
 function isGitCopyCommitHashInput(value: unknown): value is GitCopyCommitHashInput {

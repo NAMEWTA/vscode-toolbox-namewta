@@ -21,4 +21,3 @@ working_tree=<clean|protected-changes> kind=<baseline|local|pushed|verified>
 远程推进后先比较旧、新 SHA 的改动路径和影响，再决定重放、重派或拒绝旧交付。commit、push、PR、merge 各自只在授权矩阵允许时执行；远程写入后重新读取远程 SHA，并在本地与远程一致时建立下一 checkpoint。
 
 **完成标准**：每轮交付对应唯一 SHA；远程漂移和受保护改动不会静默改变基线。
-

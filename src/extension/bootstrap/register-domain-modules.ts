@@ -7,6 +7,7 @@ import {
   CopyReferenceHandler,
   type ClipboardPort,
 } from '../../core/domains/copy-reference/public-api';
+import type { Disposable } from '../../core/kernel/disposable';
 import type { ToolRegistry } from '../../core/orchestration/public-api';
 import {
   GitBlameHandler,
@@ -19,6 +20,8 @@ import { GitBlamePortAdapter } from '../adapters/git/git-blame-port-adapter';
 import { GitCommandRunner } from '../adapters/git/git-command-runner';
 import { GitHistoryPortAdapter } from '../adapters/git/git-history-port-adapter';
 import { GitLineHistoryPortAdapter } from '../adapters/git/git-line-history-port-adapter';
+import { registerGitReviewHandlers } from '../adapters/git/git-review-handler-registration';
+import { GitReviewPortAdapter } from '../adapters/git/git-review-port-adapter';
 
 export type DomainModuleDependencies = {
   readonly registry: ToolRegistry;
@@ -26,7 +29,9 @@ export type DomainModuleDependencies = {
   readonly runtimeInfoPort: RuntimeInfoPort;
 };
 
-export function registerDomainModules(dependencies: DomainModuleDependencies): void {
+export function registerDomainModules(
+  dependencies: DomainModuleDependencies,
+): Disposable {
   const { clipboardPort, registry, runtimeInfoPort } = dependencies;
   registry.register(new CopyReferenceHandler(clipboardPort));
   registry.register(new GitCopyCommitHashHandler(clipboardPort));
@@ -42,7 +47,12 @@ export function registerDomainModules(dependencies: DomainModuleDependencies): v
       new GitLineHistoryPortAdapter(git, () => vscode.workspace.isTrusted),
     ),
   );
+  const gitReviewSession = registerGitReviewHandlers(
+    registry,
+    new GitReviewPortAdapter(git, () => vscode.workspace.isTrusted),
+  );
   registry.register(
     new SystemInfoHandler(runtimeInfoPort, () => registry.getCapabilities()),
   );
+  return gitReviewSession;
 }

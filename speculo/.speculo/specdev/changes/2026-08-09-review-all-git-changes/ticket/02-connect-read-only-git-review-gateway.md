@@ -4,7 +4,7 @@ artifact: ticket
 change: 2026-08-09-review-all-git-changes
 id: T-02
 title: 接入只读 Git 变更数据与 Gateway
-status: ready
+status: done
 planning_depth: deep
 planning_depth_reason: 接入不可信 Git、路径和进程边界并执行 Workspace Trust 权限控制，属于安全与外部数据完整性高风险切片
 ready: true
@@ -21,7 +21,7 @@ contract_ids:
   - AC-014
   - AC-016
   - AC-019
-owner: unassigned
+owner: codex-local
 expected_changes:
   - '<Path>src/extension/adapters/git/git-review-*.ts</Path>'
   - '<Path>src/extension/adapters/git/git-review-*.test.ts</Path>'
@@ -53,7 +53,7 @@ shared_path_owners:
 
 - **目标：** 将受信任工作区中的真实 Git 未提交变更适配为 T-01 的 Core Port，并在唯一领域注册点接入全部 Git Review Handler，使 Extension API 调用方能通过 Gateway 操作真实 Review Session。
 - **可观察产出：** `getCapabilities()` 只在 Handler 注册后报告 Git Review 能力；Gateway 能只读获取 staged、unstaged、untracked、删除、重命名、二进制、submodule 和无 `HEAD` 仓库的稳定描述，并返回可用于原生 diff 或摘要的内容能力。
-- **来源：** `US-001`、`US-004` 至 `US-006`、`AC-002`、`AC-004`、`AC-005`、`AC-007`、`AC-008`、`AC-012`、`AC-014`、`AC-016`、`AC-019`、`DEC-004`、`USER-DECISION:2026-08-09-merge-each-ticket`。
+- **来源：** `US-001`、`US-004` 至 `US-006`、`AC-002`、`AC-004`、`AC-005`、`AC-007`、`AC-008`、`AC-012`、`AC-014`、`AC-016`、`AC-019`、`DEC-004`、`USER-DECISION:2026-08-09-direct-main-development`。
 - **当前事实：** `<Path>src/extension/adapters/git/git-command-runner.ts</Path>` 已使用 `shell: false`、参数数组、超时、取消、输出上限和进程清理；`<Path>src/extension/adapters/git/git-resource-resolver.ts</Path>` 已集中检查 Workspace Trust 和可执行仓库。当前没有工作树 change inventory 或 Git Review Port Adapter。
 - **Planning Depth 原因：** Git 输出、URI、路径、工作区信任和子进程都是不可信边界，遗漏、目录穿越、命令写入或错误取消会破坏审核可信度与安全，因此按 Deep 规划。
 
@@ -104,7 +104,7 @@ shared_path_owners:
 3. 实现基准内容、当前内容描述和特殊项摘要 Port 能力，复用现有 Runner 的上限与清理。
 4. 在唯一领域注册点构造 session service、Adapter 和全部 Handler，使 capabilities 与实际可用命令一致。
 5. 运行 Adapter/Handler 定向测试、完整单元测试、类型检查、依赖边界和构建。
-6. 写入 Evidence 与双轴审查；全部通过后提交 Ticket 分支并 merge 回父分支。
+6. 写入 Evidence 与双轴审查；全部通过后关闭 G-02 并同步当前 `main` 状态，T-03 才可开始。
 
 ## 7. 路径访问契约
 
@@ -125,19 +125,19 @@ shared_path_owners:
 
 ## 9. 发布、迁移与恢复
 
-- **迁移顺序：** 必须从已经合并 T-01 的父分支创建 T-02；先实现 Adapter 与测试，再注册 Handler，最后确认 capabilities 只投影真实可用命令。
+- **迁移顺序：** 必须在 G-01 关闭后的当前 `main` 开始 T-02；先实现 Adapter 与测试，再注册 Handler，最后确认 capabilities 只投影真实可用命令。
 - **兼容窗口：** 新能力是 API v1 的向后兼容扩展；现有 Git 行为持续可用，没有磁盘状态或配置迁移。
 - **监控信号：** 结构化错误 code、Git 操作类别和非敏感计数日志，配合进程清理、超时和 parser 测试。
-- **回滚或前向恢复：** merge 前丢弃隔离分支；merge 后使用 revert 提交回退 Adapter 与注册，不 reset T-01 契约。若仅某类 Git 状态异常，保持 capability 失败而不返回不完整队列。
-- **不可逆操作与批准点：** 无生产不可逆操作。用户已授权 T-02 在 Evidence、双轴审查与门禁全部通过后本地 merge 回父分支；不授权 push、远程写入或 Git 工作树修改。
+- **回滚或前向恢复：** G-02 失败时只在当前 Ticket 授权路径内修订；存在用户授权的本地提交时使用显式 revert，不 reset T-01 契约。若仅某类 Git 状态异常，保持 capability 失败而不返回不完整队列。
+- **不可逆操作与批准点：** 无生产不可逆操作。用户已选择直接在当前 `main` 串行开发；G-02 关闭不执行分支合并、push、远程写入或产品 Git 工作树修改。
 - **收缩条件：** 所有 T-01 Git Review Handler 已注册且 capability/Handler 一致，外部 Git 字段全部验证，允许的 Git 参数集合只读并有审计证据。
 
 ## 10. 验收标准
 
-- [ ] AC-002、AC-004、AC-005、AC-007、AC-008、AC-012、AC-014、AC-016、AC-019 均有 Adapter/Handler 证据。
-- [ ] 特殊路径、无 HEAD、删除、重命名、二进制、submodule、取消、超时和 Trust 均有失败或正常测试。
-- [ ] Git 调用审计证明没有写入或远程子命令，日志不包含源码全文或不必要敏感路径。
-- [ ] 验证矩阵全部执行并记录到 `<Path>{roots.state}/specdev/changes/2026-08-09-review-all-git-changes/evidence/T-02.md</Path>`。
-- [ ] 实际修改未超出 `writable_paths`，共享注册点仅由 T-02 修改。
-- [ ] Ticket 分支已 merge 回父分支并记录 base、提交和 merge 结果；T-03 只能从合并后的父分支开始。
-- [ ] 未执行 push，未发生未批准偏差，Map/Evidence/Ticket 状态一致。
+- [x] AC-002、AC-004、AC-005、AC-007、AC-008、AC-012、AC-014、AC-016、AC-019 均有 Adapter/Handler 证据。
+- [x] 特殊路径、无 HEAD、删除、重命名、二进制、submodule、取消、超时和 Trust 均有失败或正常测试。
+- [x] Git 调用审计证明没有写入或远程子命令，日志不包含源码全文或不必要敏感路径。
+- [x] 验证矩阵全部执行并记录到 `<Path>{roots.state}/specdev/changes/2026-08-09-review-all-git-changes/evidence/T-02.md</Path>`。
+- [x] 实际修改未超出 `writable_paths`，共享注册点仅由 T-02 修改。
+- [x] G-02 已在 Evidence 和审查通过后关闭，并记录开始/关闭时的 HEAD、工作区摘要和实际修改路径；T-03 只能从该已验证状态开始。
+- [x] 未执行 push，未发生未批准偏差，Map/Evidence/Ticket 状态一致。

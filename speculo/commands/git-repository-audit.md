@@ -3,7 +3,18 @@ id: git-repository-audit
 type: command
 name: Git Repository Audit
 description: 只读盘点项目根目录下一个或多个 Git 仓库，生成可复核的代码迭代、团队协作与个人贡献报告
-keywords: [git-audit, git-inventory, repository, commit, merge, contribution, 仓库盘点, 代码审计, 团队评估]
+keywords:
+  [
+    git-audit,
+    git-inventory,
+    repository,
+    commit,
+    merge,
+    contribution,
+    仓库盘点,
+    代码审计,
+    团队评估,
+  ]
 ---
 
 # Git Repository Audit 命令
@@ -81,40 +92,40 @@ uv run --no-project python -
 从用户自然语言解析：
 
 ```yaml
-start_time: "YYYY-MM-DD HH:mm:ss"
-end_time: "YYYY-MM-DD HH:mm:ss"
-timezone: "Asia/Shanghai"
+start_time: 'YYYY-MM-DD HH:mm:ss'
+end_time: 'YYYY-MM-DD HH:mm:ss'
+timezone: 'Asia/Shanghai'
 
 repositories:
-  mode: all                 # all | selected
-  include: []               # project_root 相对路径
+  mode: all # all | selected
+  include: [] # project_root 相对路径
   exclude: []
 
 branches:
-  mode: default             # default | selected | all-local | all-refs
+  mode: default # default | selected | all-local | all-refs
   include: []
-  primary_branch: ""
+  primary_branch: ''
 
 authors:
-  mode: all                 # all | selected
-  include: []               # 作者名字
+  mode: all # all | selected
+  include: [] # 作者名字
   exclude: []
   exclude_bots: true
 
 paths:
   include: []
   exclude:
-    - ".git/**"
-    - "speculo/.speculo/**"
-    - ".venv/**"
-    - "node_modules/**"
-    - "vendor/**"
-    - "dist/**"
-    - "build/**"
-    - "coverage/**"
-    - "*.min.js"
-    - "*.map"
-    - "*.lock"
+    - '.git/**'
+    - 'speculo/.speculo/**'
+    - '.venv/**'
+    - 'node_modules/**'
+    - 'vendor/**'
+    - 'dist/**'
+    - 'build/**'
+    - 'coverage/**'
+    - '*.min.js'
+    - '*.map'
+    - '*.lock'
 
 options:
   include_merge_commits: true
@@ -524,30 +535,30 @@ schema_version: 1
 status: complete
 scope: workspace
 topic: git-audit
-generated_at: "ISO-8601"
-project_root: "."
-timezone: "Asia/Shanghai"
+generated_at: 'ISO-8601'
+project_root: '.'
+timezone: 'Asia/Shanghai'
 time_range:
-  start: "ISO-8601"
-  end: "ISO-8601"
+  start: 'ISO-8601'
+  end: 'ISO-8601'
 date_basis: committer-date
 author_identity: author-name-only
 exclude_bots: true
 repository_mode: all
 repositories:
-  - path: "."
+  - path: '.'
     primary_branch: main
     refs: [main]
-    head_at_start: "<full-sha>"
+    head_at_start: '<full-sha>'
 path_includes: []
 path_excludes: []
 include_merge_commits: true
 local_history_only: true
 fetch_performed: false
 tool_versions:
-  git: ""
-  uv: ""
-  python: ""
+  git: ''
+  uv: ''
+  python: ''
 validation:
   status: passed
   warnings: []
@@ -566,20 +577,35 @@ validation:
 # Git 仓库代码迭代与团队贡献盘点报告
 
 ## 0. 执行摘要
+
 ## 1. 分析范围与统计口径
+
 ## 2. 仓库发现与 Git 快照
+
 ## 3. 全局核心指标
+
 ## 4. 仓库间对比
+
 ## 5. 提交时间与提交强度
+
 ## 6. 合并与分支活动
+
 ## 7. 功能迭代主题
+
 ## 8. Bug 修复与质量活动
+
 ## 9. 代码增减与变更结构
+
 ## 10. 热点模块与知识集中
+
 ## 11. 团队优点、不足与风险
+
 ## 12. 个人贡献画像
+
 ## 13. 优先行动项
+
 ## 14. 数据质量、限制与复核
+
 ## 15. 原始数据附录
 ```
 
@@ -589,16 +615,16 @@ validation:
 
 ```markdown
 | 仓库 | 项目相对路径 | 主分支 | refs | 本地分支 | 远端分支 | 标签 | 最早提交 | 最新提交 | 工作区状态 |
-|---|---|---|---|---:|---:|---:|---|---|---|
+| ---- | ------------ | ------ | ---- | -------: | -------: | ---: | -------- | -------- | ---------- |
 
 | 主题 | 时间 | commits | 主要作者 | 仓库/模块 | +行 | -行 | 测试伴随 | 后续修复 | 关键哈希 | 置信度 |
-|---|---|---:|---|---|---:|---:|---|---|---|---|
+| ---- | ---- | ------: | -------- | --------- | --: | --: | -------- | -------- | -------- | ------ |
 
 | 作者 | commits | 活跃天 | feature | bugfix | test | refactor | 工程类 | churn | 主要模块 | 主要主题 |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
+| ---- | ------: | -----: | ------: | -----: | ---: | -------: | -----: | ----: | -------- | -------- |
 
 | 优先级 | 发现 | 数据证据 | 影响 | 建议行动 | 建议负责人 |
-|---|---|---|---|---|---|
+| ------ | ---- | -------- | ---- | -------- | ---------- |
 ```
 
 无法从 Git 判断负责人时写“团队共同确认”。
@@ -609,7 +635,7 @@ validation:
 
 ```markdown
 | 仓库 | 哈希 | Committer Date | 作者名字 | 类型 | 置信度 | Subject | 文件数 | +行 | -行 | 主要模块 | 主题 |
-|---|---|---|---|---|---|---|---:|---:|---:|---|---|
+| ---- | ---- | -------------- | -------- | ---- | ------ | ------- | -----: | --: | --: | -------- | ---- |
 ```
 
 同时包含：

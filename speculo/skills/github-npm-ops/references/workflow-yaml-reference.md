@@ -110,11 +110,11 @@ permissions:
   packages: write
 ```
 
-| 权限               | 作用                                                                                   |
-| ------------------ | -------------------------------------------------------------------------------------- |
-| `id-token: write`  | **必需**：用于 npm provenance（OIDC 签名）                                              |
-| `contents: write`  | **必需**：`softprops/action-gh-release` 创建 GitHub Release 需要                        |
-| `packages: write`  | 仅在同时发 GitHub Packages 时需要；纯 npm 发布可省略                                    |
+| 权限              | 作用                                                             |
+| ----------------- | ---------------------------------------------------------------- |
+| `id-token: write` | **必需**：用于 npm provenance（OIDC 签名）                       |
+| `contents: write` | **必需**：`softprops/action-gh-release` 创建 GitHub Release 需要 |
+| `packages: write` | 仅在同时发 GitHub Packages 时需要；纯 npm 发布可省略             |
 
 默认 `GITHUB_TOKEN` 只有 `contents: read`，这三项必须显式声明。
 

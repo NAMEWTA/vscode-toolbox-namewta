@@ -18,11 +18,21 @@ suite('vscode-toolbox-namewta extension', () => {
       { command: 'gitBlame.getCommitChanges', available: true },
       { command: 'gitBlame.getHistoricalContent', available: true },
       { command: 'gitBlame.getLineHistory', available: true },
+      { command: 'gitReview.end', available: true },
+      { command: 'gitReview.getItemContent', available: true },
+      { command: 'gitReview.markReviewedAndNext', available: true },
+      { command: 'gitReview.markStale', available: true },
+      { command: 'gitReview.next', available: true },
+      { command: 'gitReview.previous', available: true },
+      { command: 'gitReview.refresh', available: true },
+      { command: 'gitReview.retry', available: true },
+      { command: 'gitReview.skip', available: true },
+      { command: 'gitReview.start', available: true },
       { command: 'system.getRuntimeInfo', available: true },
     ]);
   });
 
-  test('registers the foundation, copy and blame visibility commands', async () => {
+  test('注册基础、复制、Git Blame 与 Git Review 命令', async () => {
     const commands = await vscode.commands.getCommands(true);
     assert.ok(commands.includes('vscodeToolboxNamewta.openToolbox'));
     assert.ok(commands.includes('vscodeToolboxNamewta.showRuntimeInfo'));
@@ -33,6 +43,14 @@ suite('vscode-toolbox-namewta extension', () => {
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.hide'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.refresh'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.viewLineHistory'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.start'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.previous'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.next'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.markReviewedAndNext'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.retry'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.skip'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.refresh'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.end'));
   });
 
   test('executes runtime info through the public API', async () => {

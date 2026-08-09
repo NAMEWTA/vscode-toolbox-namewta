@@ -4,7 +4,7 @@ artifact: ticket
 change: 2026-08-09-review-all-git-changes
 id: T-01
 title: 建立类型化 Git Review 契约与 Review Session 状态机
-status: ready
+status: done
 planning_depth: deep
 planning_depth_reason: 扩展公共 ToolCommandMap、Extension API capability 和共享 Core 状态契约，属于公共 API 与共享核心路径变更
 ready: true
@@ -19,7 +19,7 @@ contract_ids:
   - AC-017
   - AC-018
   - AC-019
-owner: unassigned
+owner: codex-local
 expected_changes:
   - '<Path>src/core/contracts/tool-command-contract.ts</Path>'
   - '<Path>src/core/contracts/tool-command-contract.test.ts</Path>'
@@ -54,7 +54,7 @@ shared_path_owners:
 
 - **目标：** 以一个无 VS Code、Node、React 或 DOM 依赖的 Core 领域，建立 Git Review 的类型化命令、运行时输入校验、Review Session 状态机和 Port，使后续 Git 适配与 UI 只实现边界能力，不重新决定业务状态。
 - **可观察产出：** Core 测试可以证明 session 的建立、稳定导航、显式审核、跳过、内容失效、刷新归并、完成、替换与释放行为；Extension API 类型系统认识全部 Git Review 命令，但本 Ticket 不宣称 Git 能力已经可用。
-- **来源：** `US-003`、`US-004`、`US-007`、`AC-009` 至 `AC-012`、`AC-016` 至 `AC-019`、`ADR-001`、`ADR-002`、项目 `ADR 0002`、`USER-DECISION:2026-08-09-merge-each-ticket`。
+- **来源：** `US-003`、`US-004`、`US-007`、`AC-009` 至 `AC-012`、`AC-016` 至 `AC-019`、`ADR-001`、`ADR-002`、项目 `ADR 0002`、`USER-DECISION:2026-08-09-direct-main-development`。
 - **当前事实：** 所有业务操作必须经 `<Path>src/core/orchestration/toolbox-gateway.ts</Path>`；当前 `<Path>src/core/contracts/tool-command-contract.ts</Path>` 没有 Git Review 命令，Core 也没有可复用的本地审核状态模型。
 - **Planning Depth 原因：** 本 Ticket 修改公开命令联合、运行时守卫和共享 Core 契约，错误设计会扩散到 Extension API、后续适配器和 UI，因此按 Deep 规划并需要人工批准；用户已批准本拆分。
 
@@ -105,7 +105,7 @@ shared_path_owners:
 3. 实现 Review Session 的纯状态机与内容身份归并，覆盖重复、越界、stale、取消和替换。
 4. 实现类型化 Handler 与公共导出，并确保未注册能力不会在 `getCapabilities()` 中伪装可用。
 5. 运行 Core 定向测试、完整单元测试、类型检查和依赖边界检查。
-6. 写入 Evidence 与双轴审查结果；全部通过后提交 Ticket 分支并按本 Ticket Gate 合并回父分支。
+6. 写入 Evidence 与双轴审查结果；全部通过后关闭 G-01 并同步当前 `main` 状态，T-02 才可开始。
 
 ## 7. 路径访问契约
 
@@ -126,20 +126,20 @@ shared_path_owners:
 
 ## 9. 发布、迁移与恢复
 
-- **迁移顺序：** 先扩展 Core 契约和纯状态机，保持未注册 Git Review capability 不可用；T-02 只在此 Ticket 已合并后接入 Adapter。
+- **迁移顺序：** 先扩展 Core 契约和纯状态机，保持未注册 Git Review capability 不可用；T-02 只在 G-01 关闭后接入 Adapter。
 - **兼容窗口：** 现有命令与 Extension API v1 持续工作；新增命令类型在 T-02 注册前不出现在运行时 capabilities。
 - **监控信号：** 类型检查、Gateway capability 测试、依赖边界和状态机覆盖率。
-- **回滚或前向恢复：** merge 前可丢弃隔离 Ticket 分支；merge 后使用显式 revert 提交回退本 Ticket，不使用 destructive reset。T-02 未开始前不存在数据迁移。
-- **不可逆操作与批准点：** 无生产不可逆操作。用户已授权在 Evidence、双轴审查和适用门禁全部通过后，将 T-01 本地分支 merge 回记录的父分支；不授权 push。
+- **回滚或前向恢复：** G-01 失败时只在当前 Ticket 授权路径内修订；存在用户授权的本地提交时使用显式 revert，否则在 Evidence 中记录精确 diff 与恢复方案，不使用 destructive reset。T-02 未开始前不存在数据迁移。
+- **不可逆操作与批准点：** 无生产不可逆操作。用户已选择直接在当前 `main` 串行开发；G-01 关闭不执行分支合并或 push。
 - **收缩条件：** 全部新增命令都有运行时守卫，状态分支穷尽，Core 依赖扫描无 VS Code/Node/React/DOM 导入，Evidence 完整。
 
 ## 10. 验收标准
 
-- [ ] AC-009、AC-010、AC-011、AC-012、AC-016、AC-017、AC-018、AC-019 的 Core 行为均有可判定测试。
-- [ ] 所有新增命令输入输出可序列化、无 `any` 且经运行时守卫验证。
-- [ ] Core 依赖边界和现有 Extension API v1 行为保持不变。
-- [ ] 验证矩阵全部执行并记录到 `<Path>{roots.state}/specdev/changes/2026-08-09-review-all-git-changes/evidence/T-01.md</Path>`。
-- [ ] 实际项目修改未超出 `writable_paths`，shared path 仅由 T-01 修改。
-- [ ] Ticket 分支已在 Evidence 和审查通过后 merge 回父分支，并记录 base、提交和 merge 结果；T-02 只能从合并后的父分支开始。
-- [ ] 未执行 push，未发生未批准的范围、契约或发布偏差。
-- [ ] Ticket、Tickets Map 和 Evidence 状态一致。
+- [x] AC-009、AC-010、AC-011、AC-012、AC-016、AC-017、AC-018、AC-019 的 Core 行为均有可判定测试。
+- [x] 所有新增命令输入输出可序列化、无 `any` 且经运行时守卫验证。
+- [x] Core 依赖边界和现有 Extension API v1 行为保持不变。
+- [x] 验证矩阵全部执行并记录到 `<Path>{roots.state}/specdev/changes/2026-08-09-review-all-git-changes/evidence/T-01.md</Path>`。
+- [x] 实际项目修改未超出 `writable_paths`，shared path 仅由 T-01 修改。
+- [x] G-01 已在 Evidence 和审查通过后关闭，并记录开始/关闭时的 HEAD、工作区摘要和实际修改路径；T-02 只能从该已验证状态开始。
+- [x] 未执行 push，未发生未批准的范围、契约或发布偏差。
+- [x] Ticket、Tickets Map 和 Evidence 状态一致。

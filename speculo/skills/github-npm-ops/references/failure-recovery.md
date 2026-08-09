@@ -72,12 +72,12 @@ git push origin vX.Y.Z
 
 常见根因：
 
-| 根因 | 修复 |
-|------|------|
-| `NPM_TOKEN` 过期 / 失效 | 重新生成 Granular Token，更新仓库 secret |
-| `provenance` 失败 | workflow 缺 `id-token: write` 权限；package.json `repository.url` 不严格匹配 GitHub URL |
-| 包名 scope 不属于当前 token | 检查 token 配置的 scope；首次发布 scoped 包需 `--access public` |
-| 网络抖动 / npm registry 临时不可用 | 等几分钟后 rerun |
+| 根因                               | 修复                                                                                    |
+| ---------------------------------- | --------------------------------------------------------------------------------------- |
+| `NPM_TOKEN` 过期 / 失效            | 重新生成 Granular Token，更新仓库 secret                                                |
+| `provenance` 失败                  | workflow 缺 `id-token: write` 权限；package.json `repository.url` 不严格匹配 GitHub URL |
+| 包名 scope 不属于当前 token        | 检查 token 配置的 scope；首次发布 scoped 包需 `--access public`                         |
+| 网络抖动 / npm registry 临时不可用 | 等几分钟后 rerun                                                                        |
 
 ---
 
@@ -116,8 +116,8 @@ git push origin vX.Y.Z
 
 本文件是发布编排视角下的失败恢复入口；更细粒度的失败案例（如 EUSAGE / E422 / provenance 错误码、package.json 字段错误）见 `troubleshooting-playbook.md`。
 
-| 失败位置 | 看本文件 | 看 github-npm-ops troubleshooting-playbook |
-|---------|---------|---------------------------------------|
-| Phase 1–6 编排逻辑层面 | ✅ | ❌ |
-| release.yml 内部步骤的具体错误码 | ❌ | ✅ |
-| npm 错误码（E403 / E404 / E422 / EUSAGE） | ❌ | ✅ |
+| 失败位置                                  | 看本文件 | 看 github-npm-ops troubleshooting-playbook |
+| ----------------------------------------- | -------- | ------------------------------------------ |
+| Phase 1–6 编排逻辑层面                    | ✅       | ❌                                         |
+| release.yml 内部步骤的具体错误码          | ❌       | ✅                                         |
+| npm 错误码（E403 / E404 / E422 / EUSAGE） | ❌       | ✅                                         |

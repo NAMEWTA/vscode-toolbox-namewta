@@ -18,18 +18,23 @@
 **Supersedes:** none / ADR-###
 
 ### Context
+
 <缺少什么背景会让这个决定令人惊讶。>
 
 ### Decision
+
 <清晰、规范且可验证的结论。>
 
 ### Trade-off
+
 <认真考虑的替代方案，以及为什么接受当前代价。>
 
 ### Consequences
+
 <真正重要的正面、负面和风险。>
 
 ### Verification / Migration
+
 <仅在适用时出现。>
 ```
 

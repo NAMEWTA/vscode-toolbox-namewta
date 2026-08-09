@@ -2,15 +2,15 @@
 
 ### Delivery Contract
 
-| 字段 | 值 |
-|---|---|
-| Execution model | native-subagent / external-web-subagent |
-| Lead / Provider | `<owner>` / `<provider>` |
-| Repository / Branch | `<repository-or-local>` / `<branch>` |
-| Checkpoint policy | immutable SHA / equivalent fixed baseline |
-| Source delivery | repository-url / source-package / combination |
-| Max concurrency / corrections | `<n>` / `3` |
-| Review | standards + spec + Lead verification + conditional E2E |
+| 字段                          | 值                                                     |
+| ----------------------------- | ------------------------------------------------------ |
+| Execution model               | native-subagent / external-web-subagent                |
+| Lead / Provider               | `<owner>` / `<provider>`                               |
+| Repository / Branch           | `<repository-or-local>` / `<branch>`                   |
+| Checkpoint policy             | immutable SHA / equivalent fixed baseline              |
+| Source delivery               | repository-url / source-package / combination          |
+| Max concurrency / corrections | `<n>` / `3`                                            |
+| Review                        | standards + spec + Lead verification + conditional E2E |
 
 ### Per-Ticket Dispatch Packets
 

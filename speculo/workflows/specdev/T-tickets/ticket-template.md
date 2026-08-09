@@ -12,8 +12,8 @@ risk: medium
 blocked_by: []
 contract_ids: [AC-001]
 owner: unassigned
-expected_changes: ["<Path>src/example.ts</Path>"]
-writable_paths: ["<Path>src/example/**</Path>"]
+expected_changes: ['<Path>src/example.ts</Path>']
+writable_paths: ['<Path>src/example/**</Path>']
 read_only_paths: []
 shared_paths: []
 shared_path_owners: []
@@ -53,8 +53,8 @@ shared_path_owners: []
 ## 3. 范围边界
 
 | IN（本 Ticket 构建） | REUSE（复用且不改变契约） | OUT（明确不做） |
-|---|---|---|
-| ... | ... | ... |
+| -------------------- | ------------------------- | --------------- |
+| ...                  | ...                       | ...             |
 
 ## 4. 要构建什么
 
@@ -94,11 +94,11 @@ shared_path_owners: []
 
 ## 8. 验证矩阵
 
-| 行为或风险 | 验证接缝 | 命令或步骤 | 预期结果 | Evidence |
-|---|---|---|---|---|
-| 正常路径 | ... | ... | ... | `<Path>{roots.state}/specdev/changes/{change}/evidence/T-01.md</Path>` |
-| 失败路径 | ... | ... | ... | `<Path>{roots.state}/specdev/changes/{change}/evidence/T-01.md</Path>` |
-| 回归 | ... | ... | ... | `<Path>{roots.state}/specdev/changes/{change}/evidence/T-01.md</Path>` |
+| 行为或风险 | 验证接缝 | 命令或步骤 | 预期结果 | Evidence                                                               |
+| ---------- | -------- | ---------- | -------- | ---------------------------------------------------------------------- |
+| 正常路径   | ...      | ...        | ...      | `<Path>{roots.state}/specdev/changes/{change}/evidence/T-01.md</Path>` |
+| 失败路径   | ...      | ...        | ...      | `<Path>{roots.state}/specdev/changes/{change}/evidence/T-01.md</Path>` |
+| 回归       | ...      | ...        | ...      | `<Path>{roots.state}/specdev/changes/{change}/evidence/T-01.md</Path>` |
 
 不适用的关键风险类别必须写“不适用：原因”。
 

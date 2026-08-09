@@ -24,26 +24,26 @@ fi
 
 `PUBLISH_TO_NPM=true` 命中下列任一行时为真：
 
-| 模式 | 形态 | 说明 |
-|------|------|------|
-| `npm publish` | `run: npm publish --provenance --access public` | 官方 npm CLI |
-| `pnpm publish` | `run: pnpm publish --no-git-checks` | pnpm 包管理器 |
-| `yarn publish` | `run: yarn publish --new-version $VERSION` | 旧 yarn / berry |
-| `JS-DevTools/npm-publish@vN` | `uses: JS-DevTools/npm-publish@v3` | 第三方封装 action |
-| `cycjimmy/semantic-release-action@vN` | `uses: cycjimmy/semantic-release-action@v4` | semantic-release 流水线 |
-| `changesets/action@vN` | `uses: changesets/action@v1` 且配置 `publish:` 输入 | Changesets 风格的多包发布 |
+| 模式                                  | 形态                                                | 说明                      |
+| ------------------------------------- | --------------------------------------------------- | ------------------------- |
+| `npm publish`                         | `run: npm publish --provenance --access public`     | 官方 npm CLI              |
+| `pnpm publish`                        | `run: pnpm publish --no-git-checks`                 | pnpm 包管理器             |
+| `yarn publish`                        | `run: yarn publish --new-version $VERSION`          | 旧 yarn / berry           |
+| `JS-DevTools/npm-publish@vN`          | `uses: JS-DevTools/npm-publish@v3`                  | 第三方封装 action         |
+| `cycjimmy/semantic-release-action@vN` | `uses: cycjimmy/semantic-release-action@v4`         | semantic-release 流水线   |
+| `changesets/action@vN`                | `uses: changesets/action@v1` 且配置 `publish:` 输入 | Changesets 风格的多包发布 |
 
 ## 误判排除
 
 下列形态**不应**触发 `PUBLISH_TO_NPM=true`：
 
-| 形态 | 是否触发 | 原因 |
-|------|---------|------|
-| `# npm publish` 注释行 | ❌ | grep `-E` 默认匹配整行；如需更严格可加 `^[^#]*` 锚定 |
-| `description: 'Run npm publish ...'` | ⚠️ 可能误命中 | 收紧 grep 为 `run:[[:space:]]*npm[[:space:]]+publish` 即可避免 |
-| `npm publish --dry-run` | ✅ 仍命中 | 视作真发布意图；如需排除，可在判定后追加 `--dry-run` 检查并手动降级 |
-| `npm pack` | ❌ | `pack` 不是 `publish` |
-| 仅 `softprops/action-gh-release` | ❌ | 这是 GitHub Release 创建器，不是 npm publish |
+| 形态                                 | 是否触发      | 原因                                                                |
+| ------------------------------------ | ------------- | ------------------------------------------------------------------- |
+| `# npm publish` 注释行               | ❌            | grep `-E` 默认匹配整行；如需更严格可加 `^[^#]*` 锚定                |
+| `description: 'Run npm publish ...'` | ⚠️ 可能误命中 | 收紧 grep 为 `run:[[:space:]]*npm[[:space:]]+publish` 即可避免      |
+| `npm publish --dry-run`              | ✅ 仍命中     | 视作真发布意图；如需排除，可在判定后追加 `--dry-run` 检查并手动降级 |
+| `npm pack`                           | ❌            | `pack` 不是 `publish`                                               |
+| 仅 `softprops/action-gh-release`     | ❌            | 这是 GitHub Release 创建器，不是 npm publish                        |
 
 ## 收紧版（推荐用于精确判定）
 
@@ -61,8 +61,8 @@ grep -E '^\s*(run:\s*(npm|pnpm|yarn)\s+publish|uses:\s*(JS-DevTools/npm-publish|
 
 ## 与 Phase 5 的衔接
 
-| 嗅探结果 | Phase 5 行为 |
-|---------|-------------|
-| `PUBLISH_TO_NPM=true` | 跑 `gh release view` + `gh run` + `npm view` 三端 |
-| `PUBLISH_TO_NPM=false` | 仅跑 `gh release view` + `gh run` 两端，并向用户输出「本仓库 release.yml 不含 npm publish 步骤」提示 |
-| `RELEASE_YML_MISSING=true` | Phase 0 直接终止，不进入后续 phase |
+| 嗅探结果                   | Phase 5 行为                                                                                         |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `PUBLISH_TO_NPM=true`      | 跑 `gh release view` + `gh run` + `npm view` 三端                                                    |
+| `PUBLISH_TO_NPM=false`     | 仅跑 `gh release view` + `gh run` 两端，并向用户输出「本仓库 release.yml 不含 npm publish 步骤」提示 |
+| `RELEASE_YML_MISSING=true` | Phase 0 直接终止，不进入后续 phase                                                                   |

@@ -32,4 +32,3 @@ ticket_path=<full-ticket-path> evidence_path=<full-evidence-path>
 Agent 返回 Ticket 状态、`<Path>{roots.state}/specdev/changes/{change}/evidence/{ticket-id}.md</Path>`、`workspace_ref`、checkpoint、commit/PR 引用和待 Lead E2E。Lead 负责应用或集成、回归、Gate 判断和状态同步；逻辑冲突返回契约 owner，不机械选择某一侧版本。
 
 **完成标准**：派单、工作区、路径修改、审查、修正和返回均可由 Goal Plan、Evidence 与 change 状态恢复。
-

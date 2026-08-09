@@ -221,25 +221,25 @@ Claude 入口：
 
 ## 参考路由
 
-| 任务 | 读取文档 |
-|---|---|
-| 规则优先级和固定默认原则 | `references/00-governance-and-fixed-defaults.md` |
-| 仓库扫描与项目画像 | `references/01-project-discovery.md` |
-| 用户问答和决策收敛 | `references/02-interview-workflow.md` |
-| 目录、边界、局部平铺 | `references/03-project-architecture-and-directory-layout.md` |
-| 文件、目录和标识符命名 | `references/04-file-directory-and-symbol-naming.md` |
-| 模块、导入、导出和依赖 | `references/05-modules-imports-exports-and-dependencies.md` |
-| TypeScript 类型系统 | `references/06-typescript-type-system.md` |
-| 函数、异步、错误和资源 | `references/07-functions-async-errors-and-resources.md` |
-| 注释、JSDoc 和文档 | `references/08-comments-jsdoc-and-documentation.md` |
-| 测试策略和共置 | `references/09-testing-strategy.md` |
-| React 和前端 | `references/10-react-and-frontend.md` |
-| Node、CLI 和跨平台 | `references/11-node-cli-and-cross-platform.md` |
-| 格式、Lint、文件大小 | `references/12-formatting-lint-and-complexity.md` |
-| 配置、依赖和质量门禁 | `references/13-configuration-dependencies-and-ci.md` |
-| 安全、性能和国际化 | `references/14-security-performance-and-i18n.md` |
-| Git、PR 和交付 | `references/15-git-review-and-delivery.md` |
-| 遗留迁移和例外 | `references/16-adoption-exceptions-and-migration.md` |
-| 输出目录和文件合同 | `references/17-generation-contract.md` |
+| 任务                     | 读取文档                                                     |
+| ------------------------ | ------------------------------------------------------------ |
+| 规则优先级和固定默认原则 | `references/00-governance-and-fixed-defaults.md`             |
+| 仓库扫描与项目画像       | `references/01-project-discovery.md`                         |
+| 用户问答和决策收敛       | `references/02-interview-workflow.md`                        |
+| 目录、边界、局部平铺     | `references/03-project-architecture-and-directory-layout.md` |
+| 文件、目录和标识符命名   | `references/04-file-directory-and-symbol-naming.md`          |
+| 模块、导入、导出和依赖   | `references/05-modules-imports-exports-and-dependencies.md`  |
+| TypeScript 类型系统      | `references/06-typescript-type-system.md`                    |
+| 函数、异步、错误和资源   | `references/07-functions-async-errors-and-resources.md`      |
+| 注释、JSDoc 和文档       | `references/08-comments-jsdoc-and-documentation.md`          |
+| 测试策略和共置           | `references/09-testing-strategy.md`                          |
+| React 和前端             | `references/10-react-and-frontend.md`                        |
+| Node、CLI 和跨平台       | `references/11-node-cli-and-cross-platform.md`               |
+| 格式、Lint、文件大小     | `references/12-formatting-lint-and-complexity.md`            |
+| 配置、依赖和质量门禁     | `references/13-configuration-dependencies-and-ci.md`         |
+| 安全、性能和国际化       | `references/14-security-performance-and-i18n.md`             |
+| Git、PR 和交付           | `references/15-git-review-and-delivery.md`                   |
+| 遗留迁移和例外           | `references/16-adoption-exceptions-and-migration.md`         |
+| 输出目录和文件合同       | `references/17-generation-contract.md`                       |
 
 完整索引见 `references/README.md`。

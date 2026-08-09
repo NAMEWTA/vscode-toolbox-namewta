@@ -55,11 +55,7 @@
       ]
     },
     "planning_depth": {
-      "enum": [
-        "lite",
-        "standard",
-        "deep"
-      ]
+      "enum": ["lite", "standard", "deep"]
     },
     "planning_depth_reason": {
       "type": "string",
@@ -69,12 +65,7 @@
       "type": "boolean"
     },
     "risk": {
-      "enum": [
-        "low",
-        "medium",
-        "high",
-        "critical"
-      ]
+      "enum": ["low", "medium", "high", "critical"]
     },
     "blocked_by": {
       "type": "array",

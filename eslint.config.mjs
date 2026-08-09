@@ -123,6 +123,13 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.node, ...globals.mocha } },
   },
   {
+    files: ['speculo/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
     files: ['**/*.test.{ts,tsx}', 'tests/**/*.ts'],
     rules: {
       'max-lines': ['error', { max: 850, skipBlankLines: true, skipComments: true }],

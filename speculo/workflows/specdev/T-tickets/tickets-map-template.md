@@ -19,9 +19,9 @@ status: draft
 
 ## 2. 执行清单
 
-| ID | Ticket | 可观察产出 | Blocked By | Depth | Risk | Ready | Owner | Contract IDs | Wave/Gate | Status |
-|---|---|---|---|---|---|---|---|---|---|---|
-| T-01 | `<Path>{roots.state}/specdev/changes/{change}/ticket/01-<ticket-name>.md</Path>` | ... | — | standard | medium | yes | unassigned | AC-001 | — | ready |
+| ID   | Ticket                                                                           | 可观察产出 | Blocked By | Depth    | Risk   | Ready | Owner      | Contract IDs | Wave/Gate | Status |
+| ---- | -------------------------------------------------------------------------------- | ---------- | ---------- | -------- | ------ | ----- | ---------- | ------------ | --------- | ------ |
+| T-01 | `<Path>{roots.state}/specdev/changes/{change}/ticket/01-<ticket-name>.md</Path>` | ...        | —          | standard | medium | yes   | unassigned | AC-001       | —         | ready  |
 
 Ticket frontmatter 是状态、依赖、深度和路径访问契约的权威；本表是同步投影，不得独立修改出另一套真相。
 
@@ -38,9 +38,9 @@ T-01 [READY]
 
 ## 4. 合同覆盖矩阵
 
-| Contract ID | 覆盖 Ticket | 验证接缝 | 状态 | 说明 |
-|---|---|---|---|---|
-| AC-001 | T-01 | ... | covered | ... |
+| Contract ID | 覆盖 Ticket | 验证接缝 | 状态    | 说明 |
+| ----------- | ----------- | -------- | ------- | ---- |
+| AC-001      | T-01        | ...      | covered | ...  |
 
 `uncovered` 必须修复；`deferred` 必须有用户批准、原因和后续归属。
 
@@ -51,9 +51,9 @@ T-01 [READY]
 - 项目路径契约以 Ticket frontmatter 为准。
 - 并行写代码的 Ticket 使用独立 worktree；只读调查不需要。
 
-| Ticket A | Ticket B | Writable 交集 | 真实依赖 | 处理 |
-|---|---|---|---|---|
-| T-02 | T-03 | 无 | 否 | 可并行 |
+| Ticket A | Ticket B | Writable 交集 | 真实依赖 | 处理   |
+| -------- | -------- | ------------- | -------- | ------ |
+| T-02     | T-03     | 无            | 否       | 可并行 |
 
 ## 6. Gate、Wave 与集成点
 

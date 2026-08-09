@@ -6,11 +6,11 @@
 
 每一行绑定一个行为、合同或风险：
 
-| 行为或风险 | 验证接缝 | 方法或命令 | 预期结果 | Evidence |
-|---|---|---|---|---|
-| 正常路径 | 公共接口 | 项目定向测试 | 指定外部行为成立 | `<Path>{roots.state}/specdev/changes/{change}/evidence/{ticket-id}.md</Path>` |
-| 无效输入 | schema 或公共接口 | 定向失败测试 | 稳定错误行为成立 | `<Path>{roots.state}/specdev/changes/{change}/evidence/{ticket-id}.md</Path>` |
-| 回归 | 现有测试套件 | 项目回归命令 | 相关既有行为保持 | `<Path>{roots.state}/specdev/changes/{change}/evidence/{ticket-id}.md</Path>` |
+| 行为或风险 | 验证接缝          | 方法或命令   | 预期结果         | Evidence                                                                      |
+| ---------- | ----------------- | ------------ | ---------------- | ----------------------------------------------------------------------------- |
+| 正常路径   | 公共接口          | 项目定向测试 | 指定外部行为成立 | `<Path>{roots.state}/specdev/changes/{change}/evidence/{ticket-id}.md</Path>` |
+| 无效输入   | schema 或公共接口 | 定向失败测试 | 稳定错误行为成立 | `<Path>{roots.state}/specdev/changes/{change}/evidence/{ticket-id}.md</Path>` |
+| 回归       | 现有测试套件      | 项目回归命令 | 相关既有行为保持 | `<Path>{roots.state}/specdev/changes/{change}/evidence/{ticket-id}.md</Path>` |
 
 命令引用项目脚本时，项目文件路径使用项目相对 Path 标签，例如 `<Path>package.json</Path>` 或 `<Path>Makefile</Path>`。
 

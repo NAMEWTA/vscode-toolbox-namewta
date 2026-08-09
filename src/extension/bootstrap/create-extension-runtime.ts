@@ -44,6 +44,7 @@ import type { GitLineHistoryEntry } from '../../core/domains/git-blame/public-ap
 import { ViewLineHistoryCommand } from '../commands/view-line-history-command';
 import { GitBlameHoverActions } from '../commands/git-blame-hover-action-command';
 import { GitBlameHoverProvider } from '../presentation/git-blame-hover-provider';
+import { GitReviewSessionExperience } from '../commands/git-review-session-experience';
 import { ApplicationError } from '../../core/kernel/application-error';
 import { ToolboxPanelController } from '../presentation/toolbox-panel-controller';
 import { registerDomainModules } from './register-domain-modules';
@@ -59,11 +60,12 @@ export function createExtensionRuntime(
   const logger = disposables.add(new VscodeLoggerAdapter('vscodeToolboxNamewta'));
   const registry = new ToolRegistry();
   const gateway = new DefaultToolboxGateway(registry, logger);
-  const extensionVersion = readExtensionVersion(context.extension.packageJSON);
-  const runtimeInfoPort = new VscodeRuntimeInfoAdapter(extensionVersion);
+  const runtimeInfoPort = new VscodeRuntimeInfoAdapter(
+    readExtensionVersion(context.extension.packageJSON),
+  );
   const clipboardPort = new VscodeClipboardAdapter();
 
-  registerDomainModules({ clipboardPort, registry, runtimeInfoPort });
+  disposables.add(registerDomainModules({ clipboardPort, registry, runtimeInfoPort }));
   const historicalProvider = disposables.add(
     new GitHistoricalDocumentProvider(gateway),
   );
@@ -80,13 +82,12 @@ export function createExtensionRuntime(
   const commandRegistration = new VscodeCommandRegistrationAdapter(logger, () =>
     logger.show(),
   );
+  const gitReviewExperience = disposables.add(
+    new GitReviewSessionExperience({ gateway, logger }),
+  );
   const openToolboxCommand = new OpenToolboxCommand(panelController);
   const showRuntimeInfoCommand = new ShowRuntimeInfoCommand(gateway);
-  const copySourceAdapter = new VscodeCopyReferenceSourceAdapter();
-  const copyReferenceCommands = [
-    new CopyReferenceCommand('relative', gateway, copySourceAdapter),
-    new CopyReferenceCommand('absolute', gateway, copySourceAdapter),
-  ];
+  const copyReferenceCommands = createCopyReferenceCommands(gateway);
   const blameCommands = createBlameCommands(
     gateway,
     disposables,
@@ -100,6 +101,7 @@ export function createExtensionRuntime(
       id: command.id,
       execute: (...args: readonly unknown[]) => command.execute(...args),
     })),
+    ...gitReviewExperience.commands,
     ...blameCommands,
   ]);
 
@@ -157,6 +159,16 @@ function createBlameCommands(
       controller,
       resourceAdapter,
     ),
+  ];
+}
+
+function createCopyReferenceCommands(
+  gateway: ToolboxGateway,
+): readonly CopyReferenceCommand[] {
+  const source = new VscodeCopyReferenceSourceAdapter();
+  return [
+    new CopyReferenceCommand('relative', gateway, source),
+    new CopyReferenceCommand('absolute', gateway, source),
   ];
 }
 

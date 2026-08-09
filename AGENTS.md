@@ -108,5 +108,5 @@ pnpm package:vsix
 
 初始化时已选择以下工作流，运行时必须强制读取对应入口文件：
 
-- ./speculo/workflows/specdev/INDEX.md
-</SPECULO>
+- `./speculo/workflows/specdev/INDEX.md`
+  </SPECULO>

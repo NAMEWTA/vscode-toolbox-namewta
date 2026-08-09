@@ -1,0 +1,128 @@
+import { describe, expect, it, vi } from 'vitest';
+import type { GitCommandPort } from '../../core/domains/git-blame/public-api';
+import { ApplicationError } from '../../core/kernel/application-error';
+import {
+  VscodeGitReviewRepositoryAdapter,
+  type GitReviewRepositoryContext,
+  type GitReviewRepositoryHost,
+} from './vscode-git-review-repository-adapter';
+
+vi.mock('vscode', () => ({
+  l10n: { t: (value: string): string => value },
+  window: {},
+  workspace: {},
+}));
+
+describe('VS Code Git Review 仓库适配器', () => {
+  it('优先使用活动文件所在的唯一仓库，不显示选择器', async () => {
+    const git = createGit();
+    git.run.mockResolvedValue(gitResult('/workspace/repository\n'));
+    const host = createHost({
+      isWorkspaceTrusted: true,
+      activeFilePath: '/workspace/repository/src/main.ts',
+      workspaceFolderPaths: ['/workspace/other'],
+    });
+    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+
+    await expect(adapter.resolve([], new AbortController().signal)).resolves.toBe(
+      '/workspace/repository',
+    );
+
+    expect(git.run).toHaveBeenCalledWith(
+      expect.objectContaining({
+        operation: 'git-review-repository-discovery',
+        cwd: '/workspace/repository/src',
+        args: ['--no-optional-locks', 'rev-parse', '--show-toplevel'],
+      }),
+    );
+    expect(host.pickRepository).not.toHaveBeenCalled();
+  });
+
+  it('在多个工作区仓库间选择，取消时不返回候选仓库', async () => {
+    const git = createGit();
+    git.run
+      .mockResolvedValueOnce(gitResult('/workspace/first\n'))
+      .mockResolvedValueOnce(gitResult('/workspace/second\n'));
+    const host = createHost({
+      isWorkspaceTrusted: true,
+      activeFilePath: undefined,
+      workspaceFolderPaths: ['/workspace/first', '/workspace/second'],
+    });
+    host.pickRepository.mockResolvedValue(undefined);
+    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+
+    await expect(
+      adapter.resolve([], new AbortController().signal),
+    ).resolves.toBeUndefined();
+
+    expect(host.pickRepository).toHaveBeenCalledWith([
+      expect.objectContaining({ repositoryRoot: '/workspace/first' }),
+      expect.objectContaining({ repositoryRoot: '/workspace/second' }),
+    ]);
+  });
+
+  it('拒绝不可信工作区和未验证的命令参数', async () => {
+    const git = createGit();
+    const host = createHost({
+      isWorkspaceTrusted: false,
+      activeFilePath: undefined,
+      workspaceFolderPaths: ['/workspace/repository'],
+    });
+    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+
+    await expect(
+      adapter.resolve([], new AbortController().signal),
+    ).rejects.toMatchObject({
+      code: 'permission-denied',
+    });
+    await expect(
+      adapter.resolve([{ repositoryRoot: '/untrusted' }], new AbortController().signal),
+    ).rejects.toMatchObject({ code: 'invalid-input' });
+    expect(git.run).not.toHaveBeenCalled();
+  });
+
+  it('保留取消和超时错误，不将其伪装成空仓库', async () => {
+    const git = createGit();
+    git.run.mockRejectedValue(
+      new ApplicationError('Git request timed out.', { code: 'timeout' }),
+    );
+    const host = createHost({
+      isWorkspaceTrusted: true,
+      activeFilePath: undefined,
+      workspaceFolderPaths: ['/workspace/repository'],
+    });
+    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+
+    await expect(
+      adapter.resolve([], new AbortController().signal),
+    ).rejects.toMatchObject({
+      code: 'timeout',
+    });
+  });
+});
+
+function createGit(): GitCommandPort & {
+  readonly run: ReturnType<typeof vi.fn>;
+} {
+  return { run: vi.fn() } as unknown as GitCommandPort & {
+    readonly run: ReturnType<typeof vi.fn>;
+  };
+}
+
+function createHost(context: GitReviewRepositoryContext): GitReviewRepositoryHost & {
+  readonly getContext: ReturnType<typeof vi.fn>;
+  readonly pickRepository: ReturnType<typeof vi.fn>;
+} {
+  return {
+    getContext: vi.fn<() => GitReviewRepositoryContext>().mockReturnValue(context),
+    pickRepository: vi.fn<GitReviewRepositoryHost['pickRepository']>(),
+  };
+}
+
+function gitResult(stdout: string): {
+  readonly stdout: string;
+  readonly stdoutBytes: number;
+  readonly stderrBytes: number;
+} {
+  return { stdout, stdoutBytes: stdout.length, stderrBytes: 0 };
+}

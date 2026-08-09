@@ -21,13 +21,13 @@
 
 每个摩擦点归且仅归一个**主类型**：
 
-| 类型 | 含义 | 典型表现 |
-|------|------|---------|
-| `bug` | 资产行为不符合契约或文档 | 产物写错位置、`.status.json` 缺字段、命令覆盖了用户改动 |
-| `friction` | 能用但别扭、步骤冗余、易错 | 反复手动改路径、phase 频繁 `revisited`、确认环节缺失 |
-| `missing-capability` | 缺一个本该有的 command/workflow/skill | 用户手动拼凑某个反复出现的流程 |
-| `doc-gap` | 文档缺失、过时或与实现不符 | 指引说一套、资产做另一套；找不到用法 |
-| `ergonomics` | 命名、触发词、措辞、可发现性 | description 区分度差、关键词命中不到、术语不一致 |
+| 类型                 | 含义                                  | 典型表现                                                |
+| -------------------- | ------------------------------------- | ------------------------------------------------------- |
+| `bug`                | 资产行为不符合契约或文档              | 产物写错位置、`.status.json` 缺字段、命令覆盖了用户改动 |
+| `friction`           | 能用但别扭、步骤冗余、易错            | 反复手动改路径、phase 频繁 `revisited`、确认环节缺失    |
+| `missing-capability` | 缺一个本该有的 command/workflow/skill | 用户手动拼凑某个反复出现的流程                          |
+| `doc-gap`            | 文档缺失、过时或与实现不符            | 指引说一套、资产做另一套；找不到用法                    |
+| `ergonomics`         | 命名、触发词、措辞、可发现性          | description 区分度差、关键词命中不到、术语不一致        |
 
 ## 优先级评分
 
@@ -36,12 +36,12 @@
 - 影响面：`broad`（影响所有使用者 / 破坏契约）｜`partial`（影响部分流程）｜`cosmetic`（轻微体验）
 - 发生频率：`recurring`（多次出现 / 多来源佐证）｜`occasional`｜`one-off`
 
-| 优先级 | 判定 |
-|--------|------|
+| 优先级              | 判定                                              |
+| ------------------- | ------------------------------------------------- |
 | `priority:critical` | 破坏契约、数据/产物丢失、覆盖用户改动 —— 无论频率 |
-| `priority:high` | `broad` 影响且 `recurring`，或显著阻塞主流程 |
-| `priority:medium` | `partial` 影响，或 `broad` 但仅 `occasional` |
-| `priority:low` | `cosmetic`，或 `one-off` 且有 workaround |
+| `priority:high`     | `broad` 影响且 `recurring`，或显著阻塞主流程      |
+| `priority:medium`   | `partial` 影响，或 `broad` 但仅 `occasional`      |
+| `priority:low`      | `cosmetic`，或 `one-off` 且有 workaround          |
 
 ## 噪声过滤规则
 

@@ -2,7 +2,7 @@
   "name": "vscode-toolbox-namewta",
   "displayName": "vscode-toolbox-namewta",
   "description": "%extension.description%",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "NAMEWTA",
   "license": "MIT",
   "private": true,
@@ -91,9 +91,63 @@
         "command": "vscodeToolboxNamewta.gitBlame.viewLineHistory",
         "title": "%commands.gitBlame.viewLineHistory%",
         "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.start",
+        "title": "%commands.gitReview.start%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.previous",
+        "title": "%commands.gitReview.previous%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.next",
+        "title": "%commands.gitReview.next%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.markReviewedAndNext",
+        "title": "%commands.gitReview.markReviewedAndNext%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.retry",
+        "title": "%commands.gitReview.retry%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.skip",
+        "title": "%commands.gitReview.skip%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.refresh",
+        "title": "%commands.gitReview.refresh%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.end",
+        "title": "%commands.gitReview.end%",
+        "category": "%extension.category%"
       }
     ],
+    "views": {
+      "scm": [
+        {
+          "id": "vscodeToolboxNamewta.gitReview.queue",
+          "name": "%views.gitReview.queue%"
+        }
+      ]
+    },
     "menus": {
+      "scm/title": [
+        {
+          "command": "vscodeToolboxNamewta.gitReview.start",
+          "group": "navigation@10"
+        }
+      ],
       "explorer/context": [
         {
           "command": "vscodeToolboxNamewta.copyReference.relative",

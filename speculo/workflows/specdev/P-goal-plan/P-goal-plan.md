@@ -4,7 +4,8 @@ type: workflow-entry
 workflow: specdev
 name: 目标规划
 description: 在协调复杂度需要时，将 Ready Spec、Tickets、架构决策与外部约束综合为决策完备的跨 Ticket 计划，并仅在用户选择时加入严格角色委派。
-keywords: [目标规划, 编排, DAG, Gate, Wave, Lead, Subagent, checkpoint, 派单, 迁移, 证据]
+keywords:
+  [目标规划, 编排, DAG, Gate, Wave, Lead, Subagent, checkpoint, 派单, 迁移, 证据]
 ---
 
 # 目标规划

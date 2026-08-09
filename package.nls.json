@@ -1,5 +1,5 @@
 {
-  "extension.description": "Copy code references and inspect Git Blame annotations, history, and commit changes.",
+  "extension.description": "Copy code references, review Git changes, and inspect Git Blame annotations, history, and commit changes.",
   "extension.category": "vscode-toolbox-namewta",
   "commands.openToolbox": "Open Toolbox",
   "commands.showRuntimeInfo": "Show Runtime Info",
@@ -10,6 +10,15 @@
   "commands.gitBlame.hide": "Hide Git Blame Annotations",
   "commands.gitBlame.refresh": "Refresh Git Blame Annotations",
   "commands.gitBlame.viewLineHistory": "View Line History",
+  "commands.gitReview.start": "Start Git Review",
+  "commands.gitReview.previous": "Previous Git Review Item",
+  "commands.gitReview.next": "Next Git Review Item",
+  "commands.gitReview.markReviewedAndNext": "Mark Reviewed and Next",
+  "commands.gitReview.retry": "Retry Git Review Item",
+  "commands.gitReview.skip": "Skip Git Review Item",
+  "commands.gitReview.refresh": "Refresh Git Review Queue",
+  "commands.gitReview.end": "End Git Review",
+  "views.gitReview.queue": "Git Review Queue",
   "configuration.title": "vscode-toolbox-namewta",
   "configuration.logging.level": "Controls the minimum diagnostic log level written to the vscode-toolbox-namewta output channel.",
   "configuration.webview.requestTimeoutMs": "Maximum time in milliseconds that the Toolbox Webview waits for a tool response.",
@@ -19,6 +28,6 @@
   "configuration.gitBlame.highlightCurrentCommit": "Highlights all lines owned by the commit at the cursor.",
   "configuration.gitBlame.ignoreWhitespace": "Ignores whitespace changes while calculating Git Blame annotations.",
   "configuration.gitBlame.maxLines": "Maximum document line count allowed for Git Blame annotations.",
-  "capabilities.untrustedWorkspaces": "Copy Reference, the Toolbox UI, and runtime information remain available. Git Blame commands require a trusted workspace.",
-  "capabilities.virtualWorkspaces": "Copy Reference supports stable virtual resources. Git Blame requires a resource that the Extension Host can map to an executable Git repository."
+  "capabilities.untrustedWorkspaces": "Copy Reference, the Toolbox UI, and runtime information remain available. Git Blame and Git Review commands require a trusted workspace.",
+  "capabilities.virtualWorkspaces": "Copy Reference supports stable virtual resources. Git Blame and Git Review require a resource that the Extension Host can map to an executable Git repository."
 }

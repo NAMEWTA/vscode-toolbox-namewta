@@ -31,17 +31,17 @@
 
 项目生成时必须结合仓库事实确认，常用基线为：
 
-| 对象 | 默认规则 | 示例 |
-|---|---|---|
-| 目录 | `kebab-case` | `user-auth/` |
-| 普通 TypeScript 文件 | `kebab-case.ts` | `session-expiration-policy.ts` |
-| React 业务组件 | `PascalCase.tsx` | `SessionExpiredDialog.tsx` |
-| Hook | `use-*.ts` / `use-*.tsx` | `use-session-timeout.ts` |
-| 单元测试 | 源文件名 + `.test` | `login-service.test.ts` |
-| 集成测试 | `.integration.test` | `payment-flow.integration.test.ts` |
-| E2E | `.e2e.spec` | `checkout.e2e.spec.ts` |
-| 声明文件 | 环境或能力名 | `electron-api.d.ts` |
-| 工程脚本 | 动宾结构 | `generate-icons.ts` |
+| 对象                 | 默认规则                 | 示例                               |
+| -------------------- | ------------------------ | ---------------------------------- |
+| 目录                 | `kebab-case`             | `user-auth/`                       |
+| 普通 TypeScript 文件 | `kebab-case.ts`          | `session-expiration-policy.ts`     |
+| React 业务组件       | `PascalCase.tsx`         | `SessionExpiredDialog.tsx`         |
+| Hook                 | `use-*.ts` / `use-*.tsx` | `use-session-timeout.ts`           |
+| 单元测试             | 源文件名 + `.test`       | `login-service.test.ts`            |
+| 集成测试             | `.integration.test`      | `payment-flow.integration.test.ts` |
+| E2E                  | `.e2e.spec`              | `checkout.e2e.spec.ts`             |
+| 声明文件             | 环境或能力名             | `electron-api.d.ts`                |
+| 工程脚本             | 动宾结构                 | `generate-icons.ts`                |
 
 生成器或框架管理的文件可保留其约定，必须在项目规范中标出适用范围。
 
@@ -84,9 +84,9 @@
 数值名称包含单位或语义：
 
 ```ts
-const timeoutMs = 30_000
-const payloadSizeBytes = 1_024
-const retryCount = 3
+const timeoutMs = 30_000;
+const payloadSizeBytes = 1_024;
+const retryCount = 3;
 ```
 
 避免 `flag`、`data`、`info`、`obj`、`temp` 等无信息名称。

@@ -76,4 +76,34 @@ describe('tool command contract', () => {
       }),
     ).toBe(false);
   });
+
+  it('validates all Git Review commands before they reach the session domain', () => {
+    expect(isToolCommandId('gitReview.start')).toBe(true);
+    expect(
+      isToolCommandInput('gitReview.start', {
+        repositoryRoot: '/workspace/repository',
+        replace: false,
+      }),
+    ).toBe(true);
+    expect(
+      isToolCommandInput('gitReview.start', {
+        repositoryRoot: 'workspace/repository',
+        replace: false,
+      }),
+    ).toBe(false);
+    expect(isToolCommandInput('gitReview.next', {})).toBe(true);
+    expect(isToolCommandInput('gitReview.next', { unexpected: true })).toBe(false);
+    expect(
+      isToolCommandInput('gitReview.getItemContent', {
+        path: 'src/main.ts',
+        contentIdentity: 'a'.repeat(64),
+      }),
+    ).toBe(true);
+    expect(
+      isToolCommandInput('gitReview.getItemContent', {
+        path: '../secret.txt',
+        contentIdentity: 'a'.repeat(64),
+      }),
+    ).toBe(false);
+  });
 });

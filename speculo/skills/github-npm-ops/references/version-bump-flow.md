@@ -52,11 +52,11 @@ head -30 CHANGELOG.md
 
 **用 `npm version` 还是手改?**
 
-| 场景 | 推荐 |
-|------|------|
-| 单一 package.json,简单 bump | `npm version <major\|minor\|patch> --no-git-tag-version` |
-| Monorepo / 多文件版本号要同步 | 手改 + `pnpm -r`(或脚本) |
-| 已写好 CHANGELOG,只想改 package.json 一处 | 手改 |
+| 场景                                      | 推荐                                                     |
+| ----------------------------------------- | -------------------------------------------------------- |
+| 单一 package.json,简单 bump               | `npm version <major\|minor\|patch> --no-git-tag-version` |
+| Monorepo / 多文件版本号要同步             | 手改 + `pnpm -r`(或脚本)                                 |
+| 已写好 CHANGELOG,只想改 package.json 一处 | 手改                                                     |
 
 `--no-git-tag-version` 的关键作用:**只改文件,不自动打 tag**。我们要把 tag 打在 release commit 上,不是在 bump 这一刻。
 
@@ -76,6 +76,7 @@ git commit -m "chore(release): v0.0.10" \
 ```
 
 **为什么必须是同一个 commit**:
+
 - tag 要精确指向这个 commit
 - workflow 的 `Verify tag matches package version` 步骤会校验该 commit 上的 `package.json` 版本与 tag 一致
 - 利于后续 `git revert` 一键回滚发布

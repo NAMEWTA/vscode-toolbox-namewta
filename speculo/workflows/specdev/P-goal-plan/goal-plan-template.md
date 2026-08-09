@@ -25,13 +25,13 @@ ready_for_execution: false
 
 ### Authoritative Inputs
 
-| 优先级 | 来源 | 负责内容 | 冲突处理 |
-|---|---|---|---|
-| 1 | 用户最新明确决定 | 产品取舍与批准 | 更新真正拥有该决策的工件 |
-| 2 | `<Path>{roots.state}/specdev/changes/{change}/ADR.md</Path>` | 当前 change 架构决定 | 通过新决定替代 |
-| 3 | `<Path>{roots.state}/specdev/changes/{change}/spec.md</Path>` | 外部行为、范围与验收 | 下游不得改写 |
-| 4 | `<Path>{roots.state}/specdev/changes/{change}/ticket/{ticket-file}.md</Path>` | 单 Ticket 契约 | Goal Plan 只编排 |
-| 5 | 当前代码事实 | 现状与可行性 | 冲突时触发偏差 |
+| 优先级 | 来源                                                                          | 负责内容             | 冲突处理                 |
+| ------ | ----------------------------------------------------------------------------- | -------------------- | ------------------------ |
+| 1      | 用户最新明确决定                                                              | 产品取舍与批准       | 更新真正拥有该决策的工件 |
+| 2      | `<Path>{roots.state}/specdev/changes/{change}/ADR.md</Path>`                  | 当前 change 架构决定 | 通过新决定替代           |
+| 3      | `<Path>{roots.state}/specdev/changes/{change}/spec.md</Path>`                 | 外部行为、范围与验收 | 下游不得改写             |
+| 4      | `<Path>{roots.state}/specdev/changes/{change}/ticket/{ticket-file}.md</Path>` | 单 Ticket 契约       | Goal Plan 只编排         |
+| 5      | 当前代码事实                                                                  | 现状与可行性         | 冲突时触发偏差           |
 
 ## 2. Execution Graph
 
@@ -44,13 +44,13 @@ ready_for_execution: false
 ### Waves and Ownership
 
 | Wave | Ticket | 前置条件 | 项目写路径 | Shared owner | 集成点 |
-|---|---|---|---|---|---|
+| ---- | ------ | -------- | ---------- | ------------ | ------ |
 
 ### Ticket Quick Reference
 
-| ID | Ticket | 行为产出 | Depth/Risk | Dependencies | Wave/Gate | Owner | Evidence |
-|---|---|---|---|---|---|---|---|
-| T-01 | `<Path>{roots.state}/specdev/changes/{change}/ticket/01-<name>.md</Path>` | ... | standard/medium | — | W0/G0 | `<owner>` | `<Path>{roots.state}/specdev/changes/{change}/evidence/T-01.md</Path>` |
+| ID   | Ticket                                                                    | 行为产出 | Depth/Risk      | Dependencies | Wave/Gate | Owner     | Evidence                                                               |
+| ---- | ------------------------------------------------------------------------- | -------- | --------------- | ------------ | --------- | --------- | ---------------------------------------------------------------------- |
+| T-01 | `<Path>{roots.state}/specdev/changes/{change}/ticket/01-<name>.md</Path>` | ...      | standard/medium | —            | W0/G0     | `<owner>` | `<Path>{roots.state}/specdev/changes/{change}/evidence/T-01.md</Path>` |
 
 ## 3. Gates and Completion Evidence
 
@@ -59,29 +59,29 @@ ready_for_execution: false
 ### Gates
 
 | Gate | 开启条件 | 关闭证据 | 阻塞范围 | Owner/批准人 | 失败恢复 |
-|---|---|---|---|---|---|
+| ---- | -------- | -------- | -------- | ------------ | -------- |
 
 ### Contract and Reference Coverage
 
 | 合同或参考要求 | 覆盖 Ticket | 验证接缝 | Evidence | 状态 |
-|---|---|---|---|---|
+| -------------- | ----------- | -------- | -------- | ---- |
 
 ## 4. Execution and Integration Protocol
 
 ### Ticket Execution Order
 
 | Ticket | 开始条件 | 执行 owner | 必跑验证 | Evidence | 集成条件 |
-|---|---|---|---|---|---|
+| ------ | -------- | ---------- | -------- | -------- | -------- |
 
 ### Authorization Matrix
 
-| 动作 | 状态 | 目标与条件 |
-|---|---|---|
-| Local changes | allowed / not-authorized | ... |
-| Commit | allowed / not-authorized | ... |
-| Push / PR / Merge | allowed / not-authorized | ... |
-| Deploy / Migration | allowed / not-authorized | ... |
-| Production configuration / feature / real user data | allowed / not-authorized | ... |
+| 动作                                                | 状态                     | 目标与条件 |
+| --------------------------------------------------- | ------------------------ | ---------- |
+| Local changes                                       | allowed / not-authorized | ...        |
+| Commit                                              | allowed / not-authorized | ...        |
+| Push / PR / Merge                                   | allowed / not-authorized | ...        |
+| Deploy / Migration                                  | allowed / not-authorized | ...        |
+| Production configuration / feature / real user data | allowed / not-authorized | ...        |
 
 ### Evidence Return and Integration
 

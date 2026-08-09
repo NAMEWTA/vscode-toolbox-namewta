@@ -12,6 +12,7 @@ await esbuild.build({
     'tests/integration/git-blame-hover.integration.test.ts',
     'tests/integration/git-history.integration.test.ts',
     'tests/integration/git-line-history.integration.test.ts',
+    'tests/integration/git-review.integration.test.ts',
     'tests/integration/trusted-workspace.integration.test.ts',
     'tests/integration/suite/index.ts',
   ],
