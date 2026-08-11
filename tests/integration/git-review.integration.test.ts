@@ -199,7 +199,7 @@ suite('Git Review Extension Host 命令集成', () => {
       }
     } finally {
       if (api !== undefined) {
-        await api.execute('gitReview.end', {});
+        await finishCommandReview(api);
       }
       sourceControl.dispose();
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
@@ -230,6 +230,7 @@ suite('Git Review Extension Host 命令集成', () => {
         assert.equal(requireSession(stale.data).currentItemPath, 'second.ts');
       }
 
+      await finishCommandReview(api);
       const ended = await api.execute('gitReview.end', {});
       assert.equal(ended.ok, true);
       if (ended.ok) {
@@ -284,6 +285,23 @@ async function waitForReviewPanel(): Promise<void> {
   throw new Error(
     `没有在预期时间内打开单一 Git 审核聚合页。当前标签：${JSON.stringify(tabSnapshot())}`,
   );
+}
+
+async function finishCommandReview(
+  api: VscodeToolboxNamewtaExtensionApi,
+): Promise<void> {
+  await vscode.commands.executeCommand('vscodeToolboxNamewta.gitReview.refresh');
+  const current = await api.execute('gitReview.refresh', {});
+  if (!current.ok || !('session' in current.data)) {
+    return;
+  }
+  let remaining = current.data.session.items.length;
+  while (remaining > 0) {
+    await vscode.commands.executeCommand(
+      'vscodeToolboxNamewta.gitReview.markReviewedAndNext',
+    );
+    remaining -= 1;
+  }
 }
 
 function reviewPanelCount(): number {
