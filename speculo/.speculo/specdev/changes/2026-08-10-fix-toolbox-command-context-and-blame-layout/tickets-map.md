@@ -33,12 +33,12 @@ T-01 [IN_PROGRESS]
 
 ## 4. 合同覆盖矩阵
 
-| Contract ID      | 覆盖 Ticket | 验证接缝                        | 状态    | 说明                                     |
-| ---------------- | ----------- | ------------------------------- | ------- | ---------------------------------------- |
-| AC-001 至 AC-003 | T-01        | Command/Adapter/Extension Host  | covered | 真实菜单上下文与失败边界                 |
-| AC-004、AC-005   | T-01        | Formatter/Renderer/截图         | partial | 自动化通过，真实主题截图待补             |
-| AC-006           | T-01        | Manifest/i18n                   | covered | 全部可见命令前缀且 ID兼容                |
-| AC-007           | T-01        | `pnpm check:ci` 与 VSIX/Release | partial | 0.1.4 VSIX 已生成，标签与 Release 待完成 |
+| Contract ID      | 覆盖 Ticket | 验证接缝                        | 状态    | 说明                               |
+| ---------------- | ----------- | ------------------------------- | ------- | ---------------------------------- |
+| AC-001 至 AC-003 | T-01        | Command/Adapter/Extension Host  | covered | 真实菜单上下文与失败边界           |
+| AC-004、AC-005   | T-01        | Formatter/Renderer/截图         | partial | 自动化通过，真实主题截图待补       |
+| AC-006           | T-01        | Manifest/i18n                   | covered | 全部可见命令前缀且 ID兼容          |
+| AC-007           | T-01        | `pnpm check:ci` 与 VSIX/Release | covered | 0.1.4 标签、Release 与 VSIX 已完成 |
 
 ## 5. 并行与路径所有权
 
