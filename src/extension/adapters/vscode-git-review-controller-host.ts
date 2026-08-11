@@ -53,8 +53,8 @@ export class VscodeGitReviewControllerHost implements GitReviewControllerHost {
     );
   }
 
-  public async showSummary(summary: GitReviewSummary): Promise<void> {
-    await vscode.window.showInformationMessage(
+  public showSummary(summary: GitReviewSummary): Promise<void> {
+    void vscode.window.showInformationMessage(
       vscode.l10n.t(
         'Git Review complete: {0} reviewed, {1} skipped, {2} total.',
         summary.reviewed,
@@ -62,6 +62,7 @@ export class VscodeGitReviewControllerHost implements GitReviewControllerHost {
         summary.total,
       ),
     );
+    return Promise.resolve();
   }
 }
 
