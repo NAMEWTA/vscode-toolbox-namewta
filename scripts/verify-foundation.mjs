@@ -200,9 +200,9 @@ function verifyReleaseSurface(manifest, contributedCommands) {
       command.startsWith('vscodeToolboxNamewta.copyReference.') ||
       command.startsWith('vscodeToolboxNamewta.gitBlame.'),
   );
-  if (changeCommands.length !== 7) {
+  if (changeCommands.length !== 9) {
     failures.push(
-      `Copy/Blame 用户命令必须恰好为 7 个，当前为 ${changeCommands.length} 个。`,
+      `Copy/Blame 用户命令必须恰好为 9 个，当前为 ${changeCommands.length} 个。`,
     );
   }
   if (contributedCommands.some((command) => command.includes('.internal.'))) {

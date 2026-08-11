@@ -50,10 +50,44 @@ describe('GitReviewSessionService', () => {
     rejectsInvalidDescriptors,
   );
   it(
+    'keeps staged and unstaged items for the same path independently addressable',
+    keepsLayeredItemsForSamePath,
+  );
+  it(
     'does not call the Port when a refresh has already been cancelled',
     avoidsCancelledRefresh,
   );
+  it('allows aggregate patch reads to complete concurrently', readsPatchesConcurrently);
 });
+
+async function readsPatchesConcurrently(): Promise<void> {
+  const port = createPort();
+  port.listChanges.mockResolvedValue([
+    change({ path: 'alpha.ts', contentIdentity: 'a'.repeat(64) }),
+    change({ path: 'beta.ts', contentIdentity: 'b'.repeat(64) }),
+  ]);
+  port.readItemPatch.mockResolvedValue({
+    kind: 'patch',
+    additions: 0,
+    deletions: 0,
+    hunks: [],
+  });
+  const service = new GitReviewSessionService(port);
+  await startSession(service);
+
+  await expect(
+    Promise.all([
+      service.getItemPatch(
+        { itemId: 'unstaged:alpha.ts', contentIdentity: 'a'.repeat(64) },
+        { aborted: false },
+      ),
+      service.getItemPatch(
+        { itemId: 'unstaged:beta.ts', contentIdentity: 'b'.repeat(64) },
+        { aborted: false },
+      ),
+    ]),
+  ).resolves.toHaveLength(2);
+}
 
 async function createsStablePathSortedQueue(): Promise<void> {
   const port = createPort();
@@ -270,10 +304,15 @@ async function readsMatchingItemContent(): Promise<void> {
       { aborted: false },
     ),
   ).rejects.toMatchObject({ code: 'invalid-input' });
-  expect(port.readItemContent).toHaveBeenCalledWith(
-    { repositoryRoot: '/workspace/repository', item: descriptor },
-    expect.objectContaining({ aborted: false }),
-  );
+  const actualRequest: unknown = port.readItemContent.mock.calls[0]?.[0];
+  expect(actualRequest).toEqual({
+    repositoryRoot: '/workspace/repository',
+    item: {
+      ...descriptor,
+      itemId: 'unstaged:src/main.ts',
+      layer: 'unstaged',
+    },
+  });
 }
 
 async function rejectsInvalidItemContent(): Promise<void> {
@@ -369,6 +408,35 @@ async function rejectsInvalidDescriptors(): Promise<void> {
   expect(service.getSnapshot()).toEqual({ state: 'inactive' });
 }
 
+async function keepsLayeredItemsForSamePath(): Promise<void> {
+  const port = createPort();
+  port.listChanges.mockResolvedValue([
+    {
+      ...change({ path: 'same.ts', contentIdentity: 'a'.repeat(64) }),
+      itemId: 'staged:same.ts',
+      layer: 'staged',
+    },
+    {
+      ...change({ path: 'same.ts', contentIdentity: 'b'.repeat(64) }),
+      itemId: 'unstaged:same.ts',
+      layer: 'unstaged',
+    },
+  ]);
+
+  const snapshot = await startSession(new GitReviewSessionService(port));
+
+  expect(snapshot).toMatchObject({
+    state: 'active',
+    session: {
+      currentItemId: 'staged:same.ts',
+      items: [
+        expect.objectContaining({ itemId: 'staged:same.ts', layer: 'staged' }),
+        expect.objectContaining({ itemId: 'unstaged:same.ts', layer: 'unstaged' }),
+      ],
+    },
+  });
+}
+
 async function avoidsCancelledRefresh(): Promise<void> {
   const port = createPort();
   port.listChanges.mockResolvedValue([
@@ -414,8 +482,15 @@ function item(
 function createPort(): GitReviewPort & {
   readonly listChanges: ReturnType<typeof vi.fn>;
   readonly readItemContent: ReturnType<typeof vi.fn>;
+  readonly readItemPatch: ReturnType<typeof vi.fn>;
+  readonly mutateItem: ReturnType<typeof vi.fn>;
 } {
-  return { listChanges: vi.fn(), readItemContent: vi.fn() };
+  return {
+    listChanges: vi.fn(),
+    readItemContent: vi.fn(),
+    readItemPatch: vi.fn(),
+    mutateItem: vi.fn(),
+  };
 }
 
 function change(

@@ -81,9 +81,13 @@ function formatSelection(selection: CopySelectionSnapshot): string {
     return `:${start.line + 1}`;
   }
   if (start.line === end.line) {
-    return `:${start.line + 1}(${start.character + 1}-${end.character + 1})`;
+    return `:${start.line + 1}(${start.character + 1}-${end.character})`;
   }
-  return `:${start.line + 1}-${end.line + 1}`;
+  const finalLine = end.character === 0 ? end.line - 1 : end.line;
+  if (finalLine === start.line) {
+    return `:${start.line + 1}`;
+  }
+  return `:${start.line + 1}-${finalLine + 1}`;
 }
 
 function normalizeSelection(

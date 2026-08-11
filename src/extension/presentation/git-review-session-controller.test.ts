@@ -5,13 +5,32 @@ import type {
   GitReviewSessionSnapshot,
 } from '../../core/domains/git-review/public-api';
 import type { ToolboxGateway } from '../../core/orchestration/public-api';
-import {
-  GitReviewSessionController,
-  type GitReviewControllerHost,
-  type GitReviewPresentation,
-  type GitReviewRepositoryResolver,
-  type GitReviewWatcherFactory,
-} from './git-review-session-controller';
+import { GitReviewSessionController } from './git-review-session-controller';
+import type {
+  GitReviewControllerHost,
+  GitReviewPresentation,
+  GitReviewRepositoryResolver,
+  GitReviewWatcherFactory,
+} from './git-review-session-controller-contract';
+
+describe('Git Review 聚合视图定位', () => {
+  it('聚合视图接管定位时不读取完整原生 Diff 内容', async () => {
+    const gateway = createGateway();
+    const initial = activeSnapshot('alpha.ts', [item('alpha.ts')]);
+    gateway.execute.mockResolvedValueOnce(success(initial));
+    const dependencies = createDependencies(gateway);
+    dependencies.presentation.focusItem.mockReturnValue(true);
+    const controller = new GitReviewSessionController(dependencies);
+
+    await controller.start();
+
+    expect(dependencies.presentation.focusItem).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: 'unstaged:alpha.ts' }),
+    );
+    expect(gateway.execute).toHaveBeenCalledTimes(1);
+    expect(dependencies.presentation.openItem).not.toHaveBeenCalled();
+  });
+});
 
 describe('Git Review 会话控制器', () => {
   it('启动后投影视图并打开首个文本项，导航不改变处理状态', async () => {
@@ -299,6 +318,7 @@ function createDependencies(gateway: ToolboxGateway): {
   };
   readonly presentation: GitReviewPresentation & {
     readonly render: ReturnType<typeof vi.fn>;
+    readonly focusItem: ReturnType<typeof vi.fn>;
     readonly openItem: ReturnType<typeof vi.fn>;
     readonly dispose: ReturnType<typeof vi.fn>;
   };
@@ -327,6 +347,7 @@ function createDependencies(gateway: ToolboxGateway): {
   } satisfies GitReviewRepositoryResolver;
   const presentation = {
     render: vi.fn<(snapshot: GitReviewSessionSnapshot) => void>(),
+    focusItem: vi.fn<(item: GitReviewItem) => boolean>().mockReturnValue(false),
     openItem: vi.fn<GitReviewPresentation['openItem']>().mockResolvedValue(undefined),
     dispose: vi.fn<() => void>(),
   } satisfies GitReviewPresentation;
@@ -372,6 +393,8 @@ function activeSnapshot(
     state: 'active',
     session: {
       repositoryRoot: '/workspace/repository',
+      currentItemId:
+        items.find((candidate) => candidate.path === currentItemPath)?.itemId ?? '',
       currentItemPath,
       items,
       progress: {
@@ -386,6 +409,8 @@ function activeSnapshot(
 
 function item(path: string, contentIdentity = 'a'.repeat(64)): GitReviewItem {
   return {
+    itemId: `unstaged:${path}`,
+    layer: 'unstaged',
     path,
     contentIdentity,
     change: 'modified',

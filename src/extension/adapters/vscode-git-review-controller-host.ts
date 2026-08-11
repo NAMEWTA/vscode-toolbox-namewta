@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import type { ToolError } from '../../core/contracts/tool-error-contract';
 import type { GitReviewSummary } from '../../core/domains/git-review/public-api';
 import type { ToolLogger } from '../../core/orchestration/public-api';
-import type { GitReviewControllerHost } from '../presentation/git-review-session-controller';
+import type { GitReviewControllerHost } from '../presentation/git-review-session-controller-contract';
 
 export class VscodeGitReviewControllerHost implements GitReviewControllerHost {
   public constructor(

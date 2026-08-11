@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
-import { formatGitBlameAnnotations } from '../../core/domains/git-blame/git-blame-annotation-format';
+import {
+  formatGitBlameAnnotations,
+  measureDisplayWidth,
+} from '../../core/domains/git-blame/git-blame-annotation-format';
 import type { GitBlameLine } from '../../core/domains/git-blame/public-api';
 import type {
   GitBlameAnnotationRenderer,
@@ -35,9 +38,18 @@ export class GitBlameDecorationRenderer implements GitBlameAnnotationRenderer {
       nowEpochSeconds: Math.floor(Date.now() / 1_000),
       maxAuthorWidth: 18,
     });
-    const annotations = formatted
-      .filter(({ text }) => text !== '')
-      .map(({ line, text }) => decoration(line, text));
+    const annotationWidth =
+      Math.max(0, ...formatted.map(({ text }) => measureDisplayWidth(text))) + 1;
+    const formattedByLine = new Map(formatted.map((item) => [item.line, item]));
+    const annotations = Array.from({ length: document.lineCount }, (_, index) => {
+      const item = formattedByLine.get(index + 1);
+      return decoration(
+        index + 1,
+        item?.text ?? '',
+        annotationWidth,
+        item?.heatBackgroundColor,
+      );
+    });
     const heat = formatted
       .filter(
         (item): item is typeof item & { readonly heatColor: string } =>
@@ -46,8 +58,8 @@ export class GitBlameDecorationRenderer implements GitBlameAnnotationRenderer {
       .map(({ line, heatColor }) => heatDecoration(line, heatColor));
     const highlight = createHighlightRanges(lines, highlightedLine, config);
     for (const editor of editors) {
-      editor.setDecorations(resources.annotation, annotations);
       editor.setDecorations(resources.heat, heat);
+      editor.setDecorations(resources.annotation, annotations);
       editor.setDecorations(resources.highlight, highlight);
     }
   }
@@ -90,17 +102,20 @@ export class GitBlameDecorationRenderer implements GitBlameAnnotationRenderer {
 }
 
 function createResources(): DocumentDecorationResources {
+  const heat = vscode.window.createTextEditorDecorationType({
+    before: { margin: '0 0.4em 0 0', width: '0.35em', height: '100%' },
+    rangeBehavior: vscode.DecorationRangeBehavior.OpenOpen,
+  });
+  const annotation = vscode.window.createTextEditorDecorationType({
+    before: {
+      color: new vscode.ThemeColor('editorCodeLens.foreground'),
+      margin: '0 0.75em 0 0',
+    },
+    rangeBehavior: vscode.DecorationRangeBehavior.OpenOpen,
+  });
   return {
-    annotation: vscode.window.createTextEditorDecorationType({
-      before: {
-        color: new vscode.ThemeColor('editorCodeLens.foreground'),
-        margin: '0 1.25em 0 0',
-        width: '22em',
-      },
-    }),
-    heat: vscode.window.createTextEditorDecorationType({
-      before: { margin: '0 0.4em 0 0', width: '0.4em' },
-    }),
+    annotation,
+    heat,
     highlight: vscode.window.createTextEditorDecorationType({
       isWholeLine: true,
       backgroundColor: new vscode.ThemeColor('editor.wordHighlightBackground'),
@@ -109,17 +124,28 @@ function createResources(): DocumentDecorationResources {
   };
 }
 
-function decoration(line: number, text: string): vscode.DecorationOptions {
+function decoration(
+  line: number,
+  text: string,
+  width: number,
+  backgroundColor: string | undefined,
+): vscode.DecorationOptions {
   return {
     range: lineStartRange(line),
-    renderOptions: { before: { contentText: text } },
+    renderOptions: {
+      before: {
+        contentText: text,
+        width: `${width}ch`,
+        ...(backgroundColor === undefined ? {} : { backgroundColor }),
+      },
+    },
   };
 }
 
 function heatDecoration(line: number, color: string): vscode.DecorationOptions {
   return {
     range: lineStartRange(line),
-    renderOptions: { before: { contentText: '▌', color } },
+    renderOptions: { before: { contentText: ' ', backgroundColor: color } },
   };
 }
 

@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -7,91 +7,20 @@ import type {
   GitCommandRequest,
   GitCommandResult,
 } from '../../../core/domains/git-blame/public-api';
+import type {
+  GitReviewChangeDescriptor,
+  GitReviewItemContent,
+} from '../../../core/domains/git-review/public-api';
 import { ApplicationError } from '../../../core/kernel/application-error';
 import { GitCommandRunner } from './git-command-runner';
 import { GitReviewPortAdapter } from './git-review-port-adapter';
 
 describe('GitReviewPortAdapter', () => {
-  it('读取真实仓库的合并变更、特殊项和正确的前后文本，且不执行 Git 写入', async () => {
-    const repository = await createCommittedRepository();
-    const runner = new GitCommandRunner();
-    const git = new RecordingGitPort(runner);
-    const adapter = new GitReviewPortAdapter(git, () => true);
-    try {
-      await writeFile(path.join(repository, 'main.ts'), 'const value = 2;\n');
-      await runFixtureGit(runner, repository, ['add', '--', 'main.ts']);
-      await writeFile(path.join(repository, 'main.ts'), 'const value = 3;\n');
-      await rm(path.join(repository, 'removed.ts'));
-      await rm(path.join(repository, 'binary-deleted.bin'));
-      await runFixtureGit(runner, repository, ['mv', 'before-rename.ts', 'renamed.ts']);
-      await writeFile(path.join(repository, 'draft\nname.ts'), 'draft\n');
-      await writeFile(path.join(repository, 'binary.bin'), Buffer.from([0, 1, 2, 3]));
-
-      const changes = await adapter.listChanges(repository, { aborted: false });
-      const byPath = new Map(changes.map((change) => [change.path, change]));
-      const main = byPath.get('main.ts');
-      const removed = byPath.get('removed.ts');
-      const renamed = byPath.get('renamed.ts');
-      const draft = byPath.get('draft\nname.ts');
-      const binary = byPath.get('binary.bin');
-      const binaryDeleted = byPath.get('binary-deleted.bin');
-
-      expect(changes).toHaveLength(6);
-      expect(main).toMatchObject({ change: 'modified', presentation: 'text' });
-      expect(removed).toMatchObject({ change: 'deleted', presentation: 'text' });
-      expect(renamed).toMatchObject({
-        change: 'renamed',
-        previousPath: 'before-rename.ts',
-        presentation: 'text',
-      });
-      expect(draft).toMatchObject({ change: 'untracked', presentation: 'text' });
-      expect(binary).toMatchObject({ change: 'untracked', presentation: 'binary' });
-      expect(binaryDeleted).toMatchObject({
-        change: 'deleted',
-        presentation: 'binary',
-      });
-      expect(main).toBeDefined();
-      expect(removed).toBeDefined();
-      expect(binary).toBeDefined();
-      expect(binaryDeleted).toBeDefined();
-
-      await expect(
-        adapter.readItemContent(
-          { repositoryRoot: repository, item: requiredChange(main) },
-          { aborted: false },
-        ),
-      ).resolves.toEqual({
-        kind: 'text',
-        before: 'const value = 1;\n',
-        after: 'const value = 3;\n',
-      });
-      await expect(
-        adapter.readItemContent(
-          { repositoryRoot: repository, item: requiredChange(removed) },
-          { aborted: false },
-        ),
-      ).resolves.toEqual({
-        kind: 'text',
-        before: 'remove me\n',
-        after: '',
-      });
-      await expect(
-        adapter.readItemContent(
-          { repositoryRoot: repository, item: requiredChange(binary) },
-          { aborted: false },
-        ),
-      ).resolves.toEqual({ kind: 'summary', reason: 'binary' });
-      await expect(
-        adapter.readItemContent(
-          { repositoryRoot: repository, item: requiredChange(binaryDeleted) },
-          { aborted: false },
-        ),
-      ).resolves.toEqual({ kind: 'summary', reason: 'binary' });
-      expect(hasOnlyReadOnlyGitCommands(git.requests)).toBe(true);
-    } finally {
-      await rm(repository, { recursive: true, force: true });
-    }
-  }, 10_000);
+  it(
+    '读取真实仓库的合并变更、特殊项和正确的前后文本，且不执行 Git 写入',
+    readsRepositoryChanges,
+    10_000,
+  );
 
   it('只读 Git 调用审计拒绝写入和远程子命令', () => {
     expect(
@@ -105,7 +34,160 @@ describe('GitReviewPortAdapter', () => {
       ]),
     ).toBe(false);
   });
+
+  it('对单个文件执行暂存、取消暂存和确认后的丢弃，并刷新分层清单', async () => {
+    const repository = await createCommittedRepository();
+    const runner = new GitCommandRunner();
+    const adapter = new GitReviewPortAdapter(runner, () => true);
+    try {
+      const file = path.join(repository, 'main.ts');
+      await writeFile(file, 'const value = 2;\n');
+
+      const unstaged = requiredChange(
+        (await adapter.listChanges(repository, { aborted: false })).find(
+          (change) => change.path === 'main.ts' && change.layer === 'unstaged',
+        ),
+      );
+      const stagedChanges = await adapter.mutateItem(
+        { repositoryRoot: repository, item: unstaged, mutation: 'stage' },
+        { aborted: false },
+      );
+      const staged = requiredChange(
+        stagedChanges.find(
+          (change) => change.path === 'main.ts' && change.layer === 'staged',
+        ),
+      );
+
+      const unstagedChanges = await adapter.mutateItem(
+        { repositoryRoot: repository, item: staged, mutation: 'unstage' },
+        { aborted: false },
+      );
+      const restoredUnstaged = requiredChange(
+        unstagedChanges.find(
+          (change) => change.path === 'main.ts' && change.layer === 'unstaged',
+        ),
+      );
+      const remaining = await adapter.mutateItem(
+        { repositoryRoot: repository, item: restoredUnstaged, mutation: 'discard' },
+        { aborted: false },
+      );
+
+      expect(remaining.some((change) => change.path === 'main.ts')).toBe(false);
+      await expect(readFile(file, 'utf8')).resolves.toBe('const value = 1;\n');
+    } finally {
+      await rm(repository, { recursive: true, force: true });
+    }
+  }, 10_000);
 });
+
+type MixedChangeFixture = {
+  readonly stagedMain: GitReviewChangeDescriptor;
+  readonly unstagedMain: GitReviewChangeDescriptor;
+  readonly removed: GitReviewChangeDescriptor;
+  readonly binary: GitReviewChangeDescriptor;
+  readonly binaryDeleted: GitReviewChangeDescriptor;
+};
+
+async function readsRepositoryChanges(): Promise<void> {
+  const repository = await createCommittedRepository();
+  const runner = new GitCommandRunner();
+  const git = new RecordingGitPort(runner);
+  const adapter = new GitReviewPortAdapter(git, () => true);
+  try {
+    await createMixedChanges(repository, runner);
+    const changes = await adapter.listChanges(repository, { aborted: false });
+    const fixture = assertMixedChangeInventory(changes);
+    await assertMixedChangeContents(adapter, repository, fixture);
+    expect(hasOnlyReadOnlyGitCommands(git.requests)).toBe(true);
+  } finally {
+    await rm(repository, { recursive: true, force: true });
+  }
+}
+
+async function createMixedChanges(
+  repository: string,
+  runner: GitCommandRunner,
+): Promise<void> {
+  await writeFile(path.join(repository, 'main.ts'), 'const value = 2;\n');
+  await runFixtureGit(runner, repository, ['add', '--', 'main.ts']);
+  await writeFile(path.join(repository, 'main.ts'), 'const value = 3;\n');
+  await rm(path.join(repository, 'removed.ts'));
+  await rm(path.join(repository, 'binary-deleted.bin'));
+  await runFixtureGit(runner, repository, ['mv', 'before-rename.ts', 'renamed.ts']);
+  await writeFile(path.join(repository, 'draft\nname.ts'), 'draft\n');
+  await writeFile(path.join(repository, 'binary.bin'), Buffer.from([0, 1, 2, 3]));
+}
+
+function assertMixedChangeInventory(
+  changes: readonly GitReviewChangeDescriptor[],
+): MixedChangeFixture {
+  const byPath = new Map(changes.map((change) => [change.path, change]));
+  const stagedMain = requiredChange(
+    changes.find((change) => change.path === 'main.ts' && change.layer === 'staged'),
+  );
+  const unstagedMain = requiredChange(
+    changes.find((change) => change.path === 'main.ts' && change.layer === 'unstaged'),
+  );
+  const removed = requiredChange(byPath.get('removed.ts'));
+  const binary = requiredChange(byPath.get('binary.bin'));
+  const binaryDeleted = requiredChange(byPath.get('binary-deleted.bin'));
+
+  expect(changes).toHaveLength(7);
+  expect(stagedMain).toMatchObject({ change: 'modified', presentation: 'text' });
+  expect(unstagedMain).toMatchObject({ change: 'modified', presentation: 'text' });
+  expect(removed).toMatchObject({ change: 'deleted', presentation: 'text' });
+  expect(byPath.get('renamed.ts')).toMatchObject({
+    change: 'renamed',
+    previousPath: 'before-rename.ts',
+    presentation: 'text',
+  });
+  expect(byPath.get('draft\nname.ts')).toMatchObject({
+    change: 'untracked',
+    presentation: 'text',
+  });
+  expect(binary).toMatchObject({ change: 'untracked', presentation: 'binary' });
+  expect(binaryDeleted).toMatchObject({ change: 'deleted', presentation: 'binary' });
+  return { stagedMain, unstagedMain, removed, binary, binaryDeleted };
+}
+
+async function assertMixedChangeContents(
+  adapter: GitReviewPortAdapter,
+  repository: string,
+  fixture: MixedChangeFixture,
+): Promise<void> {
+  await expect(readContent(adapter, repository, fixture.stagedMain)).resolves.toEqual({
+    kind: 'text',
+    before: 'const value = 1;\n',
+    after: 'const value = 2;\n',
+  });
+  await expect(readContent(adapter, repository, fixture.unstagedMain)).resolves.toEqual(
+    {
+      kind: 'text',
+      before: 'const value = 2;\n',
+      after: 'const value = 3;\n',
+    },
+  );
+  await expect(readContent(adapter, repository, fixture.removed)).resolves.toEqual({
+    kind: 'text',
+    before: 'remove me\n',
+    after: '',
+  });
+  await expect(readContent(adapter, repository, fixture.binary)).resolves.toEqual({
+    kind: 'summary',
+    reason: 'binary',
+  });
+  await expect(
+    readContent(adapter, repository, fixture.binaryDeleted),
+  ).resolves.toEqual({ kind: 'summary', reason: 'binary' });
+}
+
+function readContent(
+  adapter: GitReviewPortAdapter,
+  repositoryRoot: string,
+  item: GitReviewChangeDescriptor,
+): Promise<GitReviewItemContent> {
+  return adapter.readItemContent({ repositoryRoot, item }, { aborted: false });
+}
 
 describe('GitReviewPortAdapter 无 HEAD 与错误边界', () => {
   it('为无 HEAD 仓库使用空基准，并在不可信、取消和超时边界保留结构化失败', async () => {
@@ -117,17 +199,30 @@ describe('GitReviewPortAdapter 无 HEAD 与错误边界', () => {
     try {
       await runFixtureGit(runner, repository, ['init']);
       await writeFile(path.join(repository, 'first.ts'), 'first\n');
+      await writeFile(path.join(repository, 'binary.bin'), Buffer.from([0, 1, 2, 3]));
       await runFixtureGit(runner, repository, ['add', '--', 'first.ts']);
+      await runFixtureGit(runner, repository, ['add', '--', 'binary.bin']);
       const changes = await adapter.listChanges(repository, { aborted: false });
       const first = changes.find((change) => change.path === 'first.ts');
+      const binary = changes.find((change) => change.path === 'binary.bin');
 
       expect(first).toMatchObject({ change: 'added', presentation: 'text' });
+      expect(binary).toMatchObject({ change: 'added', presentation: 'binary' });
       await expect(
         adapter.readItemContent(
           { repositoryRoot: repository, item: requiredChange(first) },
           { aborted: false },
         ),
       ).resolves.toEqual({ kind: 'text', before: '', after: 'first\n' });
+      await expect(
+        adapter.readItemPatch(
+          {
+            repositoryRoot: repository,
+            item: requiredChange(binary),
+          },
+          { aborted: false },
+        ),
+      ).resolves.toEqual({ kind: 'summary', reason: 'binary' });
       await writeFile(path.join(repository, 'first.ts'), 'changed\n');
       await expect(
         adapter.readItemContent(

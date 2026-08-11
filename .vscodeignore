@@ -6,6 +6,7 @@ build/**
 docs/**
 media/**
 scripts/**
+speculo/**
 src/**
 tests/**
 coverage/**
@@ -24,3 +25,8 @@ AGENTS.md
 CONTRIBUTING.md
 SECURITY.md
 pnpm-lock.yaml
+pnpm-workspace.yaml
+CLAUDE.md
+LICENSE.zh-CN.md
+.gitignore
+.prettierignore

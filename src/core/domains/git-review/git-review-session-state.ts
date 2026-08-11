@@ -25,11 +25,12 @@ export function createActiveGitReviewSession(
     });
   }
   const items = [...changes]
-    .sort((left, right) => compareGitReviewPaths(left.path, right.path))
+    .map(normalizeGitReviewDescriptor)
+    .sort(compareGitReviewItems)
     .map((change) => ({ ...change, reviewState: 'unreviewed' as const }));
-  const paths = new Set(items.map((item) => item.path));
-  if (paths.size !== items.length) {
-    throw new ApplicationError('Git Review changes contain duplicate paths.', {
+  const itemIds = new Set(items.map((item) => item.itemId));
+  if (itemIds.size !== items.length) {
+    throw new ApplicationError('Git Review changes contain duplicate items.', {
       code: 'internal-error',
     });
   }
@@ -41,6 +42,7 @@ export function createGitReviewSessionSnapshot(
 ): GitReviewSession {
   return {
     repositoryRoot: session.repositoryRoot,
+    currentItemId: session.items[session.currentIndex]?.itemId ?? '',
     currentItemPath: session.items[session.currentIndex]?.path ?? '',
     items: session.items.map((item) => ({ ...item })),
     progress: createGitReviewProgress(session.items),
@@ -88,9 +90,9 @@ export function preserveGitReviewCurrentItem(
   previousSession: ActiveGitReviewSession,
   refreshedSession: ActiveGitReviewSession,
 ): void {
-  const previousPath = previousSession.items[previousSession.currentIndex]?.path;
+  const previousItemId = previousSession.items[previousSession.currentIndex]?.itemId;
   const currentIndex = refreshedSession.items.findIndex(
-    (item) => item.path === previousPath,
+    (item) => item.itemId === previousItemId,
   );
   refreshedSession.currentIndex =
     currentIndex >= 0
@@ -115,12 +117,47 @@ export function toGitReviewChangeDescriptor(
   item: GitReviewItem,
 ): GitReviewChangeDescriptor {
   return {
+    itemId: item.itemId,
+    layer: item.layer,
     path: item.path,
     ...(item.previousPath === undefined ? {} : { previousPath: item.previousPath }),
     contentIdentity: item.contentIdentity,
     change: item.change,
     presentation: item.presentation,
   };
+}
+
+function normalizeGitReviewDescriptor(
+  change: GitReviewChangeDescriptor,
+): GitReviewItem {
+  const layer = change.layer ?? 'unstaged';
+  return {
+    ...change,
+    itemId: change.itemId ?? `${layer}:${change.path}`,
+    layer,
+    reviewState: 'unreviewed',
+  };
+}
+
+function compareGitReviewItems(
+  left: GitReviewChangeDescriptor & { readonly layer: string },
+  right: GitReviewChangeDescriptor & { readonly layer: string },
+): number {
+  const layerDifference = layerOrder(left.layer) - layerOrder(right.layer);
+  return layerDifference === 0
+    ? compareGitReviewPaths(left.path, right.path)
+    : layerDifference;
+}
+
+function layerOrder(layer: string): number {
+  switch (layer) {
+    case 'conflict':
+      return 0;
+    case 'staged':
+      return 1;
+    default:
+      return 2;
+  }
 }
 
 export function updateGitReviewItemState(

@@ -4,9 +4,24 @@ import {
   isToolCommandInput,
   isWebviewToExtensionMessage,
   type ExtensionToWebviewMessage,
+  type GitReviewWebviewAction,
+  type ToolCommandId,
   type ToolResult,
+  type WebviewToExtensionMessage,
 } from '../../core/contracts';
 import type { ToolboxGateway, ToolLogger } from '../../core/orchestration/public-api';
+
+export type VscodeWebviewMessageAdapterOptions = {
+  readonly authorize?: (
+    command: ToolCommandId,
+    input: unknown,
+  ) => Promise<ToolResult<never> | undefined>;
+  readonly onGitReviewAction?: (message: GitReviewWebviewAction) => Promise<void>;
+  readonly onToolResult?: (
+    command: ToolCommandId,
+    result: ToolResult<unknown>,
+  ) => Promise<void> | void;
+};
 
 export class VscodeWebviewMessageAdapter implements vscode.Disposable {
   readonly #disposable: vscode.Disposable;
@@ -16,6 +31,7 @@ export class VscodeWebviewMessageAdapter implements vscode.Disposable {
     private readonly webview: vscode.Webview,
     private readonly gateway: ToolboxGateway,
     private readonly logger: ToolLogger,
+    private readonly options: VscodeWebviewMessageAdapterOptions = {},
   ) {
     this.#disposable = webview.onDidReceiveMessage((message: unknown) => {
       void this.handleMessage(message);
@@ -36,11 +52,22 @@ export class VscodeWebviewMessageAdapter implements vscode.Disposable {
       return;
     }
 
+    if (message.type === 'gitReview.action') {
+      await this.options.onGitReviewAction?.(message);
+      return;
+    }
+
     if (message.type === 'tool.cancel') {
       this.#controllers.get(message.requestId)?.abort();
       return;
     }
 
+    await this.executeToolCommand(message);
+  }
+
+  private async executeToolCommand(
+    message: Extract<WebviewToExtensionMessage, { readonly type: 'tool.execute' }>,
+  ): Promise<void> {
     if (!isToolCommandId(message.command)) {
       await this.postResult(
         message.requestId,
@@ -57,6 +84,15 @@ export class VscodeWebviewMessageAdapter implements vscode.Disposable {
       return;
     }
 
+    const authorization = await this.options.authorize?.(
+      message.command,
+      message.input,
+    );
+    if (authorization !== undefined) {
+      await this.postResult(message.requestId, authorization);
+      return;
+    }
+
     this.#controllers.get(message.requestId)?.abort();
     const controller = new AbortController();
     this.#controllers.set(message.requestId, controller);
@@ -67,6 +103,7 @@ export class VscodeWebviewMessageAdapter implements vscode.Disposable {
         signal: controller.signal,
         source: 'webview',
       });
+      await this.options.onToolResult?.(message.command, result);
       await this.postResult(message.requestId, result);
     } finally {
       if (this.#controllers.get(message.requestId) === controller) {

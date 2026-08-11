@@ -1,18 +1,25 @@
 import { ApplicationError } from '../../kernel/application-error';
 import type { Disposable } from '../../kernel/disposable';
-import {
-  isGitReviewItemContent,
-  type GitReviewItemContent,
-  type GitReviewItemContentInput,
-  type GitReviewItemState,
-  type GitReviewSessionSnapshot,
-  type GitReviewStartInput,
+import type {
+  GitReviewItemContent,
+  GitReviewItemContentInput,
+  GitReviewItemState,
+  GitReviewSessionSnapshot,
+  GitReviewStartInput,
 } from './git-review-model';
+import type {
+  GitReviewItemActionInput,
+  GitReviewItemPatch,
+} from './git-review-patch-model';
 import type { GitReviewCancellationSignal, GitReviewPort } from './git-review-port';
+import type { GitReviewCancellableRequest } from './git-review-cancellable-request';
+import { findGitReviewActionItem, GitReviewItemReader } from './git-review-item-reader';
+import { GitReviewRequestTracker } from './git-review-request-tracker';
 import {
-  createGitReviewCancellableRequest,
-  type GitReviewCancellableRequest,
-} from './git-review-cancellable-request';
+  assertGitReviewMutationAllowed,
+  createGitReviewAbortError,
+  createNoGitReviewChangesError,
+} from './git-review-session-policy';
 import {
   createActiveGitReviewSession,
   createGitReviewSessionSnapshot,
@@ -30,10 +37,13 @@ type GitReviewSessionState = 'inactive' | 'loading' | 'active' | 'stale' | 'refr
 export class GitReviewSessionService implements Disposable {
   #state: GitReviewSessionState = 'inactive';
   #session: ActiveGitReviewSession | undefined;
-  #request: GitReviewCancellableRequest | undefined;
+  readonly #requests = new GitReviewRequestTracker(() => this.#isDisposed);
+  readonly #itemReader: GitReviewItemReader;
   #isDisposed = false;
 
-  public constructor(private readonly port: GitReviewPort) {}
+  public constructor(private readonly port: GitReviewPort) {
+    this.#itemReader = new GitReviewItemReader(port, this.#requests);
+  }
 
   public async start(
     input: GitReviewStartInput,
@@ -44,7 +54,7 @@ export class GitReviewSessionService implements Disposable {
       this.end();
     }
 
-    const request = this.startRequest(signal);
+    const request = this.#requests.startExclusive(signal);
     this.#state = 'loading';
     return this.loadStartedSession(input, request);
   }
@@ -86,7 +96,7 @@ export class GitReviewSessionService implements Disposable {
   ): Promise<GitReviewSessionSnapshot> {
     const previousSession = this.requireRefreshableSession();
     const previousState = this.#state;
-    const request = this.startRequest(signal);
+    const request = this.#requests.startExclusive(signal);
     this.#state = 'refreshing';
 
     try {
@@ -94,9 +104,9 @@ export class GitReviewSessionService implements Disposable {
         previousSession.repositoryRoot,
         request.signal,
       );
-      this.assertCurrentRequest(request);
+      this.#requests.assertExclusive(request);
       if (changes.length === 0) {
-        throw createNoChangesError();
+        throw createNoGitReviewChangesError();
       }
 
       const refreshedSession = createActiveGitReviewSession(
@@ -109,12 +119,12 @@ export class GitReviewSessionService implements Disposable {
       this.#state = 'active';
       return this.getSnapshot();
     } catch (error: unknown) {
-      if (this.#request === request && this.#session === previousSession) {
+      if (this.#requests.isExclusive(request) && this.#session === previousSession) {
         this.#state = previousState;
       }
       throw error;
     } finally {
-      this.finishRequest(request);
+      this.#requests.finishExclusive(request);
     }
   }
 
@@ -122,41 +132,43 @@ export class GitReviewSessionService implements Disposable {
     input: GitReviewItemContentInput,
     signal: GitReviewCancellationSignal,
   ): Promise<GitReviewItemContent> {
-    const session = this.requireRefreshableSession();
-    const item = session.items.find(
-      (candidate) =>
-        candidate.path === input.path &&
-        candidate.contentIdentity === input.contentIdentity,
+    return this.#itemReader.readContent(
+      this.requireRefreshableSession(),
+      input,
+      signal,
     );
-    if (item === undefined) {
-      throw new ApplicationError('The Git Review item no longer matches the session.', {
-        code: 'invalid-input',
-      });
-    }
+  }
 
-    const request = this.startRequest(signal);
-    try {
-      const content = await this.port.readItemContent(
-        {
-          repositoryRoot: session.repositoryRoot,
-          item: toGitReviewChangeDescriptor(item),
-        },
-        request.signal,
-      );
-      this.assertCurrentRequest(request);
-      if (!isGitReviewItemContent(content)) {
-        throw new ApplicationError('Git Review content is invalid.', {
-          code: 'internal-error',
-        });
-      }
-      return content;
-    } finally {
-      this.finishRequest(request);
-    }
+  public async getItemPatch(
+    input: GitReviewItemActionInput,
+    signal: GitReviewCancellationSignal,
+  ): Promise<GitReviewItemPatch> {
+    return this.#itemReader.readPatch(this.requireRefreshableSession(), input, signal);
+  }
+
+  public stageItem(
+    input: GitReviewItemActionInput,
+    signal: GitReviewCancellationSignal,
+  ): Promise<GitReviewSessionSnapshot> {
+    return this.mutateItem(input, 'stage', signal);
+  }
+
+  public unstageItem(
+    input: GitReviewItemActionInput,
+    signal: GitReviewCancellationSignal,
+  ): Promise<GitReviewSessionSnapshot> {
+    return this.mutateItem(input, 'unstage', signal);
+  }
+
+  public discardItem(
+    input: GitReviewItemActionInput,
+    signal: GitReviewCancellationSignal,
+  ): Promise<GitReviewSessionSnapshot> {
+    return this.mutateItem(input, 'discard', signal);
   }
 
   public end(): GitReviewSessionSnapshot {
-    this.abortRequest();
+    this.#requests.abortAll();
     this.#session = undefined;
     this.#state = 'inactive';
     return { state: 'inactive' };
@@ -194,22 +206,66 @@ export class GitReviewSessionService implements Disposable {
   ): Promise<GitReviewSessionSnapshot> {
     try {
       const changes = await this.port.listChanges(input.repositoryRoot, request.signal);
-      this.assertCurrentRequest(request);
+      this.#requests.assertExclusive(request);
       if (changes.length === 0) {
-        throw createNoChangesError();
+        throw createNoGitReviewChangesError();
       }
 
       this.#session = createActiveGitReviewSession(input.repositoryRoot, changes);
       this.#state = 'active';
       return this.getSnapshot();
     } catch (error: unknown) {
-      if (this.#request === request) {
+      if (this.#requests.isExclusive(request)) {
         this.#session = undefined;
         this.#state = 'inactive';
       }
       throw error;
     } finally {
-      this.finishRequest(request);
+      this.#requests.finishExclusive(request);
+    }
+  }
+
+  private async mutateItem(
+    input: GitReviewItemActionInput,
+    mutation: 'stage' | 'unstage' | 'discard',
+    signal: GitReviewCancellationSignal,
+  ): Promise<GitReviewSessionSnapshot> {
+    const previousSession = this.requireActiveSession();
+    const item = findGitReviewActionItem(previousSession, input);
+    assertGitReviewMutationAllowed(item.layer, mutation);
+    const request = this.#requests.startExclusive(signal);
+    this.#state = 'refreshing';
+    try {
+      const changes = await this.port.mutateItem(
+        {
+          repositoryRoot: previousSession.repositoryRoot,
+          item: toGitReviewChangeDescriptor(item),
+          mutation,
+        },
+        request.signal,
+      );
+      this.#requests.assertExclusive(request);
+      if (changes.length === 0) {
+        this.#session = undefined;
+        this.#state = 'inactive';
+        return { state: 'inactive' };
+      }
+      const refreshedSession = createActiveGitReviewSession(
+        previousSession.repositoryRoot,
+        changes,
+      );
+      preserveGitReviewStates(previousSession, refreshedSession);
+      preserveGitReviewCurrentItem(previousSession, refreshedSession);
+      this.#session = refreshedSession;
+      this.#state = 'active';
+      return this.getSnapshot();
+    } catch (error: unknown) {
+      if (this.#requests.isExclusive(request) && this.#session === previousSession) {
+        this.#state = 'active';
+      }
+      throw error;
+    } finally {
+      this.#requests.finishExclusive(request);
     }
   }
 
@@ -218,7 +274,7 @@ export class GitReviewSessionService implements Disposable {
     signal: GitReviewCancellationSignal,
   ): void {
     if (this.#isDisposed || signal.aborted) {
-      throw createAbortError();
+      throw createGitReviewAbortError();
     }
     if (this.hasRunningSession() && !input.replace) {
       throw new ApplicationError('A Git Review session is already active.', {
@@ -228,7 +284,7 @@ export class GitReviewSessionService implements Disposable {
   }
 
   private hasRunningSession(): boolean {
-    return this.#session !== undefined || this.#request !== undefined;
+    return this.#session !== undefined || this.#requests.hasExclusive();
   }
 
   private requireActiveSession(): ActiveGitReviewSession {
@@ -252,40 +308,6 @@ export class GitReviewSessionService implements Disposable {
     return this.#session;
   }
 
-  private startRequest(
-    signal: GitReviewCancellationSignal,
-  ): GitReviewCancellableRequest {
-    if (signal.aborted) {
-      throw createAbortError();
-    }
-    this.abortRequest();
-    const request = createGitReviewCancellableRequest(signal);
-    this.#request = request;
-    return request;
-  }
-
-  private finishRequest(request: GitReviewCancellableRequest): void {
-    request.dispose();
-    if (this.#request === request) {
-      this.#request = undefined;
-    }
-  }
-
-  private abortRequest(): void {
-    if (this.#request === undefined) {
-      return;
-    }
-    this.#request.abort();
-    this.#request.dispose();
-    this.#request = undefined;
-  }
-
-  private assertCurrentRequest(request: GitReviewCancellableRequest): void {
-    if (this.#isDisposed || request.signal.aborted || this.#request !== request) {
-      throw createAbortError();
-    }
-  }
-
   private updateCurrentItemAndAdvance(
     reviewState: GitReviewItemState,
   ): GitReviewSessionSnapshot {
@@ -305,17 +327,4 @@ export class GitReviewSessionService implements Disposable {
     session.currentIndex = nextUnreviewedIndex;
     return this.getSnapshot();
   }
-}
-
-function createNoChangesError(): ApplicationError {
-  return new ApplicationError('No Git changes are available for review.', {
-    code: 'capability-unavailable',
-    details: { reason: 'no-changes' },
-  });
-}
-
-function createAbortError(): Error {
-  const error = new Error('The Git Review request was cancelled.');
-  error.name = 'AbortError';
-  return error;
 }

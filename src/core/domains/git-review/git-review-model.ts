@@ -3,13 +3,18 @@ export type GitReviewChange =
   | 'modified'
   | 'deleted'
   | 'renamed'
-  | 'untracked';
+  | 'untracked'
+  | 'conflicted';
+
+export type GitReviewLayer = 'conflict' | 'staged' | 'unstaged';
 
 export type GitReviewPresentation = 'text' | 'binary' | 'submodule';
 
 export type GitReviewItemState = 'unreviewed' | 'reviewed' | 'skipped';
 
 export type GitReviewChangeDescriptor = {
+  readonly itemId?: string;
+  readonly layer?: GitReviewLayer;
   readonly path: string;
   readonly previousPath?: string;
   readonly contentIdentity: string;
@@ -18,6 +23,8 @@ export type GitReviewChangeDescriptor = {
 };
 
 export type GitReviewItem = GitReviewChangeDescriptor & {
+  readonly itemId: string;
+  readonly layer: GitReviewLayer;
   readonly reviewState: GitReviewItemState;
 };
 
@@ -30,6 +37,7 @@ export type GitReviewProgress = {
 
 export type GitReviewSession = {
   readonly repositoryRoot: string;
+  readonly currentItemId: string;
   readonly currentItemPath: string;
   readonly items: readonly GitReviewItem[];
   readonly progress: GitReviewProgress;
@@ -67,7 +75,12 @@ export type GitReviewItemContent =
     }
   | {
       readonly kind: 'summary';
-      readonly reason: 'binary' | 'submodule' | 'unavailable';
+      readonly reason:
+        | 'binary'
+        | 'submodule'
+        | 'conflict'
+        | 'too-large'
+        | 'unavailable';
     };
 
 export type GitReviewItemContentInput = {
@@ -107,11 +120,17 @@ export function isGitReviewItemContent(value: unknown): value is GitReviewItemCo
   return (
     value.kind === 'summary' &&
     isRecordWithKeys(value, ['kind', 'reason']) &&
-    (value.reason === 'binary' ||
-      value.reason === 'submodule' ||
-      value.reason === 'unavailable')
+    SUMMARY_REASONS.has(String(value.reason))
   );
 }
+
+const SUMMARY_REASONS = new Set([
+  'binary',
+  'submodule',
+  'conflict',
+  'too-large',
+  'unavailable',
+]);
 
 export function isGitReviewChangeDescriptor(
   value: unknown,
@@ -120,8 +139,9 @@ export function isGitReviewChangeDescriptor(
     isRecordWithOptionalKeys(
       value,
       ['path', 'contentIdentity', 'change', 'presentation'],
-      ['previousPath'],
+      ['itemId', 'layer', 'previousPath'],
     ) &&
+    hasValidOptionalItemIdentity(value) &&
     isGitReviewPath(value.path) &&
     (value.previousPath === undefined || isGitReviewPath(value.previousPath)) &&
     isContentIdentity(value.contentIdentity) &&
@@ -136,7 +156,23 @@ function isGitReviewChange(value: unknown): value is GitReviewChange {
     value === 'modified' ||
     value === 'deleted' ||
     value === 'renamed' ||
-    value === 'untracked'
+    value === 'untracked' ||
+    value === 'conflicted'
+  );
+}
+
+function hasValidOptionalItemIdentity(value: Record<string, unknown>): boolean {
+  if (value.itemId === undefined && value.layer === undefined) {
+    return true;
+  }
+  return (
+    typeof value.itemId === 'string' &&
+    value.itemId.length > 0 &&
+    value.itemId.length <= 4_128 &&
+    !value.itemId.includes('\0') &&
+    (value.layer === 'conflict' ||
+      value.layer === 'staged' ||
+      value.layer === 'unstaged')
   );
 }
 

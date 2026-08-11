@@ -17,18 +17,26 @@ VS Code 命令 / React Webview
 
 ### Copy Reference
 
-- 从活动编辑器复制相对或绝对代码引用，空选区包含一基行号，选区按单行或跨行格式输出。
+- 从活动编辑器复制相对或绝对代码引用；空选区输出一基行号，跨行选择输出 `src/main.ts:1-10`，单行字符选择输出 `src/main.ts:2(5-9)`。
 - 从 Explorer 复制单个或多个资源；多项保持选择顺序。
 - 支持可稳定表示的虚拟资源；绝对 URI 会移除 query 和 fragment。
 - 只写入剪贴板，不提供 Paste 或跨域组合命令。
 
 ### Git Blame
 
-- 对当前文档显式显示、隐藏、切换或刷新左侧日期/作者注解和 commit 热力条。
-- 未保存编辑只保留可证明的旧归属，新增或不确定行显示为未提交。
+- 对当前文档显式显示、隐藏、切换或刷新左侧等宽日期/作者列和 commit 热力条。
+- 未保存编辑只保留可证明的旧归属；新增或不确定行使用同宽空单元，继续输入时源码起始列不会跳动。
 - 已提交行 Hover 提供完整元数据、复制 hash、安全 remote 链接、提交单文件 Diff、上一版本和增量 Line History。
 - 历史内容使用自有只读 URI 和公开 `vscode.diff`，不创建临时文件或依赖其他 Git 扩展。
 - 每文档请求支持取消、10 秒超时、64 MiB 输出上限和 generation 防陈旧结果；默认拒绝超过 20,000 行的文档。
+
+### Git Review
+
+- SCM 标题栏使用小型 Git Compare 图标启动审核，并在单个编辑器标签页中从上到下展示全部变更。
+- 冲突、已暂存和未暂存变更分层显示；同一路径的 staged/unstaged 内容保持为两个独立条目。
+- 每个文件支持打开文件、打开原生 Diff、复制文件或行引用、标记已审核、跳过，以及适用的 Stage、Unstage 和 Discard 操作。
+- Discard 必须逐文件二次确认；冲突项提供 Merge Changes 入口，解决后可直接 Stage。
+- 聚合 patch 单项限制为 8 MiB，同时最多加载两个文件；长列表使用虚拟化并在面板关闭或状态变化时取消旧请求。
 
 ### 扩展基座
 
@@ -66,12 +74,15 @@ pnpm dev
 
 请直接打开本目录作为 VS Code 工作区根目录，避免加载上级目录而缺少本模板的 `.vscode/launch.json` 与任务配置。
 
-- `vscode-toolbox-namewta: 打开工具箱`
-- `vscode-toolbox-namewta: 显示运行时信息`
-- `vscode-toolbox-namewta: 复制相对引用`
-- `vscode-toolbox-namewta: 复制绝对引用`
-- `vscode-toolbox-namewta: 切换 Git Blame 注解`
-- `vscode-toolbox-namewta: 查看行历史`
+- `toolbox-打开工具箱`
+- `toolbox-显示运行时信息`
+- `toolbox-复制相对引用`
+- `toolbox-复制绝对引用`
+- `toolbox-切换 Git Blame 注解`
+- `toolbox-查看行历史`
+- `toolbox-开始审核 Git 变更`
+
+命令面板、编辑器右键菜单、行号右键菜单、Explorer 右键菜单和 SCM 标题菜单中的本扩展命令均以 `toolbox-` 开头；内部命令 ID 保持稳定。
 
 Git Blame 必须由用户对具体文档显式开启；扩展激活时不会扫描仓库、启动 Git 或创建注解资源。默认快捷键仅分配给 Toggle：Windows/Linux 为 `Ctrl+Alt+B`，macOS 为 `Cmd+Alt+B`。
 
@@ -138,9 +149,9 @@ Core 禁止导入 VS Code、React、Node 或 DOM API。Webview 禁止导入 VS C
 
 ## 工作区信任与虚拟工作区
 
-Copy Reference、工具箱 UI 和“系统信息”命令可在受限工作区运行；全部 Git Blame 操作在代码层要求工作区信任，拒绝时不会启动 Git。
+Copy Reference、工具箱 UI 和“系统信息”命令可在受限工作区运行；全部 Git Blame 和 Git Review 操作在代码层要求工作区信任，拒绝时不会启动 Git。
 
-Copy Reference 支持可稳定表示的虚拟 URI。Git Blame 只接受扩展宿主可映射到本机或远程文件系统路径、且该宿主可执行 Git 的资源；远程工作区由远程 Extension Host 的实际路径和 Git 环境决定。Untitled 不支持引用复制，未跟踪文件静默不显示 Blame。
+Copy Reference 支持可稳定表示的虚拟 URI。Git Blame 和 Git Review 只接受扩展宿主可映射到本机或远程文件系统路径、且该宿主可执行 Git 的资源；远程工作区由远程 Extension Host 的实际路径和 Git 环境决定。Untitled 不支持引用复制，未跟踪文件静默不显示 Blame。
 
 ## 测试策略
 

@@ -1,4 +1,20 @@
 import type { ToolResult } from './tool-result-contract';
+import { type GitReviewSessionSnapshot } from '../domains/git-review/git-review-model';
+import { isGitReviewSessionSnapshot } from '../domains/git-review/git-review-session-snapshot-contract';
+
+export type GitReviewWebviewAction = {
+  readonly type: 'gitReview.action';
+  readonly action:
+    | 'open-file'
+    | 'open-diff'
+    | 'copy-reference'
+    | 'merge-changes'
+    | 'mark-reviewed'
+    | 'skip';
+  readonly itemId: string;
+  readonly contentIdentity: string;
+  readonly line?: number;
+};
 
 export type WebviewToExtensionMessage =
   | {
@@ -10,7 +26,8 @@ export type WebviewToExtensionMessage =
   | {
       readonly type: 'tool.cancel';
       readonly requestId: string;
-    };
+    }
+  | GitReviewWebviewAction;
 
 export type ExtensionToWebviewMessage =
   | {
@@ -21,6 +38,14 @@ export type ExtensionToWebviewMessage =
   | {
       readonly type: 'tool.event';
       readonly event: ToolEvent;
+    }
+  | {
+      readonly type: 'gitReview.snapshot';
+      readonly snapshot: GitReviewSessionSnapshot;
+    }
+  | {
+      readonly type: 'gitReview.focus';
+      readonly itemId: string;
     };
 
 export type ToolEvent = {
@@ -30,7 +55,14 @@ export type ToolEvent = {
 export function isWebviewToExtensionMessage(
   value: unknown,
 ): value is WebviewToExtensionMessage {
-  if (!isRecord(value) || !isRequestId(value.requestId)) {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  if (value.type === 'gitReview.action') {
+    return isGitReviewWebviewAction(value);
+  }
+  if (!isRequestId(value.requestId)) {
     return false;
   }
 
@@ -56,10 +88,50 @@ export function isExtensionToWebviewMessage(
     return isRequestId(value.requestId) && isToolResult(value.result);
   }
 
+  if (value.type === 'gitReview.snapshot') {
+    return isGitReviewSessionSnapshot(value.snapshot);
+  }
+  if (value.type === 'gitReview.focus') {
+    return isItemId(value.itemId);
+  }
+
   return (
     value.type === 'tool.event' &&
     isRecord(value.event) &&
     value.event.type === 'capabilities.changed'
+  );
+}
+
+function isGitReviewWebviewAction(value: Record<string, unknown>): boolean {
+  return (
+    GIT_REVIEW_ACTIONS.has(String(value.action)) &&
+    isItemId(value.itemId) &&
+    typeof value.contentIdentity === 'string' &&
+    value.contentIdentity.length > 0 &&
+    value.contentIdentity.length <= 512 &&
+    (value.line === undefined ||
+      (Number.isInteger(value.line) &&
+        typeof value.line === 'number' &&
+        value.line >= 1 &&
+        value.line <= 10_000_000))
+  );
+}
+
+const GIT_REVIEW_ACTIONS = new Set([
+  'open-file',
+  'open-diff',
+  'copy-reference',
+  'merge-changes',
+  'mark-reviewed',
+  'skip',
+]);
+
+function isItemId(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= 4_128 &&
+    !value.includes('\0')
   );
 }
 

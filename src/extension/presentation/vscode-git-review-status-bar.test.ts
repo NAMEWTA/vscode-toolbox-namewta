@@ -78,6 +78,7 @@ function snapshot(
     state,
     session: {
       repositoryRoot: '/private/repository',
+      currentItemId: 'unstaged:src/second.ts',
       currentItemPath: 'src/second.ts',
       items: [
         item('src/first.ts', 'reviewed'),
@@ -94,6 +95,8 @@ function item(
   reviewState: 'reviewed' | 'unreviewed' | 'skipped',
 ): GitReviewItem {
   return {
+    itemId: `unstaged:${path}`,
+    layer: 'unstaged',
     path,
     contentIdentity: `${path.length}`.padStart(64, '0'),
     change: 'modified' as const,

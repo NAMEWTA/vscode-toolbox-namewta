@@ -32,6 +32,15 @@ export class ViewLineHistoryCommand {
     if (args.length === 1 && isLineHistoryTarget(args[0])) {
       return args[0];
     }
+    if (args.length === 1 && isEditorLineContext(args[0])) {
+      const resource = await this.resourceAdapter.resolve(args[0].uri);
+      return {
+        resource,
+        ref: 'HEAD',
+        path: resource.relativePath,
+        line: args[0].lineNumber,
+      };
+    }
     if (args.length > 0 && !isEditorContextArgs(args)) {
       throw invalidInputError();
     }
@@ -52,6 +61,16 @@ export class ViewLineHistoryCommand {
       line,
     };
   }
+}
+
+function isEditorLineContext(
+  value: unknown,
+): value is { readonly uri: vscode.Uri; readonly lineNumber: number } {
+  return (
+    isRecordWithKeys(value, ['uri', 'lineNumber']) &&
+    value.uri instanceof vscode.Uri &&
+    isPositiveInteger(value.lineNumber)
+  );
 }
 
 function isLineHistoryTarget(value: unknown): value is GitLineHistoryStartInput {

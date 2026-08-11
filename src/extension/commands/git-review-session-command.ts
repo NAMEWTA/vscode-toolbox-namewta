@@ -11,7 +11,7 @@ export type GitReviewSessionCommandAction =
   | 'end';
 
 export type GitReviewSessionCommandTarget = {
-  start(): Promise<void>;
+  start(...args: readonly unknown[]): Promise<void>;
   previous(): Promise<void>;
   next(): Promise<void>;
   markReviewedAndNext(): Promise<void>;
@@ -43,27 +43,14 @@ export class GitReviewSessionCommand {
   }
 
   public execute(...args: readonly unknown[]): Promise<void> {
+    const action = this.action;
+    if (action === 'start') {
+      return this.target.start(...args);
+    }
     if (args.length !== 0) {
       throw invalidInputError();
     }
-    switch (this.action) {
-      case 'start':
-        return this.target.start();
-      case 'previous':
-        return this.target.previous();
-      case 'next':
-        return this.target.next();
-      case 'markReviewedAndNext':
-        return this.target.markReviewedAndNext();
-      case 'retry':
-        return this.target.retry();
-      case 'skip':
-        return this.target.skip();
-      case 'refresh':
-        return this.target.refresh();
-      case 'end':
-        return this.target.end();
-    }
+    return this.target[action]();
   }
 }
 

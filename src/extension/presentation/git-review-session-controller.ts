@@ -5,13 +5,9 @@ import type {
 } from '../../core/contracts';
 import type {
   GitReviewItem,
-  GitReviewItemContent,
   GitReviewSessionSnapshot,
-  GitReviewSummary,
 } from '../../core/domains/git-review/public-api';
 import type { Disposable } from '../../core/kernel/disposable';
-import type { ToolError } from '../../core/contracts/tool-error-contract';
-import type { ToolboxGateway } from '../../core/orchestration/public-api';
 import {
   isGitReviewAbortError,
   toGitReviewToolError,
@@ -27,44 +23,21 @@ import {
   getGitReviewSession,
 } from './git-review-session-snapshot';
 import { startGitReviewSession } from './git-review-session-start';
+import type { GitReviewSessionControllerDependencies } from './git-review-session-controller-contract';
 
 type GitReviewGatewayCommand = Extract<ToolCommandId, `gitReview.${string}`>;
-type GitReviewSnapshotCommand = Exclude<
-  GitReviewGatewayCommand,
-  'gitReview.getItemContent'
->;
+type GitReviewSnapshotCommand =
+  | 'gitReview.start'
+  | 'gitReview.previous'
+  | 'gitReview.next'
+  | 'gitReview.markReviewedAndNext'
+  | 'gitReview.retry'
+  | 'gitReview.skip'
+  | 'gitReview.refresh'
+  | 'gitReview.end'
+  | 'gitReview.markStale';
 
 const EMPTY_INPUT: Record<string, never> = {};
-
-export type GitReviewRepositoryResolver = {
-  resolve(args: readonly unknown[], signal: AbortSignal): Promise<string | undefined>;
-};
-
-export type GitReviewPresentation = Disposable & {
-  render(snapshot: GitReviewSessionSnapshot): void;
-  openItem(item: GitReviewItem, content: GitReviewItemContent): Promise<void>;
-};
-
-export type GitReviewControllerHost = {
-  confirmReplace(): Promise<boolean>;
-  confirmEnd(): Promise<boolean>;
-  reportFailure(error: ToolError): Promise<void>;
-  showStale(): Promise<void>;
-  showSummary(summary: GitReviewSummary): Promise<void>;
-};
-
-export type GitReviewWatcherFactory = (
-  repositoryRoot: string,
-  onChange: () => Promise<void>,
-) => Disposable;
-
-export type GitReviewSessionControllerDependencies = {
-  readonly gateway: ToolboxGateway;
-  readonly repositoryResolver: GitReviewRepositoryResolver;
-  readonly presentation: GitReviewPresentation;
-  readonly host: GitReviewControllerHost;
-  readonly watcherFactory: GitReviewWatcherFactory;
-};
 
 export class GitReviewSessionController implements Disposable {
   #snapshot: GitReviewSessionSnapshot = { state: 'inactive' };
@@ -138,12 +111,10 @@ export class GitReviewSessionController implements Disposable {
     }
     const session = this.#snapshot.session;
     const targetIndex = session.items.findIndex(
-      (candidate) =>
-        candidate.path === item.path &&
-        candidate.contentIdentity === item.contentIdentity,
+      (candidate) => candidate.itemId === item.itemId,
     );
     const currentIndex = session.items.findIndex(
-      (candidate) => candidate.path === session.currentItemPath,
+      (candidate) => candidate.itemId === session.currentItemId,
     );
     if (targetIndex < 0 || currentIndex < 0) {
       return;
@@ -196,6 +167,20 @@ export class GitReviewSessionController implements Disposable {
       this.#staleRequested = false;
       this.#operations.finish(operation);
     }
+  }
+
+  public synchronize(snapshot: GitReviewSessionSnapshot): void {
+    if (this.#isDisposed) {
+      return;
+    }
+    this.#snapshot = snapshot;
+    this.dependencies.presentation.render(snapshot);
+    const session = getGitReviewSession(snapshot);
+    if (session === undefined) {
+      this.releaseWatcher();
+      return;
+    }
+    this.ensureWatcher(session.repositoryRoot);
   }
 
   public dispose(): void {
@@ -293,10 +278,13 @@ export class GitReviewSessionController implements Disposable {
       return;
     }
     const item = session.items.find(
-      (candidate) => candidate.path === session.currentItemPath,
+      (candidate) => candidate.itemId === session.currentItemId,
     );
     if (item === undefined) {
       throw unavailableGitReviewCurrentItemError();
+    }
+    if (this.dependencies.presentation.focusItem?.(item) === true) {
+      return;
     }
     const content = await this.execute(operation, 'gitReview.getItemContent', {
       path: item.path,

@@ -2,7 +2,7 @@ import path from 'node:path';
 import * as vscode from 'vscode';
 import type { GitCommandPort } from '../../core/domains/git-blame/public-api';
 import { ApplicationError } from '../../core/kernel/application-error';
-import type { GitReviewRepositoryResolver } from '../presentation/git-review-session-controller';
+import type { GitReviewRepositoryResolver } from '../presentation/git-review-session-controller-contract';
 
 const GIT_REPOSITORY_ROOT_ARGS = [
   '--no-optional-locks',
@@ -29,6 +29,10 @@ export type GitReviewRepositoryHost = {
   ): Promise<string | undefined>;
 };
 
+type GitReviewCommandContext =
+  | { readonly kind: 'discovery' }
+  | { readonly kind: 'source-control'; readonly rootPath?: string };
+
 export class VscodeGitReviewRepositoryAdapter implements GitReviewRepositoryResolver {
   public constructor(
     private readonly git: GitCommandPort,
@@ -39,14 +43,25 @@ export class VscodeGitReviewRepositoryAdapter implements GitReviewRepositoryReso
     args: readonly unknown[],
     signal: AbortSignal,
   ): Promise<string | undefined> {
-    if (args.length !== 0) {
-      throw invalidInputError();
-    }
+    const commandContext = parseCommandContext(args);
     const context = this.host.getContext();
     if (!context.isWorkspaceTrusted) {
       throw new ApplicationError('Git requires a trusted workspace.', {
         code: 'permission-denied',
       });
+    }
+    if (commandContext.kind === 'source-control') {
+      if (commandContext.rootPath === undefined) {
+        throw unavailableRepositoryError();
+      }
+      const repositoryRoot = await this.findRepositoryRoot(
+        commandContext.rootPath,
+        signal,
+      );
+      if (repositoryRoot === undefined) {
+        throw unavailableRepositoryError();
+      }
+      return repositoryRoot;
     }
     const activeRepository = await this.resolveActiveRepository(context, signal);
     if (activeRepository !== undefined) {
@@ -129,6 +144,48 @@ export class VscodeGitReviewRepositoryAdapter implements GitReviewRepositoryReso
       ? selectedRoot
       : undefined;
   }
+}
+
+function parseCommandContext(args: readonly unknown[]): GitReviewCommandContext {
+  if (args.length === 0) {
+    return { kind: 'discovery' };
+  }
+  if (args.length !== 1 || !isSourceControlContext(args[0])) {
+    throw invalidInputError();
+  }
+  const rootUri = args[0].rootUri;
+  if (rootUri === undefined) {
+    return { kind: 'source-control' };
+  }
+  if (
+    !(rootUri instanceof vscode.Uri) ||
+    rootUri.scheme !== 'file' ||
+    !isSafeAbsolutePath(rootUri.fsPath)
+  ) {
+    throw invalidInputError();
+  }
+  return { kind: 'source-control', rootPath: rootUri.fsPath };
+}
+
+function isSourceControlContext(value: unknown): value is {
+  readonly id: string;
+  readonly label: string;
+  readonly rootUri?: unknown;
+} {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    'id' in value &&
+    isBoundedText(value.id) &&
+    'label' in value &&
+    isBoundedText(value.label) &&
+    (!('rootUri' in value) || value.rootUri === undefined || value.rootUri !== null)
+  );
+}
+
+function isBoundedText(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= 1_024;
 }
 
 class VscodeGitReviewRepositoryHost implements GitReviewRepositoryHost {

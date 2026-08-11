@@ -39,7 +39,7 @@ describe('formatGitBlameAnnotations', () => {
     expect(annotations[1]?.commit).toBe(commit);
   });
 
-  it('omits heat for a single commit and assigns stable heat for multiple commits', () => {
+  it('为单提交和多提交行生成稳定的前景与淡背景配色', () => {
     const first = line(1, 'A', 1_700_000_000, 'a'.repeat(40));
     const second = line(2, 'B', 1_750_000_000, 'b'.repeat(40));
     const config = {
@@ -50,10 +50,21 @@ describe('formatGitBlameAnnotations', () => {
       maxAuthorWidth: 8,
     };
 
-    expect(formatGitBlameAnnotations([first], config)[0]?.heatColor).toBeUndefined();
+    const single = formatGitBlameAnnotations([first], config)[0];
+    expect(single?.heatColor).toMatch(/^hsl\(/u);
+    expect(single?.heatBackgroundColor).toMatch(/\/ 14%\)$/u);
     const annotations = formatGitBlameAnnotations([first, second], config);
     expect(annotations[0]?.heatColor).toMatch(/^hsl\(/u);
     expect(annotations[0]?.heatColor).not.toBe(annotations[1]?.heatColor);
+    expect(annotations[0]?.heatBackgroundColor).not.toBe(
+      annotations[1]?.heatBackgroundColor,
+    );
+    const uncommitted = formatGitBlameAnnotations(
+      [line(1, 'Not Committed Yet', 1_800_000_000, '0'.repeat(40))],
+      config,
+    )[0];
+    expect(uncommitted?.heatColor).toBeUndefined();
+    expect(uncommitted?.heatBackgroundColor).toBeUndefined();
   });
 
   it('measures CJK and combining graphemes by display width', () => {

@@ -9,10 +9,13 @@ export async function buildWebview(options = {}) {
   await mkdir('dist/meta', { recursive: true });
 
   const context = await esbuild.context({
-    entryPoints: ['src/webview/main.tsx'],
+    entryPoints: {
+      main: 'src/webview/main.tsx',
+      'git-review': 'src/webview/git-review-main.tsx',
+    },
     bundle: true,
     outdir: 'dist/webview',
-    entryNames: 'main',
+    entryNames: '[name]',
     assetNames: 'assets/[name]-[hash]',
     platform: 'browser',
     format: 'iife',

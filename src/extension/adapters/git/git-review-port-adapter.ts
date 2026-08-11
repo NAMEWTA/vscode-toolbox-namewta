@@ -1,9 +1,10 @@
 import {
-  isGitReviewChangeDescriptor,
   type GitReviewCancellationSignal,
   type GitReviewChangeDescriptor,
   type GitReviewContentRequest,
   type GitReviewItemContent,
+  type GitReviewItemPatch,
+  type GitReviewMutationRequest,
   type GitReviewPort,
 } from '../../../core/domains/git-review/public-api';
 import type {
@@ -11,18 +12,31 @@ import type {
   GitCommandResult,
 } from '../../../core/domains/git-blame/public-api';
 import { ApplicationError } from '../../../core/kernel/application-error';
-import { createGitReviewContentIdentity } from './git-review-content-identity';
 import {
   decodeGitReviewText,
   isGitReviewContentUnavailable,
   readGitReviewWorkingContent,
-  tryReadGitReviewWorkingContent,
 } from './git-review-content-reader';
+import { createGitReviewDescriptors } from './git-review-descriptor-factory';
 import { parseGitReviewBinaryNumstat } from './git-review-numstat-parser';
+import { parseGitReviewStatus } from './git-review-status-parser';
 import {
-  parseGitReviewStatus,
-  type GitReviewStatusEntry,
-} from './git-review-status-parser';
+  createUntrackedGitReviewPatch,
+  parseGitReviewPatch,
+} from './git-review-patch-parser';
+import {
+  assertGitReviewMutationAllowed,
+  createGitReviewMutationArgs,
+  createGitReviewNumstatArgs,
+  createGitReviewPatchArgs,
+  findCurrentGitReviewItem,
+  gitReviewItemSummary,
+  validateGitReviewContentRequest,
+} from './git-review-port-operation';
+import {
+  readGitReviewAfterContent,
+  readGitReviewBeforeContent,
+} from './git-review-revision-content-reader';
 import {
   assertGitReviewRequestActive,
   gitReviewStaleItem,
@@ -45,18 +59,7 @@ const GIT_REVIEW_STATUS_ARGS = [
   '-z',
   '--untracked-files=all',
 ] as const;
-const GIT_REVIEW_NUMSTAT_ARGS = [
-  GIT_OPTIONAL_LOCKS,
-  '-c',
-  'core.quotePath=false',
-  'diff',
-  '--no-ext-diff',
-  '--numstat',
-  '-z',
-  '-M',
-  'HEAD',
-  '--',
-] as const;
+const MAX_AGGREGATE_PATCH_BYTES = 8 * 1_024 * 1_024;
 
 type GitReviewInventory = {
   readonly repositoryRoot: string;
@@ -81,23 +84,33 @@ export class GitReviewPortAdapter implements GitReviewPort {
     request: GitReviewContentRequest,
     signal: GitReviewCancellationSignal,
   ): Promise<GitReviewItemContent> {
-    validateContentRequest(request);
+    validateGitReviewContentRequest(request);
     const inventory = await this.loadInventory(request.repositoryRoot, signal);
     assertGitReviewRequestActive(signal);
-    const item = findCurrentItem(inventory.changes, request.item);
+    const item = findCurrentGitReviewItem(inventory.changes, request.item);
     if (item === undefined) {
       throw gitReviewStaleItem();
     }
-    if (item.presentation === 'submodule') {
-      return { kind: 'summary', reason: 'submodule' };
-    }
-    if (item.presentation === 'binary') {
-      return { kind: 'summary', reason: 'binary' };
+    const summary = gitReviewItemSummary(item);
+    if (summary !== undefined) {
+      return summary;
     }
 
     try {
-      const before = await this.readBeforeContent(inventory, item, signal);
-      const after = await this.readAfterContent(inventory.repositoryRoot, item, signal);
+      const before = await readGitReviewBeforeContent(
+        inventory,
+        item,
+        signal,
+        (operation, args, requestSignal) =>
+          this.run(inventory.repositoryRoot, operation, args, requestSignal),
+      );
+      const after = await readGitReviewAfterContent(
+        inventory.repositoryRoot,
+        item,
+        signal,
+        (operation, args, requestSignal) =>
+          this.run(inventory.repositoryRoot, operation, args, requestSignal),
+      );
       if (before === undefined || after === undefined) {
         return { kind: 'summary', reason: 'binary' };
       }
@@ -108,6 +121,74 @@ export class GitReviewPortAdapter implements GitReviewPort {
       }
       throw error;
     }
+  }
+
+  public async readItemPatch(
+    request: GitReviewContentRequest,
+    signal: GitReviewCancellationSignal,
+  ): Promise<GitReviewItemPatch> {
+    validateGitReviewContentRequest(request);
+    const inventory = await this.loadInventory(request.repositoryRoot, signal);
+    const item = findCurrentGitReviewItem(inventory.changes, request.item);
+    if (item === undefined) {
+      throw gitReviewStaleItem();
+    }
+    const summary = gitReviewItemSummary(item);
+    if (summary !== undefined) {
+      return summary;
+    }
+    if (item.change === 'untracked') {
+      const content = await readGitReviewWorkingContent(
+        inventory.repositoryRoot,
+        item.path,
+      );
+      if (content.byteLength > MAX_AGGREGATE_PATCH_BYTES) {
+        return { kind: 'summary', reason: 'too-large' };
+      }
+      const text = decodeGitReviewText(content);
+      return text === undefined
+        ? { kind: 'summary', reason: 'binary' }
+        : createUntrackedGitReviewPatch(text);
+    }
+
+    try {
+      const result = await this.run(
+        inventory.repositoryRoot,
+        'git-review-patch',
+        createGitReviewPatchArgs(item),
+        signal,
+        MAX_AGGREGATE_PATCH_BYTES,
+      );
+      return parseGitReviewPatch(result.stdout);
+    } catch (error: unknown) {
+      if (
+        error instanceof ApplicationError &&
+        error.code === 'capability-unavailable'
+      ) {
+        return { kind: 'summary', reason: 'too-large' };
+      }
+      throw error;
+    }
+  }
+
+  public async mutateItem(
+    request: GitReviewMutationRequest,
+    signal: GitReviewCancellationSignal,
+  ): Promise<readonly GitReviewChangeDescriptor[]> {
+    validateGitReviewContentRequest(request);
+    const inventory = await this.loadInventory(request.repositoryRoot, signal);
+    const item = findCurrentGitReviewItem(inventory.changes, request.item);
+    if (item === undefined) {
+      throw gitReviewStaleItem();
+    }
+    assertGitReviewMutationAllowed(item, request.mutation);
+    await this.run(
+      inventory.repositoryRoot,
+      `git-review-${request.mutation}`,
+      createGitReviewMutationArgs(inventory.hasHead, item, request.mutation),
+      signal,
+    );
+    return (await this.loadInventory(inventory.repositoryRoot, signal)).changes;
   }
 
   private async loadInventory(
@@ -125,56 +206,24 @@ export class GitReviewPortAdapter implements GitReviewPort {
     );
     assertGitReviewRequestActive(signal);
     const entries = parseGitReviewStatus(status.stdout);
-    const binaryPaths = hasHead
-      ? parseGitReviewBinaryNumstat(
-          (await this.run(root, 'git-review-numstat', GIT_REVIEW_NUMSTAT_ARGS, signal))
-            .stdout,
+    const binaryPaths = parseGitReviewBinaryNumstat(
+      (
+        await this.run(
+          root,
+          'git-review-numstat',
+          createGitReviewNumstatArgs(hasHead),
+          signal,
         )
-      : new Set<string>();
+      ).stdout,
+    );
     assertGitReviewRequestActive(signal);
-    const changes = await this.createDescriptors(root, entries, binaryPaths, signal);
+    const changes = await createGitReviewDescriptors(
+      root,
+      entries,
+      binaryPaths,
+      signal,
+    );
     return { repositoryRoot: root, hasHead, changes };
-  }
-
-  private async createDescriptors(
-    repositoryRoot: string,
-    entries: readonly GitReviewStatusEntry[],
-    binaryPaths: ReadonlySet<string>,
-    signal: GitReviewCancellationSignal,
-  ): Promise<readonly GitReviewChangeDescriptor[]> {
-    const descriptors: GitReviewChangeDescriptor[] = [];
-    for (const entry of entries) {
-      assertGitReviewRequestActive(signal);
-      const workingContent =
-        entry.change === 'deleted' || entry.presentation === 'submodule'
-          ? undefined
-          : await tryReadGitReviewWorkingContent(repositoryRoot, entry.path);
-      assertGitReviewRequestActive(signal);
-      descriptors.push({
-        path: entry.path,
-        ...(entry.previousPath === undefined
-          ? {}
-          : { previousPath: entry.previousPath }),
-        contentIdentity: createGitReviewContentIdentity(entry, workingContent),
-        change: entry.change,
-        presentation: this.toPresentation(entry, binaryPaths, workingContent),
-      });
-    }
-    return descriptors;
-  }
-
-  private toPresentation(
-    entry: GitReviewStatusEntry,
-    binaryPaths: ReadonlySet<string>,
-    workingContent: Buffer | undefined,
-  ): GitReviewChangeDescriptor['presentation'] {
-    if (entry.presentation === 'submodule') {
-      return 'submodule';
-    }
-    if (binaryPaths.has(entry.path) || isBinaryContent(workingContent)) {
-      return 'binary';
-    }
-    return 'text';
   }
 
   private async resolveRepositoryRoot(
@@ -229,44 +278,6 @@ export class GitReviewPortAdapter implements GitReviewPort {
     }
   }
 
-  private async readBeforeContent(
-    inventory: GitReviewInventory,
-    item: GitReviewChangeDescriptor,
-    signal: GitReviewCancellationSignal,
-  ): Promise<string | undefined> {
-    if (!inventory.hasHead || item.change === 'added' || item.change === 'untracked') {
-      return '';
-    }
-    const pathAtHead = item.previousPath ?? item.path;
-    const result = await this.run(
-      inventory.repositoryRoot,
-      'git-review-before-content',
-      [
-        GIT_OPTIONAL_LOCKS,
-        'show',
-        '--no-ext-diff',
-        '--no-textconv',
-        `HEAD:${pathAtHead}`,
-      ],
-      signal,
-    );
-    return decodeGitReviewText(Buffer.from(result.stdout, 'utf8'));
-  }
-
-  private async readAfterContent(
-    repositoryRoot: string,
-    item: GitReviewChangeDescriptor,
-    signal: GitReviewCancellationSignal,
-  ): Promise<string | undefined> {
-    if (item.change === 'deleted') {
-      return '';
-    }
-    assertGitReviewRequestActive(signal);
-    const content = await readGitReviewWorkingContent(repositoryRoot, item.path);
-    assertGitReviewRequestActive(signal);
-    return decodeGitReviewText(content);
-  }
-
   private assertReady(
     repositoryRoot: string,
     signal: GitReviewCancellationSignal,
@@ -287,37 +298,18 @@ export class GitReviewPortAdapter implements GitReviewPort {
     operation: string,
     args: readonly string[],
     signal: GitReviewCancellationSignal,
+    maxOutputBytes?: number,
   ): Promise<GitCommandResult> {
     try {
-      return await this.git.run({ operation, cwd, args, signal });
+      return await this.git.run({
+        operation,
+        cwd,
+        args,
+        signal,
+        ...(maxOutputBytes === undefined ? {} : { maxOutputBytes }),
+      });
     } catch (error: unknown) {
       throw mapGitReviewFailure(error);
     }
   }
-}
-
-function validateContentRequest(request: GitReviewContentRequest): void {
-  if (
-    !isGitReviewRepositoryRoot(request.repositoryRoot) ||
-    !isGitReviewChangeDescriptor(request.item)
-  ) {
-    throw new ApplicationError('Git Review content request is invalid.', {
-      code: 'invalid-input',
-    });
-  }
-}
-
-function findCurrentItem(
-  changes: readonly GitReviewChangeDescriptor[],
-  item: GitReviewChangeDescriptor,
-): GitReviewChangeDescriptor | undefined {
-  return changes.find(
-    (candidate) =>
-      candidate.path === item.path &&
-      candidate.contentIdentity === item.contentIdentity,
-  );
-}
-
-function isBinaryContent(content: Buffer | undefined): boolean {
-  return content !== undefined && decodeGitReviewText(content) === undefined;
 }

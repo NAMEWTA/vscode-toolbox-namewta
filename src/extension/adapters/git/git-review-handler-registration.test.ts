@@ -23,8 +23,10 @@ describe('Git Review Handler 注册', () => {
     const gateway = new DefaultToolboxGateway(registry, createLogger());
 
     expect(gateway.getCapabilities()).toEqual([
+      { command: 'gitReview.discardItem', available: true },
       { command: 'gitReview.end', available: true },
       { command: 'gitReview.getItemContent', available: true },
+      { command: 'gitReview.getItemPatch', available: true },
       { command: 'gitReview.markReviewedAndNext', available: true },
       { command: 'gitReview.markStale', available: true },
       { command: 'gitReview.next', available: true },
@@ -32,7 +34,9 @@ describe('Git Review Handler 注册', () => {
       { command: 'gitReview.refresh', available: true },
       { command: 'gitReview.retry', available: true },
       { command: 'gitReview.skip', available: true },
+      { command: 'gitReview.stageItem', available: true },
       { command: 'gitReview.start', available: true },
+      { command: 'gitReview.unstageItem', available: true },
     ]);
     await expect(
       gateway.execute('gitReview.start', {
@@ -71,6 +75,8 @@ function createPort(): GitReviewPort & {
   return {
     listChanges: vi.fn(),
     readItemContent: vi.fn(),
+    readItemPatch: vi.fn(),
+    mutateItem: vi.fn(),
   };
 }
 

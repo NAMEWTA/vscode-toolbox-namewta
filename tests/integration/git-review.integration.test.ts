@@ -1,6 +1,6 @@
 import * as assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, rm, unlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, realpath, rm, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -12,7 +12,7 @@ import type {
 import type { VscodeToolboxNamewtaExtensionApi } from '../../src/core/contracts';
 
 const executeFile = promisify(execFile);
-const REVIEW_DOCUMENT_SCHEME = 'vscode-toolbox-namewta-git-review';
+const REVIEW_WEBVIEW_TYPE = 'vscodeToolboxNamewta.gitReview.aggregate';
 
 suite('Git Review Extension Host 集成', () => {
   test('通过公开 API 审核真实 staged、unstaged、untracked 与删除变更，且不写入 Git', async () => {
@@ -171,7 +171,43 @@ suite('Git Review Extension Host 无 HEAD 集成', () => {
 });
 
 suite('Git Review Extension Host 命令集成', () => {
-  test('通过公开命令打开只读 diff 并执行普通导航', async () => {
+  test('通过 SCM 标题菜单上下文启动指定仓库', async () => {
+    const fixture = await createUiReviewRepository();
+    const sourceControl = vscode.scm.createSourceControl(
+      'vscode-toolbox-namewta-integration-review',
+      'Toolbox Integration Review',
+      vscode.Uri.file(fixture.repository),
+    );
+    let api: VscodeToolboxNamewtaExtensionApi | undefined;
+    try {
+      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      api = await extensionApi();
+
+      await vscode.commands.executeCommand(
+        'vscodeToolboxNamewta.gitReview.start',
+        sourceControl,
+      );
+      await waitForReviewPanel();
+      const refreshed = await api.execute('gitReview.refresh', {});
+
+      assert.equal(refreshed.ok, true);
+      if (refreshed.ok) {
+        assert.equal(
+          await realpath(requireSession(refreshed.data).repositoryRoot),
+          await realpath(fixture.repository),
+        );
+      }
+    } finally {
+      if (api !== undefined) {
+        await api.execute('gitReview.end', {});
+      }
+      sourceControl.dispose();
+      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      await rm(fixture.repository, { recursive: true, force: true });
+    }
+  });
+
+  test('通过公开命令打开单一聚合页并执行普通导航', async () => {
     const fixture = await createUiReviewRepository();
     try {
       const api = await extensionApi();
@@ -182,10 +218,10 @@ suite('Git Review Extension Host 命令集成', () => {
       const statusBeforeReview = await gitStatus(fixture.repository);
 
       await vscode.commands.executeCommand('vscodeToolboxNamewta.gitReview.start');
-      await waitForReviewDocument();
-      const initialReviewUris = reviewDocumentUris();
+      await waitForReviewPanel();
+      assert.equal(reviewPanelCount(), 1);
       await vscode.commands.executeCommand('vscodeToolboxNamewta.gitReview.next');
-      await waitForReviewDocument(initialReviewUris);
+      assert.equal(reviewPanelCount(), 1);
 
       const stale = await api.execute('gitReview.markStale', {});
       assert.equal(stale.ok, true);
@@ -238,23 +274,38 @@ function requireSession(snapshot: GitReviewSessionSnapshot): GitReviewSession {
   return snapshot.session;
 }
 
-async function waitForReviewDocument(
-  previousUris: readonly string[] = [],
-): Promise<void> {
+async function waitForReviewPanel(): Promise<void> {
   for (let attempt = 0; attempt < 50; attempt += 1) {
-    const currentUris = reviewDocumentUris();
-    if (currentUris.some((uri) => !previousUris.includes(uri))) {
+    if (reviewPanelCount() === 1) {
       return;
     }
     await new Promise<void>((resolve) => setTimeout(resolve, 100));
   }
-  throw new Error('没有在预期时间内打开 Git 审核只读 diff。');
+  throw new Error(
+    `没有在预期时间内打开单一 Git 审核聚合页。当前标签：${JSON.stringify(tabSnapshot())}`,
+  );
 }
 
-function reviewDocumentUris(): readonly string[] {
-  return vscode.window.visibleTextEditors
-    .filter((editor) => editor.document.uri.scheme === REVIEW_DOCUMENT_SCHEME)
-    .map((editor) => editor.document.uri.toString(true));
+function reviewPanelCount(): number {
+  return vscode.window.tabGroups.all
+    .flatMap((group) => group.tabs)
+    .filter(
+      (tab) =>
+        tab.input instanceof vscode.TabInputWebview &&
+        tab.input.viewType.endsWith(REVIEW_WEBVIEW_TYPE),
+    ).length;
+}
+
+function tabSnapshot(): readonly object[] {
+  return vscode.window.tabGroups.all.flatMap((group) =>
+    group.tabs.map((tab) => ({
+      label: tab.label,
+      viewType:
+        typeof tab.input === 'object' && tab.input !== null && 'viewType' in tab.input
+          ? String(tab.input.viewType)
+          : undefined,
+    })),
+  );
 }
 
 type ReviewFixture = { readonly repository: string };

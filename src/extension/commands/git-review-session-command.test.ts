@@ -72,6 +72,16 @@ describe('Git Review 会话命令', () => {
     );
   });
 
+  it('仅向启动命令转发 VS Code Source Control 上下文', async () => {
+    const target = createTarget();
+    const command = new GitReviewSessionCommand('start', target);
+    const sourceControl = { id: 'git', label: 'Git' };
+
+    await command.execute(sourceControl);
+
+    expect(target.start).toHaveBeenCalledWith(sourceControl);
+  });
+
   it('拒绝未验证的 VS Code 命令参数', () => {
     const target = createTarget();
     const command = new GitReviewSessionCommand('next', target);
@@ -94,7 +104,9 @@ function createTarget(): GitReviewSessionCommandTarget & {
   readonly end: ReturnType<typeof vi.fn>;
 } {
   return {
-    start: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    start: vi
+      .fn<(...args: readonly unknown[]) => Promise<void>>()
+      .mockResolvedValue(undefined),
     previous: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     next: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     markReviewedAndNext: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),

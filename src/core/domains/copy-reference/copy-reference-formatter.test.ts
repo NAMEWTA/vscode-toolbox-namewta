@@ -21,7 +21,7 @@ describe('formatCopyReference', () => {
   });
 
   it.each([
-    [{ line: 2, character: 8 }, { line: 2, character: 3 }, '`src/main.ts:3(4-9)`'],
+    [{ line: 2, character: 8 }, { line: 2, character: 3 }, '`src/main.ts:3(4-8)`'],
     [{ line: 6, character: 1 }, { line: 3, character: 7 }, '`src/main.ts:4-7`'],
   ])('normalizes reverse selections before formatting', (anchor, active, expected) => {
     expect(
@@ -40,6 +40,59 @@ describe('formatCopyReference', () => {
     ).toBe(expected);
   });
 
+  it('converts an exclusive same-line end into a one-based inclusive range', () => {
+    expect(
+      formatCopyReference(
+        editorInput(
+          resource(
+            'file',
+            '',
+            '/workspace/project/src/main.ts',
+            '/workspace/project/src/main.ts',
+          ),
+          { line: 1, character: 4 },
+          { line: 1, character: 9 },
+        ),
+      ),
+    ).toBe('`src/main.ts:2(5-9)`');
+  });
+
+  it('excludes a multiline selection end at column zero', () => {
+    expect(
+      formatCopyReference(
+        editorInput(
+          resource(
+            'file',
+            '',
+            '/workspace/project/src/main.ts',
+            '/workspace/project/src/main.ts',
+          ),
+          { line: 0, character: 0 },
+          { line: 10, character: 0 },
+        ),
+      ),
+    ).toBe('`src/main.ts:1-10`');
+  });
+
+  it('keeps the final line when a multiline selection ends after column zero', () => {
+    expect(
+      formatCopyReference(
+        editorInput(
+          resource(
+            'file',
+            '',
+            '/workspace/project/src/main.ts',
+            '/workspace/project/src/main.ts',
+          ),
+          { line: 0, character: 0 },
+          { line: 10, character: 1 },
+        ),
+      ),
+    ).toBe('`src/main.ts:1-11`');
+  });
+});
+
+describe('formatCopyReference resource paths', () => {
   it('uses the deepest matching workspace folder for relative references', () => {
     const nestedWorkspace = resource(
       'file',

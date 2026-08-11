@@ -1,9 +1,5 @@
 import * as vscode from 'vscode';
-import type {
-  VscodeToolboxNamewtaExtensionApi,
-  ToolCommandId,
-  ToolCommandInput,
-} from '../../core/contracts';
+import type { VscodeToolboxNamewtaExtensionApi } from '../../core/contracts';
 import { DisposableStore } from '../../core/kernel/disposable';
 import {
   DefaultToolboxGateway,
@@ -47,6 +43,7 @@ import { GitBlameHoverProvider } from '../presentation/git-blame-hover-provider'
 import { GitReviewSessionExperience } from '../commands/git-review-session-experience';
 import { ApplicationError } from '../../core/kernel/application-error';
 import { ToolboxPanelController } from '../presentation/toolbox-panel-controller';
+import { createExtensionPublicApi } from './create-extension-public-api';
 import { registerDomainModules } from './register-domain-modules';
 
 export type ExtensionRuntime = vscode.Disposable & {
@@ -83,7 +80,11 @@ export function createExtensionRuntime(
     logger.show(),
   );
   const gitReviewExperience = disposables.add(
-    new GitReviewSessionExperience({ gateway, logger }),
+    new GitReviewSessionExperience({
+      gateway,
+      logger,
+      extensionUri: context.extensionUri,
+    }),
   );
   const openToolboxCommand = new OpenToolboxCommand(panelController);
   const showRuntimeInfoCommand = new ShowRuntimeInfoCommand(gateway);
@@ -105,14 +106,7 @@ export function createExtensionRuntime(
     ...blameCommands,
   ]);
 
-  const publicApi: VscodeToolboxNamewtaExtensionApi = {
-    apiVersion: 1,
-    execute: <TCommand extends ToolCommandId>(
-      command: TCommand,
-      input: ToolCommandInput<TCommand>,
-    ) => gateway.execute(command, input, { source: 'extension-api' }),
-    getCapabilities: () => gateway.getCapabilities(),
-  };
+  const publicApi = createExtensionPublicApi(gateway);
 
   logger.info('vscode-toolbox-namewta extension activated.', {
     capabilities: gateway.getCapabilities().map(({ command }) => command),
@@ -169,6 +163,8 @@ function createCopyReferenceCommands(
   return [
     new CopyReferenceCommand('relative', gateway, source),
     new CopyReferenceCommand('absolute', gateway, source),
+    new CopyReferenceCommand('relative', gateway, source, 'editor-context'),
+    new CopyReferenceCommand('absolute', gateway, source, 'editor-context'),
   ];
 }
 

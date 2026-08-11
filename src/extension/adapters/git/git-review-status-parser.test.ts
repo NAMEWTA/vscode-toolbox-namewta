@@ -6,7 +6,7 @@ const head = 'a'.repeat(40);
 const index = 'b'.repeat(40);
 
 describe('Git Review 状态解析器', () => {
-  it('以 NUL 分隔格式保留特殊路径并合并 staged 与 unstaged 状态', () => {
+  it('以 NUL 分隔格式保留特殊路径并拆分 staged 与 unstaged 状态', () => {
     const output = [
       `1 MM N... 100644 100644 100644 ${head} ${index} src/space name.ts`,
       `2 R. N... 100644 100644 100644 ${head} ${index} R100 renamed name.ts`,
@@ -23,27 +23,38 @@ describe('Git Review 状态解析器', () => {
     expect(entries).toMatchObject([
       {
         path: 'src/space name.ts',
+        layer: 'staged',
+        change: 'modified',
+        presentation: 'text',
+      },
+      {
+        path: 'src/space name.ts',
+        layer: 'unstaged',
         change: 'modified',
         presentation: 'text',
       },
       {
         path: 'renamed name.ts',
+        layer: 'staged',
         previousPath: 'before rename.ts',
         change: 'renamed',
         presentation: 'text',
       },
       {
         path: 'vendor/module',
+        layer: 'unstaged',
         change: 'modified',
         presentation: 'submodule',
       },
       {
         path: 'draft\nname.ts',
+        layer: 'unstaged',
         change: 'untracked',
         presentation: 'text',
       },
       {
         path: 'unicode/éclair.ts',
+        layer: 'unstaged',
         change: 'untracked',
         presentation: 'text',
       },
@@ -51,11 +62,22 @@ describe('Git Review 状态解析器', () => {
     expect(entries.every((entry) => entry.identityMaterial.length > 0)).toBe(true);
   });
 
+  it('将 unmerged 记录保留为 Merge Changes 审核项', () => {
+    const output = `u UU N... 100644 100644 100644 100644 ${head} ${index} ${'c'.repeat(40)} src/conflict.ts\0`;
+
+    expect(parseGitReviewStatus(output)).toMatchObject([
+      {
+        itemId: 'conflict:src/conflict.ts',
+        layer: 'conflict',
+        path: 'src/conflict.ts',
+        change: 'conflicted',
+      },
+    ]);
+  });
+
   it('拒绝冲突、畸形记录和越界路径，避免静默遗漏审核项', () => {
     expect(() =>
-      parseGitReviewStatus(
-        'u UU N... 100644 100644 100644 100644 100644 100644 path\0',
-      ),
+      parseGitReviewStatus('u UU N... 100644 100644 100644 malformed path\0'),
     ).toThrowError(/invalid/i);
     expect(() => parseGitReviewStatus(`? ../secret.txt\0`)).toThrowError(/invalid/i);
     expect(() => parseGitReviewStatus(`? .git/config\0`)).toThrowError(/invalid/i);

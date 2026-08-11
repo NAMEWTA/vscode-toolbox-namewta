@@ -130,6 +130,8 @@ function activeSnapshot(
     state: 'active',
     session: {
       repositoryRoot: '/private/repository',
+      currentItemId:
+        items.find((candidate) => candidate.path === currentItemPath)?.itemId ?? '',
       currentItemPath,
       items,
       progress: {
@@ -144,6 +146,8 @@ function activeSnapshot(
 
 function item(path: string, reviewState: GitReviewItem['reviewState']): GitReviewItem {
   return {
+    itemId: `unstaged:${path}`,
+    layer: 'unstaged',
     path,
     contentIdentity: `${path.length}`.padStart(64, '0'),
     change: 'modified',

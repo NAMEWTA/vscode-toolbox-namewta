@@ -1,12 +1,15 @@
 import type { RuntimeInfo } from './system-info-contract';
 import {
-  isGitReviewItemContentInput,
-  isGitReviewStartInput,
   type GitReviewItemContent,
   type GitReviewItemContentInput,
   type GitReviewSessionSnapshot,
   type GitReviewStartInput,
 } from '../domains/git-review/git-review-model';
+import type {
+  GitReviewItemActionInput,
+  GitReviewItemPatch,
+} from '../domains/git-review/git-review-patch-model';
+import { isGitReviewToolCommandInput } from './git-review-tool-command-input';
 import {
   isFullCommitHash,
   isGitBlameAnnotationsInput,
@@ -38,6 +41,8 @@ export type {
 export type {
   GitReviewItemContent,
   GitReviewItemContentInput,
+  GitReviewItemActionInput,
+  GitReviewItemPatch,
   GitReviewSessionSnapshot,
   GitReviewStartInput,
 };
@@ -143,6 +148,22 @@ export type ToolCommandMap = {
     input: GitReviewItemContentInput;
     output: GitReviewItemContent;
   };
+  'gitReview.getItemPatch': {
+    input: GitReviewItemActionInput;
+    output: GitReviewItemPatch;
+  };
+  'gitReview.stageItem': {
+    input: GitReviewItemActionInput;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.unstageItem': {
+    input: GitReviewItemActionInput;
+    output: GitReviewSessionSnapshot;
+  };
+  'gitReview.discardItem': {
+    input: GitReviewItemActionInput;
+    output: GitReviewSessionSnapshot;
+  };
   'system.getRuntimeInfo': {
     input: Record<string, never>;
     output: RuntimeInfo;
@@ -172,6 +193,10 @@ const TOOL_COMMAND_IDS = [
   'gitBlame.getLineHistory',
   'gitReview.end',
   'gitReview.getItemContent',
+  'gitReview.getItemPatch',
+  'gitReview.stageItem',
+  'gitReview.unstageItem',
+  'gitReview.discardItem',
   'gitReview.markReviewedAndNext',
   'gitReview.markStale',
   'gitReview.next',
@@ -186,17 +211,6 @@ const TOOL_COMMAND_IDS = [
 type GitReviewCommandId = Extract<ToolCommandId, `gitReview.${string}`>;
 type NonGitReviewCommandId = Exclude<ToolCommandId, GitReviewCommandId>;
 
-const GIT_REVIEW_EMPTY_INPUT_COMMANDS = new Set<GitReviewCommandId>([
-  'gitReview.previous',
-  'gitReview.next',
-  'gitReview.markReviewedAndNext',
-  'gitReview.retry',
-  'gitReview.skip',
-  'gitReview.refresh',
-  'gitReview.end',
-  'gitReview.markStale',
-]);
-
 export function isToolCommandId(value: unknown): value is ToolCommandId {
   return (
     typeof value === 'string' && TOOL_COMMAND_IDS.some((command) => command === value)
@@ -208,7 +222,7 @@ export function isToolCommandInput<TCommand extends ToolCommandId>(
   input: unknown,
 ): input is ToolCommandInput<TCommand> {
   if (isGitReviewCommand(command)) {
-    return isGitReviewCommandInput(command, input);
+    return isGitReviewToolCommandInput(command, input);
   }
   return isNonGitReviewCommandInput(command, input);
 }
@@ -237,16 +251,6 @@ function isNonGitReviewCommandInput(
 
 function isGitReviewCommand(command: ToolCommandId): command is GitReviewCommandId {
   return command.startsWith('gitReview.');
-}
-
-function isGitReviewCommandInput(command: GitReviewCommandId, input: unknown): boolean {
-  if (command === 'gitReview.start') {
-    return isGitReviewStartInput(input);
-  }
-  if (command === 'gitReview.getItemContent') {
-    return isGitReviewItemContentInput(input);
-  }
-  return GIT_REVIEW_EMPTY_INPUT_COMMANDS.has(command) && isEmptyRecord(input);
 }
 
 function isGitCopyCommitHashInput(value: unknown): value is GitCopyCommitHashInput {

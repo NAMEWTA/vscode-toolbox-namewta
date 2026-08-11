@@ -140,6 +140,7 @@ function activeSnapshot(item: GitReviewItem): GitReviewSessionSnapshot {
     state: 'active',
     session: {
       repositoryRoot: '/private/repository',
+      currentItemId: item.itemId,
       currentItemPath: item.path,
       items: [item],
       progress: { total: 1, reviewed: 0, skipped: 0, remaining: 1 },
@@ -149,6 +150,8 @@ function activeSnapshot(item: GitReviewItem): GitReviewSessionSnapshot {
 
 function item(path: string): GitReviewItem {
   return {
+    itemId: `unstaged:${path}`,
+    layer: 'unstaged',
     path,
     contentIdentity: 'a'.repeat(64),
     change: 'modified',

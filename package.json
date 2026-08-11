@@ -2,7 +2,7 @@
   "name": "vscode-toolbox-namewta",
   "displayName": "vscode-toolbox-namewta",
   "description": "%extension.description%",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "publisher": "NAMEWTA",
   "license": "MIT",
   "private": true,
@@ -49,88 +49,80 @@
     "commands": [
       {
         "command": "vscodeToolboxNamewta.openToolbox",
-        "title": "%commands.openToolbox%",
-        "category": "%extension.category%"
+        "title": "%commands.openToolbox%"
       },
       {
         "command": "vscodeToolboxNamewta.showRuntimeInfo",
-        "title": "%commands.showRuntimeInfo%",
-        "category": "%extension.category%"
+        "title": "%commands.showRuntimeInfo%"
       },
       {
         "command": "vscodeToolboxNamewta.copyReference.relative",
-        "title": "%commands.copyReference.relative%",
-        "category": "%extension.category%"
+        "title": "%commands.copyReference.relative%"
       },
       {
         "command": "vscodeToolboxNamewta.copyReference.absolute",
-        "title": "%commands.copyReference.absolute%",
-        "category": "%extension.category%"
+        "title": "%commands.copyReference.absolute%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.copyReference.editor.relative",
+        "title": "%commands.copyReference.editor.relative%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.copyReference.editor.absolute",
+        "title": "%commands.copyReference.editor.absolute%"
       },
       {
         "command": "vscodeToolboxNamewta.gitBlame.toggle",
-        "title": "%commands.gitBlame.toggle%",
-        "category": "%extension.category%"
+        "title": "%commands.gitBlame.toggle%"
       },
       {
         "command": "vscodeToolboxNamewta.gitBlame.show",
-        "title": "%commands.gitBlame.show%",
-        "category": "%extension.category%"
+        "title": "%commands.gitBlame.show%"
       },
       {
         "command": "vscodeToolboxNamewta.gitBlame.hide",
-        "title": "%commands.gitBlame.hide%",
-        "category": "%extension.category%"
+        "title": "%commands.gitBlame.hide%"
       },
       {
         "command": "vscodeToolboxNamewta.gitBlame.refresh",
-        "title": "%commands.gitBlame.refresh%",
-        "category": "%extension.category%"
+        "title": "%commands.gitBlame.refresh%"
       },
       {
         "command": "vscodeToolboxNamewta.gitBlame.viewLineHistory",
-        "title": "%commands.gitBlame.viewLineHistory%",
-        "category": "%extension.category%"
+        "title": "%commands.gitBlame.viewLineHistory%"
       },
       {
         "command": "vscodeToolboxNamewta.gitReview.start",
         "title": "%commands.gitReview.start%",
-        "category": "%extension.category%"
+        "icon": "$(diff-multiple)"
       },
       {
         "command": "vscodeToolboxNamewta.gitReview.previous",
-        "title": "%commands.gitReview.previous%",
-        "category": "%extension.category%"
+        "title": "%commands.gitReview.previous%"
       },
       {
         "command": "vscodeToolboxNamewta.gitReview.next",
-        "title": "%commands.gitReview.next%",
-        "category": "%extension.category%"
+        "title": "%commands.gitReview.next%"
       },
       {
         "command": "vscodeToolboxNamewta.gitReview.markReviewedAndNext",
-        "title": "%commands.gitReview.markReviewedAndNext%",
-        "category": "%extension.category%"
+        "title": "%commands.gitReview.markReviewedAndNext%"
       },
       {
         "command": "vscodeToolboxNamewta.gitReview.retry",
-        "title": "%commands.gitReview.retry%",
-        "category": "%extension.category%"
+        "title": "%commands.gitReview.retry%"
       },
       {
         "command": "vscodeToolboxNamewta.gitReview.skip",
-        "title": "%commands.gitReview.skip%",
-        "category": "%extension.category%"
+        "title": "%commands.gitReview.skip%"
       },
       {
         "command": "vscodeToolboxNamewta.gitReview.refresh",
-        "title": "%commands.gitReview.refresh%",
-        "category": "%extension.category%"
+        "title": "%commands.gitReview.refresh%"
       },
       {
         "command": "vscodeToolboxNamewta.gitReview.end",
-        "title": "%commands.gitReview.end%",
-        "category": "%extension.category%"
+        "title": "%commands.gitReview.end%"
       }
     ],
     "views": {
@@ -160,12 +152,12 @@
       ],
       "editor/context": [
         {
-          "command": "vscodeToolboxNamewta.copyReference.relative",
+          "command": "vscodeToolboxNamewta.copyReference.editor.relative",
           "when": "resourceScheme != untitled",
           "group": "navigation@90"
         },
         {
-          "command": "vscodeToolboxNamewta.copyReference.absolute",
+          "command": "vscodeToolboxNamewta.copyReference.editor.absolute",
           "when": "resourceScheme != untitled",
           "group": "navigation@91"
         },
@@ -185,6 +177,16 @@
           "command": "vscodeToolboxNamewta.gitBlame.viewLineHistory",
           "when": "resourceScheme == file",
           "group": "navigation@93"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "vscodeToolboxNamewta.copyReference.editor.relative",
+          "when": "false"
+        },
+        {
+          "command": "vscodeToolboxNamewta.copyReference.editor.absolute",
+          "when": "false"
         }
       ]
     },
@@ -287,14 +289,17 @@
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:integration": "pnpm build && pnpm build:tests && vscode-test",
-    "package:vsix": "pnpm build && node ./build/prepare-vsix-output.mjs && vsce package --out ./artifacts/vscode-toolbox-namewta-${npm_package_version}.vsix",
-    "package:list": "pnpm build && vsce ls",
+    "package:vsix": "pnpm build && node ./build/prepare-vsix-output.mjs && vsce package --no-dependencies --out ./artifacts/vscode-toolbox-namewta-${npm_package_version}.vsix",
+    "package:list": "pnpm build && vsce ls --no-dependencies",
     "check": "pnpm verify:foundation && pnpm format:check && pnpm lint && pnpm lint:dependencies && pnpm lint:unused && pnpm typecheck && pnpm test:coverage && pnpm build",
     "check:ci": "pnpm check && pnpm test:integration && pnpm package:list && pnpm package:vsix",
     "vscode:prepublish": "pnpm build",
     "verify:foundation": "node ./scripts/verify-foundation.mjs"
   },
   "dependencies": {
+    "@tanstack/react-virtual": "3.14.9",
+    "lucide-react": "1.31.0",
+    "parse-diff": "0.12.0",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },

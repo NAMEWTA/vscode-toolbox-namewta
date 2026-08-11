@@ -51,7 +51,7 @@ export class VscodeGitReviewQueueTree
       displayGitReviewText(item.path),
       vscode.TreeItemCollapsibleState.None,
     );
-    treeItem.id = `${item.path}:${item.contentIdentity}`;
+    treeItem.id = `${item.itemId}:${item.contentIdentity}`;
     treeItem.description = entry.isCurrent
       ? `${vscode.l10n.t('Current')} - ${state}`
       : state;
@@ -74,7 +74,7 @@ export class VscodeGitReviewQueueTree
     }
     return session.items.map((item) => ({
       item,
-      isCurrent: item.path === session.currentItemPath,
+      isCurrent: item.itemId === session.currentItemId,
     }));
   }
 

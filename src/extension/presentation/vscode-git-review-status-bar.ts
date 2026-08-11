@@ -15,7 +15,7 @@ export class VscodeGitReviewStatusBar implements vscode.Disposable {
       return;
     }
     const currentIndex = session.items.findIndex(
-      (item) => item.path === session.currentItemPath,
+      (item) => item.itemId === session.currentItemId,
     );
     const position = currentIndex < 0 ? 0 : currentIndex + 1;
     const { progress } = session;

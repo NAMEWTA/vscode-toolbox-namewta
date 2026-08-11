@@ -18,8 +18,10 @@ suite('vscode-toolbox-namewta extension', () => {
       { command: 'gitBlame.getCommitChanges', available: true },
       { command: 'gitBlame.getHistoricalContent', available: true },
       { command: 'gitBlame.getLineHistory', available: true },
+      { command: 'gitReview.discardItem', available: true },
       { command: 'gitReview.end', available: true },
       { command: 'gitReview.getItemContent', available: true },
+      { command: 'gitReview.getItemPatch', available: true },
       { command: 'gitReview.markReviewedAndNext', available: true },
       { command: 'gitReview.markStale', available: true },
       { command: 'gitReview.next', available: true },
@@ -27,7 +29,9 @@ suite('vscode-toolbox-namewta extension', () => {
       { command: 'gitReview.refresh', available: true },
       { command: 'gitReview.retry', available: true },
       { command: 'gitReview.skip', available: true },
+      { command: 'gitReview.stageItem', available: true },
       { command: 'gitReview.start', available: true },
+      { command: 'gitReview.unstageItem', available: true },
       { command: 'system.getRuntimeInfo', available: true },
     ]);
   });
@@ -38,6 +42,8 @@ suite('vscode-toolbox-namewta extension', () => {
     assert.ok(commands.includes('vscodeToolboxNamewta.showRuntimeInfo'));
     assert.ok(commands.includes('vscodeToolboxNamewta.copyReference.relative'));
     assert.ok(commands.includes('vscodeToolboxNamewta.copyReference.absolute'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.copyReference.editor.relative'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.copyReference.editor.absolute'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.toggle'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.show'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.hide'));
@@ -83,6 +89,22 @@ suite('vscode-toolbox-namewta extension', () => {
     assert.equal(await vscode.env.clipboard.readText(), `\`${uri.fsPath}:1\``);
   });
 
+  test('copies the active editor selection from the editor context route', async () => {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    assert.ok(workspaceFolder);
+    const uri = vscode.Uri.joinPath(workspaceFolder.uri, 'README.md');
+    const document = await vscode.workspace.openTextDocument(uri);
+    const editor = await vscode.window.showTextDocument(document);
+    editor.selection = new vscode.Selection(1, 4, 1, 9);
+
+    await vscode.commands.executeCommand(
+      'vscodeToolboxNamewta.copyReference.editor.relative',
+      uri,
+    );
+
+    assert.equal(await vscode.env.clipboard.readText(), '`README.md:2(5-9)`');
+  });
+
   test('does not fall back to the active editor for invalid explorer input', async () => {
     await vscode.env.clipboard.writeText('unchanged');
 
@@ -113,7 +135,9 @@ suite('vscode-toolbox-namewta extension', () => {
       '```\nfuture.ts\nREADME.md\n```',
     );
   });
+});
 
+suite('vscode-toolbox-namewta copy reference boundary', () => {
   test('does not copy an untitled editor resource', async () => {
     const document = await vscode.workspace.openTextDocument({ content: 'draft' });
     await vscode.window.showTextDocument(document);

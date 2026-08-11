@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import * as vscode from 'vscode';
 import type { GitCommandPort } from '../../core/domains/git-blame/public-api';
 import { ApplicationError } from '../../core/kernel/application-error';
 import {
@@ -7,11 +8,25 @@ import {
   type GitReviewRepositoryHost,
 } from './vscode-git-review-repository-adapter';
 
-vi.mock('vscode', () => ({
-  l10n: { t: (value: string): string => value },
-  window: {},
-  workspace: {},
-}));
+vi.mock('vscode', () => {
+  class Uri {
+    public static file(fsPath: string): Uri {
+      return new Uri('file', fsPath);
+    }
+
+    private constructor(
+      public readonly scheme: string,
+      public readonly fsPath: string,
+    ) {}
+  }
+
+  return {
+    l10n: { t: (value: string): string => value },
+    Uri,
+    window: {},
+    workspace: {},
+  };
+});
 
 describe('VS Code Git Review 仓库适配器', () => {
   it('优先使用活动文件所在的唯一仓库，不显示选择器', async () => {
@@ -61,6 +76,35 @@ describe('VS Code Git Review 仓库适配器', () => {
     ]);
   });
 
+  it('优先解析 Source Control 标题菜单提供的仓库根目录', async () => {
+    const git = createGit();
+    git.run.mockResolvedValue(gitResult('/workspace/selected\n'));
+    const host = createHost({
+      isWorkspaceTrusted: true,
+      activeFilePath: '/workspace/other/src/main.ts',
+      workspaceFolderPaths: ['/workspace/other'],
+    });
+    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+
+    await expect(
+      adapter.resolve(
+        [
+          {
+            id: 'git',
+            label: 'Git',
+            rootUri: vscode.Uri.file('/workspace/selected'),
+          },
+        ],
+        new AbortController().signal,
+      ),
+    ).resolves.toBe('/workspace/selected');
+
+    expect(git.run).toHaveBeenCalledWith(
+      expect.objectContaining({ cwd: '/workspace/selected' }),
+    );
+    expect(host.pickRepository).not.toHaveBeenCalled();
+  });
+
   it('拒绝不可信工作区和未验证的命令参数', async () => {
     const git = createGit();
     const host = createHost({
@@ -77,6 +121,9 @@ describe('VS Code Git Review 仓库适配器', () => {
     });
     await expect(
       adapter.resolve([{ repositoryRoot: '/untrusted' }], new AbortController().signal),
+    ).rejects.toMatchObject({ code: 'invalid-input' });
+    await expect(
+      adapter.resolve([{ id: '', label: 'Git' }], new AbortController().signal),
     ).rejects.toMatchObject({ code: 'invalid-input' });
     expect(git.run).not.toHaveBeenCalled();
   });
@@ -98,6 +145,24 @@ describe('VS Code Git Review 仓库适配器', () => {
     ).rejects.toMatchObject({
       code: 'timeout',
     });
+  });
+});
+
+describe('SCM 标题上下文边界', () => {
+  it('拒绝没有可执行根目录的上下文，不回退到活动仓库', async () => {
+    const git = createGit();
+    const host = createHost({
+      isWorkspaceTrusted: true,
+      activeFilePath: '/workspace/other/src/main.ts',
+      workspaceFolderPaths: ['/workspace/other'],
+    });
+    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+
+    await expect(
+      adapter.resolve([{ id: 'git', label: 'Git' }], new AbortController().signal),
+    ).rejects.toMatchObject({ code: 'capability-unavailable' });
+    expect(git.run).not.toHaveBeenCalled();
+    expect(host.pickRepository).not.toHaveBeenCalled();
   });
 });
 

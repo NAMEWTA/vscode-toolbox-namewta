@@ -6,15 +6,20 @@ import type {
   ResourceSnapshot,
 } from '../../core/domains/copy-reference/public-api';
 
+export type CopyReferenceSourceRoute = 'automatic' | 'editor-context';
+
 export class VscodeCopyReferenceSourceAdapter {
   public resolve(
     mode: CopyReferenceMode,
     commandArguments: readonly unknown[],
+    route: CopyReferenceSourceRoute = 'automatic',
   ): CopyReferenceInput | undefined {
     const source =
-      commandArguments.length > 0
-        ? resolveExplorerSource(commandArguments)
-        : resolveEditorSource(vscode.window.activeTextEditor);
+      route === 'editor-context'
+        ? resolveEditorContextSource(commandArguments, vscode.window.activeTextEditor)
+        : commandArguments.length > 0
+          ? resolveExplorerSource(commandArguments)
+          : resolveEditorSource(vscode.window.activeTextEditor);
     if (source === undefined) {
       return undefined;
     }
@@ -27,6 +32,21 @@ export class VscodeCopyReferenceSourceAdapter {
         [],
     };
   }
+}
+
+function resolveEditorContextSource(
+  commandArguments: readonly unknown[],
+  editor: vscode.TextEditor | undefined,
+): CopyReferenceSource | undefined {
+  if (
+    commandArguments.length !== 1 ||
+    !isUri(commandArguments[0]) ||
+    editor === undefined ||
+    editor.document.uri.toString(true) !== commandArguments[0].toString(true)
+  ) {
+    return undefined;
+  }
+  return resolveEditorSource(editor);
 }
 
 function resolveExplorerSource(

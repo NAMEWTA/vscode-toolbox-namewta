@@ -1,4 +1,5 @@
 import type { Disposable } from '../../core/kernel/disposable';
+import type * as vscode from 'vscode';
 import type { ToolboxGateway } from '../../core/orchestration/public-api';
 import { VscodeGitReviewControllerHost } from '../adapters/vscode-git-review-controller-host';
 import { VscodeGitReviewRepositoryAdapter } from '../adapters/vscode-git-review-repository-adapter';
@@ -15,6 +16,7 @@ import {
 export type GitReviewSessionExperienceDependencies = {
   readonly gateway: ToolboxGateway;
   readonly logger: VscodeLoggerAdapter;
+  readonly extensionUri: vscode.Uri;
 };
 
 export class GitReviewSessionExperience implements Disposable {
@@ -26,11 +28,19 @@ export class GitReviewSessionExperience implements Disposable {
     const controllerReference: {
       current: GitReviewSessionController | undefined;
     } = { current: undefined };
-    const presentation = new VscodeGitReviewPresentation(async (item) => {
-      if (controllerReference.current !== undefined) {
-        await controllerReference.current.select(item);
-      }
-    });
+    const presentation = new VscodeGitReviewPresentation(
+      async (item) => {
+        if (controllerReference.current !== undefined) {
+          await controllerReference.current.select(item);
+        }
+      },
+      {
+        extensionUri: dependencies.extensionUri,
+        gateway: dependencies.gateway,
+        logger: dependencies.logger,
+        onSnapshot: (snapshot) => controllerReference.current?.synchronize(snapshot),
+      },
+    );
     const controller = new GitReviewSessionController({
       gateway: dependencies.gateway,
       repositoryResolver: new VscodeGitReviewRepositoryAdapter(new GitCommandRunner()),

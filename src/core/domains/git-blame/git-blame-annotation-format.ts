@@ -20,28 +20,31 @@ export type FormattedGitBlameAnnotation = {
   readonly commit: string;
   readonly text: string;
   readonly heatColor?: string;
+  readonly heatBackgroundColor?: string;
 };
 
 export function formatGitBlameAnnotations(
   lines: readonly GitBlameLine[],
   config: GitBlameFormatConfiguration,
 ): readonly FormattedGitBlameAnnotation[] {
-  const committedHashes = new Set(
-    lines.filter((line) => isCommitted(line.commit)).map((line) => line.commit),
-  );
   return lines.map((line, index) => {
     const previousCommit = lines[index - 1]?.commit;
     const shouldMerge = config.mergeCommitLines && previousCommit === line.commit;
-    const text = shouldMerge ? '' : formatPrimaryText(line, config);
-    const heatColor =
-      committedHashes.size > 1 && isCommitted(line.commit)
-        ? heatColorForCommit(line, config.nowEpochSeconds)
-        : undefined;
+    const committed = isCommitted(line.commit);
+    const text = !committed || shouldMerge ? '' : formatPrimaryText(line, config);
+    const heatColors = committed
+      ? heatColorsForCommit(line, config.nowEpochSeconds)
+      : undefined;
     return {
       line: line.line,
       commit: line.commit,
       text,
-      ...(heatColor === undefined ? {} : { heatColor }),
+      ...(heatColors === undefined
+        ? {}
+        : {
+            heatColor: heatColors.color,
+            heatBackgroundColor: heatColors.backgroundColor,
+          }),
     };
   });
 }
@@ -130,11 +133,17 @@ function truncateDisplayWidth(value: string, maxWidth: number): string {
   return `${result}…`;
 }
 
-function heatColorForCommit(line: GitBlameLine, nowEpochSeconds: number): string {
+function heatColorsForCommit(
+  line: GitBlameLine,
+  nowEpochSeconds: number,
+): { readonly color: string; readonly backgroundColor: string } {
   const hue = Number.parseInt(line.commit.slice(0, 8), 16) % 360;
   const ageDays = Math.max(0, nowEpochSeconds - line.authoredAt) / 86_400;
   const saturation = Math.round(Math.max(35, 75 - Math.min(40, ageDays / 30)));
-  return `hsl(${hue} ${saturation}% 50%)`;
+  return {
+    color: `hsl(${hue} ${saturation}% 50%)`,
+    backgroundColor: `hsl(${hue} ${saturation}% 50% / 14%)`,
+  };
 }
 
 function isCommitted(commit: string): boolean {

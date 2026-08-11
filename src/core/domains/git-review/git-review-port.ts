@@ -2,6 +2,7 @@ import type {
   GitReviewChangeDescriptor,
   GitReviewItemContent,
 } from './git-review-model';
+import type { GitReviewItemPatch } from './git-review-patch-model';
 
 export type GitReviewCancellationSignal = {
   readonly aborted: boolean;
@@ -18,6 +19,12 @@ export type GitReviewContentRequest = {
   readonly item: GitReviewChangeDescriptor;
 };
 
+export type GitReviewMutation = 'stage' | 'unstage' | 'discard';
+
+export type GitReviewMutationRequest = GitReviewContentRequest & {
+  readonly mutation: GitReviewMutation;
+};
+
 export type GitReviewPort = {
   listChanges(
     repositoryRoot: string,
@@ -27,6 +34,14 @@ export type GitReviewPort = {
     request: GitReviewContentRequest,
     signal: GitReviewCancellationSignal,
   ): Promise<GitReviewItemContent>;
+  readItemPatch(
+    request: GitReviewContentRequest,
+    signal: GitReviewCancellationSignal,
+  ): Promise<GitReviewItemPatch>;
+  mutateItem(
+    request: GitReviewMutationRequest,
+    signal: GitReviewCancellationSignal,
+  ): Promise<readonly GitReviewChangeDescriptor[]>;
 };
 
-export type { GitReviewChangeDescriptor, GitReviewItemContent };
+export type { GitReviewChangeDescriptor, GitReviewItemContent, GitReviewItemPatch };

@@ -1,6 +1,10 @@
 export {
   GitReviewEndHandler,
   GitReviewGetItemContentHandler,
+  GitReviewGetItemPatchHandler,
+  GitReviewStageItemHandler,
+  GitReviewUnstageItemHandler,
+  GitReviewDiscardItemHandler,
   GitReviewMarkReviewedAndNextHandler,
   GitReviewMarkStaleHandler,
   GitReviewNextHandler,
@@ -17,6 +21,7 @@ export type {
   GitReviewItemContent,
   GitReviewItemContentInput,
   GitReviewItemState,
+  GitReviewLayer,
   GitReviewPresentation,
   GitReviewProgress,
   GitReviewSession,
@@ -31,8 +36,21 @@ export {
   isGitReviewStartInput,
 } from './git-review-model';
 export type {
+  GitReviewDiffHunk,
+  GitReviewDiffLine,
+  GitReviewItemActionInput,
+  GitReviewItemPatch,
+} from './git-review-patch-model';
+export {
+  isGitReviewItemActionInput,
+  isGitReviewItemPatch,
+} from './git-review-patch-model';
+export { isGitReviewSessionSnapshot } from './git-review-session-snapshot-contract';
+export type {
   GitReviewCancellationSignal,
   GitReviewContentRequest,
+  GitReviewMutation,
+  GitReviewMutationRequest,
   GitReviewPort,
 } from './git-review-port';
 export { GitReviewSessionService } from './git-review-session-service';
