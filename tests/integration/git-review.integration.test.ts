@@ -121,7 +121,7 @@ suite('Git Review Extension Host 集成', () => {
       }
       assert.equal(await gitStatus(fixture.repository), statusBeforeReview);
     } finally {
-      await rm(fixture.repository, { recursive: true, force: true });
+      await removeFixtureRepository(fixture.repository);
     }
   });
 });
@@ -165,7 +165,7 @@ suite('Git Review Extension Host 无 HEAD 集成', () => {
       assert.equal(ended.ok, true);
       assert.equal(await gitStatus(fixture.repository), statusBeforeReview);
     } finally {
-      await rm(fixture.repository, { recursive: true, force: true });
+      await removeFixtureRepository(fixture.repository);
     }
   });
 });
@@ -203,7 +203,7 @@ suite('Git Review Extension Host 命令集成', () => {
       }
       sourceControl.dispose();
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-      await rm(fixture.repository, { recursive: true, force: true });
+      await removeFixtureRepository(fixture.repository);
     }
   });
 
@@ -239,7 +239,7 @@ suite('Git Review Extension Host 命令集成', () => {
       assert.equal(await gitStatus(fixture.repository), statusBeforeReview);
     } finally {
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-      await rm(fixture.repository, { recursive: true, force: true });
+      await removeFixtureRepository(fixture.repository);
     }
   });
 });
@@ -302,6 +302,15 @@ async function finishCommandReview(
     );
     remaining -= 1;
   }
+}
+
+async function removeFixtureRepository(repository: string): Promise<void> {
+  await rm(repository, {
+    recursive: true,
+    force: true,
+    maxRetries: 10,
+    retryDelay: 100,
+  });
 }
 
 function reviewPanelCount(): number {
