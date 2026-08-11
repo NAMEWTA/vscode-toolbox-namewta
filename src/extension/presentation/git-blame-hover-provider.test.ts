@@ -43,6 +43,7 @@ describe('buildGitBlameHoverMarkdown', () => {
     expect(markdown.value).toContain('alice@example\\.com');
     expect(markdown.value).toContain('a'.repeat(40));
     expect(markdown.value).toContain('1 hour ago');
+    expect(markdown.value).toMatch(/\b\d{4}\\-\d{2}\\-\d{2} \d{2}:\d{2}\b/u);
     expect(markdown.value).toContain('Fix \\[parser\\]');
     expect(markdown.value).toContain('https://github.com/owner/repo/commit/');
     expect(markdown.isTrusted).toEqual({

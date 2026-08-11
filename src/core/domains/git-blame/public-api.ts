@@ -46,6 +46,7 @@ export {
   type GitCommitHashClipboardPort,
 } from './git-copy-commit-hash-handler';
 export { createGitRemoteCommitUrl } from './git-remote-commit-url';
+export { formatGitBlameLocalDateTime } from './git-blame-annotation-format';
 export { GIT_EMPTY_TREE_HASH, type GitHistoryPort } from './git-history-model';
 export { GitLineHistoryHandler } from './git-line-history-handler';
 export type {

@@ -23,7 +23,7 @@
   "configuration.title": "开发者工具箱",
   "configuration.logging.level": "控制写入 vscode-toolbox-namewta 输出通道的最低诊断日志级别。",
   "configuration.webview.requestTimeoutMs": "工具箱 Webview 等待工具响应的最长时间，单位为毫秒。",
-  "configuration.gitBlame.dateFormatStyle": "控制 Git Blame 注解中的日期格式。",
+  "configuration.gitBlame.dateFormatStyle": "控制 Git Blame 注解中的日期格式。默认 YYYY-MM-DD HH:mm 使用扩展宿主的本地时区。",
   "configuration.gitBlame.authorNameStyle": "控制 Git Blame 注解中的作者姓名格式。",
   "configuration.gitBlame.mergeCommitLines": "仅在连续提交块的首行显示注解主文本。",
   "configuration.gitBlame.highlightCurrentCommit": "高亮与光标所在行相同提交的所有行。",

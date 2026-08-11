@@ -81,12 +81,17 @@ describe('Git Blame 装饰渲染器', () => {
     const typeBeforeOptions = vscodeState.createdTypes.flatMap(({ options }) =>
       isRecord(options.before) ? [options.before] : [],
     );
+    expect(vscodeState.createdTypes).toHaveLength(2);
     expect(typeBeforeOptions.some(({ width }) => width === '22em')).toBe(false);
-    expect(
-      typeBeforeOptions.some(
-        ({ width, height }) => width === '0.35em' && height === '100%',
-      ),
-    ).toBe(true);
+    const annotationType = vscodeState.createdTypes.find(
+      ({ options }) => isRecord(options.before) && isRecord(options.after),
+    );
+    expect(annotationType?.options.before).toEqual(
+      expect.objectContaining({ height: '100%', margin: '0' }),
+    );
+    expect(annotationType?.options.after).toEqual(
+      expect.objectContaining({ width: '0.35em', height: '100%' }),
+    );
     const decorationBeforeOptions = vscodeState.setDecorations.mock.calls.flatMap(
       ([, decorations]) =>
         decorations.flatMap((option) => {
@@ -103,6 +108,22 @@ describe('Git Blame 装饰渲染器', () => {
           width === '16ch' &&
           typeof backgroundColor === 'string' &&
           backgroundColor.endsWith('/ 14%)'),
+      ),
+    ).toBe(true);
+    const decorationAfterOptions = vscodeState.setDecorations.mock.calls.flatMap(
+      ([, decorations]) =>
+        decorations.flatMap((option) => {
+          if (!isRecord(option) || !isRecord(option.renderOptions)) {
+            return [];
+          }
+          const after = option.renderOptions.after;
+          return isRecord(after) ? [after] : [];
+        }),
+    );
+    expect(
+      decorationAfterOptions.some(
+        ({ backgroundColor, contentText }) =>
+          contentText === ' ' && typeof backgroundColor === 'string',
       ),
     ).toBe(true);
   });
@@ -136,6 +157,21 @@ describe('Git Blame 装饰渲染器', () => {
     expect(uncommitted?.contentText).toBe('');
     expect(uncommitted?.width).toBe('15ch');
     expect(
+      readAfterDecoration(annotationOptions?.[1])?.backgroundColor,
+    ).toBeUndefined();
+    const annotationCall = decorationCalls.find(([, decorations]) =>
+      decorations.some((option) => {
+        const value = readBeforeDecoration(option);
+        return value?.contentText === '';
+      }),
+    );
+    expect(
+      annotationCall?.[1].every((option) => {
+        const value = readAfterDecoration(option);
+        return value?.contentText === ' ';
+      }),
+    ).toBe(true);
+    expect(
       vscodeState.createdTypes.every(
         ({ options }) =>
           options.rangeBehavior === undefined || options.rangeBehavior === 0,
@@ -154,6 +190,14 @@ function readBeforeDecoration(value: unknown): Record<string, unknown> | undefin
   }
   const before = value.renderOptions.before;
   return isRecord(before) ? before : undefined;
+}
+
+function readAfterDecoration(value: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(value) || !isRecord(value.renderOptions)) {
+    return undefined;
+  }
+  const after = value.renderOptions.after;
+  return isRecord(after) ? after : undefined;
 }
 
 function line(lineNumber: number, author: string, hash: string): GitBlameLine {

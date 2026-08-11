@@ -30,3 +30,10 @@ close_capability: not-applicable
 ## Source Comments
 
 无。
+
+## Revision: 2026-08-11 — 用户确认 Blame 呈现与发布方案
+
+- 左侧列继续使用公开 `before/after` decoration 形成拟态列，不使用 VS Code 私有 API；真实独立文本 gutter 不属于扩展可控能力。
+- 日期默认使用运行 Extension Host 的本地时区，格式固定为 `YYYY-MM-DD HH:mm`，不显示秒。
+- 日期/作者与提交色条必须由同一 decoration 实例渲染，避免多个零宽行首附件互相竞争排列。
+- 当前 `v0.1.3` 已有正式 GitHub Release；修复通过完整门禁后递增至 `0.1.4`，提交、推送 `main` 和 `v0.1.4` 标签。

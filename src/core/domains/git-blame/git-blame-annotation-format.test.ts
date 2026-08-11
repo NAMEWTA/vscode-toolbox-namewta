@@ -6,11 +6,11 @@ import {
 import type { GitBlameLine } from './git-blame-model';
 
 describe('formatGitBlameAnnotations', () => {
-  it('formats date and author styles with display-width truncation', () => {
+  it('按本地时区输出零填充的日期、小时和分钟并截断作者显示宽度', () => {
     const annotations = formatGitBlameAnnotations(
-      [line(1, 'Alice Zhang', 1_700_000_000)],
+      [line(1, 'Alice Zhang', localEpoch(2023, 10, 14, 7, 8, 45))],
       {
-        dateFormatStyle: 'YYYY-MM-DD',
+        dateFormatStyle: 'YYYY-MM-DD HH:mm',
         authorNameStyle: 'first',
         mergeCommitLines: false,
         nowEpochSeconds: 1_800_000_000,
@@ -18,7 +18,7 @@ describe('formatGitBlameAnnotations', () => {
       },
     );
 
-    expect(annotations[0]?.text).toBe('2023-11-14 Alice');
+    expect(annotations[0]?.text).toBe('2023-11-14 07:08 Alice');
   });
 
   it('merges only the primary text of consecutive commit lines', () => {
@@ -87,4 +87,15 @@ function line(
     authoredAt,
     summary: 'summary',
   };
+}
+
+function localEpoch(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+): number {
+  return Math.floor(new Date(year, month, day, hour, minute, second).getTime() / 1_000);
 }

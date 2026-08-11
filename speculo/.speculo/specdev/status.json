@@ -14,7 +14,7 @@
     },
     {
       "change": "2026-08-10-fix-toolbox-command-context-and-blame-layout",
-      "current_work": null,
+      "current_work": "specdev/implement",
       "works_run": [
         "specdev/triage",
         "specdev/diagnose-bugs",

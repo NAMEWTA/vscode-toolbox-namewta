@@ -5,7 +5,13 @@ import type {
 } from '../../core/domains/git-blame/git-blame-annotation-format';
 import type { GitBlameConfiguration } from '../presentation/git-blame-annotation-controller';
 
-const DATE_FORMAT_STYLES = ['Y/M/D', 'YYYY-MM-DD', 'DD.MM.YYYY', 'relative'] as const;
+const DATE_FORMAT_STYLES = [
+  'Y/M/D',
+  'YYYY-MM-DD',
+  'YYYY-MM-DD HH:mm',
+  'DD.MM.YYYY',
+  'relative',
+] as const;
 const AUTHOR_NAME_STYLES = ['full', 'first', 'last'] as const;
 
 export class VscodeGitBlameConfigurationAdapter {
@@ -15,7 +21,7 @@ export class VscodeGitBlameConfigurationAdapter {
       dateFormatStyle: readEnum(
         config.get<unknown>('dateFormatStyle'),
         DATE_FORMAT_STYLES,
-        'Y/M/D',
+        'YYYY-MM-DD HH:mm',
       ),
       authorNameStyle: readEnum(
         config.get<unknown>('authorNameStyle'),

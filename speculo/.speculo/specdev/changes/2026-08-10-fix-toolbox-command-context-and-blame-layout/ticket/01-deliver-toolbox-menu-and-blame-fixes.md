@@ -4,10 +4,10 @@ artifact: ticket
 change: 2026-08-10-fix-toolbox-command-context-and-blame-layout
 id: T-01
 title: 交付菜单上下文、Blame 布局与可见命名修复
-status: blocked
+status: review
 planning_depth: standard
 planning_depth_reason: 跨 Extension Host 命令接缝、Core 纯格式器、VS Code Presentation 和 Manifest，但不改变公共 API 或持久数据
-ready: false
+ready: true
 risk: medium
 blocked_by: []
 contract_ids: [AC-001, AC-002, AC-003, AC-004, AC-005, AC-006, AC-007]
@@ -22,6 +22,7 @@ expected_changes:
   - '<Path>package.nls*.json</Path>'
   - '<Path>README.md</Path>'
   - '<Path>CHANGELOG.md</Path>'
+  - '<Path>src/extension/presentation/git-blame-hover-provider*</Path>'
 writable_paths:
   - '<Path>src/extension/commands/**</Path>'
   - '<Path>src/extension/adapters/vscode-git-review-repository-adapter*</Path>'
@@ -33,6 +34,7 @@ writable_paths:
   - '<Path>package.nls.zh-cn.json</Path>'
   - '<Path>README.md</Path>'
   - '<Path>CHANGELOG.md</Path>'
+  - '<Path>src/extension/presentation/git-blame-hover-provider*</Path>'
 read_only_paths:
   - '<Path>src/core/contracts/**</Path>'
   - '<Path>src/core/orchestration/**</Path>'
@@ -56,8 +58,8 @@ shared_path_owners:
 
 ## 1. 战略与来源
 
-- **目标：** 恢复两个真实菜单入口、压缩 Blame 注解占用并统一可见命令来源标识。
-- **可观察产出：** 用户可从 SCM 和行号菜单直接完成操作，Blame 列紧凑且范围清晰，0.1.2 VSIX 可安装。
+- **目标：** 恢复两个真实菜单入口、稳定左侧 Blame 拟态列并统一可见命令来源标识。
+- **可观察产出：** 用户可从 SCM 和行号菜单直接完成操作，Blame 列使用本地 `YYYY-MM-DD HH:mm`、紧凑且不发生附件错位，0.1.4 VSIX 可安装并发布。
 - **来源：** `AC-001` 至 `AC-007`、`DIAG-001`、`USER-DECISION:2026-08-10-toolbox-fixes`。
 - **当前事实：** 命令守卫与 VS Code 官方上下文形态不匹配；Renderer 固定 `22em`；Manifest 通过 category 和无前缀 title 呈现。
 - **Planning Depth 原因：** 单一用户体验修复跨多个运行接缝但保持公共契约和数据不变，使用 Standard。
@@ -67,8 +69,8 @@ shared_path_owners:
 ### 已锁定决策
 
 - 只改可见命名，不改命令 ID。
-- Blame 使用自适应宽度、0.35em 实色色条和 14% 透明整列背景，不覆盖代码正文。
-- 版本提升至 0.1.2，仅生成本地 VSIX。
+- Blame 使用自适应宽度、严格本地时区 `YYYY-MM-DD HH:mm`、单一 decoration 的 `before/after` 附件、0.35em 实色色条和 14% 透明整列背景，不覆盖代码正文。
+- 已有 `v0.1.3` Release；本次版本提升至 `0.1.4`，并由用户授权提交、推送和标签发布。
 
 ### 已采用的低影响假设
 
@@ -103,7 +105,7 @@ shared_path_owners:
 
 1. 为 SCM/行号真实上下文、Blame 宽度色块和全命令前缀分别建立红灯回归。
 2. 在现有 Command/Adapter 接缝最小实现上下文归一化并保持畸形输入拒绝。
-3. 扩展纯格式配色并让 Renderer 按最长文本形成整列色块，验证清理行为。
+3. 扩展纯格式配色与本地日期，并让 Renderer 用单一 `before/after` 实例按最长文本形成整列色块，验证清理行为。
 4. 更新 Manifest/i18n、版本和中文文档，执行定向回归。
 5. 运行完整门禁、真实 Extension Host 手动验收和 VSIX 打包，完成双轴审查与 Evidence。
 
@@ -127,10 +129,10 @@ shared_path_owners:
 ## 9. 发布、迁移与恢复
 
 - **迁移顺序：** 先保持命令 ID兼容，再修改可见资源和版本。
-- **兼容窗口：** 0.1.2 直接兼容 0.1.1 命令绑定，无别名或数据迁移。
+- **兼容窗口：** 0.1.4 直接兼容 0.1.3 命令绑定，无别名或数据迁移。
 - **监控信号：** 输出日志不再出现两类合法上下文 `invalid-input`。
 - **回滚或前向恢复：** 所有变更可通过代码回退；视觉问题可独立退回原装饰样式而不影响命令修复。
-- **不可逆操作与批准点：** 无；不执行远程动作。
+- **不可逆操作与批准点：** `main`、`v0.1.4` 标签和 GitHub Release 已由用户明确批准；Marketplace/npm 仍不执行。
 - **收缩条件：** 不适用：不引入临时兼容层。
 
 ## 10. 验收标准
@@ -143,4 +145,4 @@ shared_path_owners:
 
 ## 11. 当前阻塞
 
-`B-T01-001`：当前会话没有 `computer-use` 技能要求的 `node_repl`，无法合规完成浅色/深色 Extension Host 截图。产品实现、自动化、真实 Extension Host 集成和 0.1.2 VSIX 已完成。
+当前视觉截图仍需在可控制 Extension Host 的环境完成；自动化、真实 Extension Host 集成和 0.1.4 包构建通过后才能关闭该验收项。

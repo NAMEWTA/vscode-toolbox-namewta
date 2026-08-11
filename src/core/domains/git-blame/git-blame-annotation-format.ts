@@ -3,6 +3,7 @@ import type { GitBlameLine } from './git-blame-model';
 export type GitBlameDateFormatStyle =
   | 'Y/M/D'
   | 'YYYY-MM-DD'
+  | 'YYYY-MM-DD HH:mm'
   | 'DD.MM.YYYY'
   | 'relative';
 export type GitBlameAuthorNameStyle = 'full' | 'first' | 'last';
@@ -60,6 +61,15 @@ export function measureDisplayWidth(value: string): number {
   return width;
 }
 
+export function formatGitBlameLocalDateTime(authoredAt: number): string {
+  const date = new Date(authoredAt * 1_000);
+  return `${date.getFullYear().toString().padStart(4, '0')}-${padNumber(
+    date.getMonth() + 1,
+  )}-${padNumber(date.getDate())} ${padNumber(date.getHours())}:${padNumber(
+    date.getMinutes(),
+  )}`;
+}
+
 function formatPrimaryText(
   line: GitBlameLine,
   config: GitBlameFormatConfiguration,
@@ -77,14 +87,16 @@ function formatDate(authoredAt: number, config: GitBlameFormatConfiguration): st
     return formatRelativeAge(Math.max(0, config.nowEpochSeconds - authoredAt));
   }
   const date = new Date(authoredAt * 1_000);
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth() + 1;
-  const day = date.getUTCDate();
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
   switch (config.dateFormatStyle) {
     case 'Y/M/D':
       return `${year}/${month}/${day}`;
     case 'YYYY-MM-DD':
       return `${year}-${padNumber(month)}-${padNumber(day)}`;
+    case 'YYYY-MM-DD HH:mm':
+      return formatGitBlameLocalDateTime(authoredAt);
     case 'DD.MM.YYYY':
       return `${padNumber(day)}.${padNumber(month)}.${year}`;
   }

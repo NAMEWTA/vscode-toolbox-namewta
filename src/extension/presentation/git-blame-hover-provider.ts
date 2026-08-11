@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
-import { createGitRemoteCommitUrl } from '../../core/domains/git-blame/public-api';
+import {
+  createGitRemoteCommitUrl,
+  formatGitBlameLocalDateTime,
+} from '../../core/domains/git-blame/public-api';
 import type {
   GitBlameAnnotationController,
   GitBlameLineIdentity,
@@ -54,7 +57,7 @@ export function buildGitBlameHoverMarkdown(
     enabledCommands: Object.values(GIT_BLAME_HOVER_COMMAND_IDS),
   };
   const { blame } = identity;
-  const absoluteTime = new Date(blame.authoredAt * 1_000).toLocaleString();
+  const absoluteTime = formatGitBlameLocalDateTime(blame.authoredAt);
   markdown.appendMarkdown(
     `**${escapeMarkdown(vscode.l10n.t('Author'))}:** ${escapeMarkdown(blame.author)} <${escapeMarkdown(blame.email)}>  \n`,
   );

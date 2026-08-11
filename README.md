@@ -24,7 +24,7 @@ VS Code 命令 / React Webview
 
 ### Git Blame
 
-- 对当前文档显式显示、隐藏、切换或刷新左侧等宽日期/作者列和 commit 热力条。
+- 对当前文档显式显示、隐藏、切换或刷新左侧等宽日期/作者列和 commit 热力条；默认日期为扩展宿主本地时区的 `YYYY-MM-DD HH:mm`。
 - 未保存编辑只保留可证明的旧归属；新增或不确定行使用同宽空单元，继续输入时源码起始列不会跳动。
 - 已提交行 Hover 提供完整元数据、复制 hash、安全 remote 链接、提交单文件 Diff、上一版本和增量 Line History。
 - 历史内容使用自有只读 URI 和公开 `vscode.diff`，不创建临时文件或依赖其他 Git 扩展。
@@ -146,6 +146,8 @@ Core 禁止导入 VS Code、React、Node 或 DOM API。Webview 禁止导入 VS C
 - `vscodeToolboxNamewta.gitBlame.highlightCurrentCommit`
 - `vscodeToolboxNamewta.gitBlame.ignoreWhitespace`
 - `vscodeToolboxNamewta.gitBlame.maxLines`
+
+`gitBlame.dateFormatStyle` 的默认值为 `YYYY-MM-DD HH:mm`。显示时间以实际运行 Git Blame 的 Extension Host 本地时区为准，精确到分钟，不显示秒。
 
 ## 工作区信任与虚拟工作区
 
