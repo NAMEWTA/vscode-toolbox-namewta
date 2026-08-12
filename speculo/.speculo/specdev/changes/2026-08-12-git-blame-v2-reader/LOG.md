@@ -27,3 +27,7 @@
 ## LOG-007 — 2026-08-12
 
 用户明确授权 commit、push 和 release。由于 `v0.1.5` 已存在并指向 change 基线，按语义化版本前向发布 `0.1.6`，不移动或覆盖既有标签与 Release。
+
+## LOG-008 — 2026-08-12
+
+产品提交 `6bf1b1c8d8368809e0d59b022716605fa7c591a1` 已推送 `origin/main`，annotated tag `v0.1.6` 指向该提交。GitHub Actions Run 31595900875 完整通过并创建正式 Release，上传的 VSIX 为 276118 bytes。Linux CI 与 macOS 本地 VSIX 的外层 ZIP SHA-256 因跨平台容器元数据不同，但解压后的 20 个文件逐字节一致。
