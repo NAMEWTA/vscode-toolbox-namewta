@@ -1,8 +1,16 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 describe('Toolbox 命令清单', () => {
+  it('声明可打包的 PNG 扩展图标并保留 SVG 源文件', () => {
+    const manifest = readJson('package.json');
+
+    expect(manifest.icon).toBe('media/icon.png');
+    expect(existsSync(path.resolve(process.cwd(), 'media/icon.png'))).toBe(true);
+    expect(existsSync(path.resolve(process.cwd(), 'media/icon.svg'))).toBe(true);
+  });
+
   it('让全部可见命令从 toolbox- 开始并保持稳定命令 ID', () => {
     const manifest = readJson('package.json');
     const contributes = record(manifest.contributes);

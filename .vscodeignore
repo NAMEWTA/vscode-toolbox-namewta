@@ -5,6 +5,8 @@
 build/**
 docs/**
 media/**
+!media/icon.svg
+!media/icon.png
 scripts/**
 speculo/**
 src/**

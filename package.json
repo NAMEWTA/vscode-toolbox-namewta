@@ -2,9 +2,10 @@
   "name": "vscode-toolbox-namewta",
   "displayName": "vscode-toolbox-namewta",
   "description": "%extension.description%",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "NAMEWTA",
   "license": "MIT",
+  "icon": "media/icon.png",
   "private": true,
   "repository": {
     "type": "git",
