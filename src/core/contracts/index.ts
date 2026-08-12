@@ -19,6 +19,9 @@ export type {
   GitHistoricalContentResult,
   GitLineHistoryInput,
   GitLineHistoryPage,
+  GitBlameReaderCopyInput,
+  GitBlameReaderModel,
+  GitBlameReaderModelInput,
   GitReviewItemContent,
   GitReviewItemContentInput,
   GitReviewSessionSnapshot,
@@ -46,6 +49,7 @@ export {
 export type {
   ExtensionToWebviewMessage,
   GitReviewWebviewAction,
+  GitBlameReaderWebviewAction,
   ToolEvent,
   WebviewToExtensionMessage,
 } from './webview-message-contract';

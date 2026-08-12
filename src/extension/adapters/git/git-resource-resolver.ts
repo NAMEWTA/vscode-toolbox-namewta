@@ -1,3 +1,4 @@
+import { realpath } from 'node:fs/promises';
 import path from 'node:path';
 import {
   isExecutableGitResource,
@@ -13,17 +14,33 @@ export type GitResourceCandidate = {
   readonly filePath: string;
 };
 
+type GitPathCanonicalizer = (filePath: string) => Promise<string>;
+
 export class GitResourceResolver {
-  public constructor(private readonly git: GitCommandPort) {}
+  public constructor(
+    private readonly git: GitCommandPort,
+    private readonly canonicalizePath: GitPathCanonicalizer = realpath,
+  ) {}
 
   public async resolve(
     candidate: GitResourceCandidate,
     signal?: GitCancellationSignal,
   ): Promise<ExecutableGitResource> {
     validateCandidate(candidate);
-    const repositoryRoot = await this.findRepositoryRoot(candidate.filePath, signal);
+    const reportedRepositoryRoot = await this.findRepositoryRoot(
+      candidate.filePath,
+      signal,
+    );
+    const [repositoryRoot, resourceDirectory] = await this.canonicalizePaths(
+      reportedRepositoryRoot,
+      path.dirname(candidate.filePath),
+    );
+    const resourcePath = path.join(
+      resourceDirectory,
+      path.basename(candidate.filePath),
+    );
     const relativePath = path
-      .relative(repositoryRoot, candidate.filePath)
+      .relative(repositoryRoot, resourcePath)
       .split(path.sep)
       .join('/');
     const resource = { repositoryRoot, relativePath };
@@ -33,6 +50,23 @@ export class GitResourceResolver {
       });
     }
     return resource;
+  }
+
+  private async canonicalizePaths(
+    repositoryRoot: string,
+    resourceDirectory: string,
+  ): Promise<readonly [string, string]> {
+    try {
+      return await Promise.all([
+        this.canonicalizePath(repositoryRoot),
+        this.canonicalizePath(resourceDirectory),
+      ]);
+    } catch (error: unknown) {
+      throw new ApplicationError('The Git resource path cannot be resolved.', {
+        code: 'capability-unavailable',
+        cause: error,
+      });
+    }
   }
 
   private async findRepositoryRoot(

@@ -5,6 +5,7 @@ import {
   type GitReviewSessionSnapshot,
   type GitReviewStartInput,
 } from '../domains/git-review/git-review-model';
+/* eslint-disable max-lines */
 import type {
   GitReviewItemActionInput,
   GitReviewItemPatch,
@@ -13,6 +14,7 @@ import { isGitReviewToolCommandInput } from './git-review-tool-command-input';
 import {
   isFullCommitHash,
   isGitBlameAnnotationsInput,
+  isGitReference,
   isGitCommitChangesInput,
   isGitHistoricalContentInput,
   isGitLineHistoryInput,
@@ -26,6 +28,10 @@ import {
   type GitLineHistoryInput,
   type GitLineHistoryPage,
 } from '../domains/git-blame/git-blame-model';
+import {
+  type GitBlameReaderCopyFormat,
+  type GitBlameReaderModel,
+} from '../domains/git-blame/git-blame-reader-model';
 
 export type {
   GitBlameAnnotationsInput,
@@ -38,6 +44,25 @@ export type {
   GitLineHistoryInput,
   GitLineHistoryPage,
 };
+export type GitBlameReaderModelInput = {
+  readonly resource: GitBlameAnnotationsInput['resource'];
+  readonly sourceUri: string;
+  readonly revision: string;
+  readonly documentVersion: number;
+  readonly lineCount: number;
+  readonly ignoreWhitespace: boolean;
+  readonly maxLines: number;
+  readonly sourceText: string;
+  readonly generation: number;
+  readonly sourceLine: number;
+};
+export type GitBlameReaderCopyInput = {
+  readonly generation: number;
+  readonly format: GitBlameReaderCopyFormat;
+  readonly line?: number;
+  readonly blockId?: string;
+};
+export type { GitBlameReaderCopyFormat, GitBlameReaderModel };
 export type {
   GitReviewItemContent,
   GitReviewItemContentInput,
@@ -91,6 +116,14 @@ export type ToolCommandMap = {
   'gitBlame.getAnnotations': {
     input: GitBlameAnnotationsInput;
     output: GitBlameAnnotationsResult;
+  };
+  'gitBlame.getReaderModel': {
+    input: GitBlameReaderModelInput;
+    output: GitBlameReaderModel;
+  };
+  'gitBlame.copyReader': {
+    input: GitBlameReaderCopyInput;
+    output: string;
   };
   'gitBlame.getLineHistory': {
     input: GitLineHistoryInput;
@@ -188,6 +221,8 @@ const TOOL_COMMAND_IDS = [
   'copyReference.copy',
   'gitBlame.copyCommitHash',
   'gitBlame.getAnnotations',
+  'gitBlame.getReaderModel',
+  'gitBlame.copyReader',
   'gitBlame.getCommitChanges',
   'gitBlame.getHistoricalContent',
   'gitBlame.getLineHistory',
@@ -238,6 +273,10 @@ function isNonGitReviewCommandInput(
       return isGitCopyCommitHashInput(input);
     case 'gitBlame.getAnnotations':
       return isGitBlameAnnotationsInput(input);
+    case 'gitBlame.getReaderModel':
+      return isGitBlameReaderModelInput(input);
+    case 'gitBlame.copyReader':
+      return isGitBlameReaderCopyInput(input);
     case 'gitBlame.getCommitChanges':
       return isGitCommitChangesInput(input);
     case 'gitBlame.getHistoricalContent':
@@ -255,6 +294,92 @@ function isGitReviewCommand(command: ToolCommandId): command is GitReviewCommand
 
 function isGitCopyCommitHashInput(value: unknown): value is GitCopyCommitHashInput {
   return isRecordWithKeys(value, ['hash']) && isFullCommitHash(value.hash);
+}
+
+// eslint-disable-next-line complexity
+function isGitBlameReaderModelInput(value: unknown): value is GitBlameReaderModelInput {
+  if (
+    !isRecordWithKeys(value, [
+      'resource',
+      'sourceUri',
+      'revision',
+      'documentVersion',
+      'lineCount',
+      'ignoreWhitespace',
+      'maxLines',
+      'sourceText',
+      'generation',
+      'sourceLine',
+    ])
+  )
+    return false;
+  return (
+    isGitBlameAnnotationsInput({
+      resource: value.resource,
+      documentVersion: value.documentVersion,
+      lineCount: value.lineCount,
+      ignoreWhitespace: value.ignoreWhitespace,
+      maxLines: value.maxLines,
+    }) &&
+    isBoundedText(value.sourceUri, 8_192) &&
+    isGitReference(value.revision) &&
+    Number.isInteger(value.generation) &&
+    Number(value.generation) > 0 &&
+    Number.isInteger(value.sourceLine) &&
+    Number(value.sourceLine) > 0 &&
+    Number(value.sourceLine) <= Number(value.lineCount) &&
+    typeof value.sourceText === 'string' &&
+    !value.sourceText.includes('\0') &&
+    value.sourceText.length <= 20_000_000
+  );
+}
+
+// eslint-disable-next-line complexity
+function isGitBlameReaderCopyInput(value: unknown): value is GitBlameReaderCopyInput {
+  if (
+    !isRecord(value) ||
+    !('generation' in value) ||
+    !('format' in value) ||
+    !isReaderCopyFormat(value.format)
+  )
+    return false;
+  const allowed = new Set(['generation', 'format', 'line', 'blockId']);
+  return (
+    Object.keys(value).every((key) => allowed.has(key)) &&
+    Number.isInteger(value.generation) &&
+    Number(value.generation) > 0 &&
+    (value.line === undefined ||
+      (Number.isInteger(value.line) &&
+        Number(value.line) > 0 &&
+        Number(value.line) <= 10_000_000)) &&
+    (value.blockId === undefined ||
+      (typeof value.blockId === 'string' &&
+        value.blockId.length > 0 &&
+        value.blockId.length <= 256 &&
+        !value.blockId.includes('\0')))
+  );
+}
+
+function isReaderCopyFormat(value: unknown): value is GitBlameReaderCopyFormat {
+  return (
+    value === 'code' ||
+    value === 'line-with-blame' ||
+    value === 'commit-sha' ||
+    value === 'commit-info' ||
+    value === 'block-code' ||
+    value === 'block-with-blame' ||
+    value === 'all-code' ||
+    value === 'all-with-blame'
+  );
+}
+
+function isBoundedText(value: unknown, maxLength: number): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= maxLength &&
+    !value.includes('\0')
+  );
 }
 
 function isCopyReferenceInput(value: unknown): value is CopyReferenceInput {

@@ -2,7 +2,7 @@
   "name": "vscode-toolbox-namewta",
   "displayName": "vscode-toolbox-namewta",
   "description": "%extension.description%",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "publisher": "NAMEWTA",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -93,6 +93,10 @@
         "title": "%commands.gitBlame.viewLineHistory%"
       },
       {
+        "command": "vscodeToolboxNamewta.gitBlame.openReader",
+        "title": "%commands.gitBlame.openReader%"
+      },
+      {
         "command": "vscodeToolboxNamewta.gitReview.start",
         "title": "%commands.gitReview.start%",
         "icon": "$(diff-multiple)"
@@ -178,6 +182,11 @@
           "command": "vscodeToolboxNamewta.gitBlame.viewLineHistory",
           "when": "resourceScheme == file",
           "group": "navigation@93"
+        },
+        {
+          "command": "vscodeToolboxNamewta.gitBlame.openReader",
+          "when": "resourceScheme == file",
+          "group": "navigation@94"
         }
       ],
       "commandPalette": [
@@ -221,36 +230,6 @@
           "maximum": 120000,
           "scope": "window",
           "description": "%configuration.webview.requestTimeoutMs%"
-        },
-        "vscodeToolboxNamewta.gitBlame.dateFormatStyle": {
-          "type": "string",
-          "enum": [
-            "Y/M/D",
-            "YYYY-MM-DD",
-            "YYYY-MM-DD HH:mm",
-            "DD.MM.YYYY",
-            "relative"
-          ],
-          "default": "YYYY-MM-DD HH:mm",
-          "scope": "window",
-          "description": "%configuration.gitBlame.dateFormatStyle%"
-        },
-        "vscodeToolboxNamewta.gitBlame.authorNameStyle": {
-          "type": "string",
-          "enum": [
-            "full",
-            "first",
-            "last"
-          ],
-          "default": "full",
-          "scope": "window",
-          "description": "%configuration.gitBlame.authorNameStyle%"
-        },
-        "vscodeToolboxNamewta.gitBlame.mergeCommitLines": {
-          "type": "boolean",
-          "default": false,
-          "scope": "window",
-          "description": "%configuration.gitBlame.mergeCommitLines%"
         },
         "vscodeToolboxNamewta.gitBlame.highlightCurrentCommit": {
           "type": "boolean",

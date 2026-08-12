@@ -82,4 +82,29 @@ describe('Webview message contract', () => {
       }),
     ).toBe(false);
   });
+
+  it('validates Reader actions and rejects free-form copy payloads', () => {
+    expect(
+      isWebviewToExtensionMessage({
+        type: 'gitBlameReader.copy',
+        generation: 4,
+        format: 'all-code',
+      }),
+    ).toBe(true);
+    expect(
+      isWebviewToExtensionMessage({
+        type: 'gitBlameReader.copy',
+        generation: 4,
+        format: 'all-code',
+        text: 'untrusted',
+      }),
+    ).toBe(false);
+    expect(
+      isWebviewToExtensionMessage({
+        type: 'gitBlameReader.openSource',
+        generation: 0,
+        line: 1,
+      }),
+    ).toBe(false);
+  });
 });

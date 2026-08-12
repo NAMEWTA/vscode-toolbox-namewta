@@ -1,0 +1,3074 @@
+{
+  "workspace": "/tmp/brm-eEweKx/workspace",
+  "results": [
+    {
+      "theme": "Light Modern",
+      "themeKey": "light",
+      "zoom": "100",
+      "screenshot": "ui-light-100.png",
+      "screenshotBytes": 300115,
+      "workbench": {
+        "dpr": 1,
+        "viewport": [1440, 900],
+        "activeTabs": [
+          "webview-vscodeToolboxNamewta.gitBlameReader-3dc96733-dacb-48e6-a558-b16b83bec64a"
+        ],
+        "frame": {
+          "rect": {
+            "x": 348,
+            "y": 66,
+            "width": 792,
+            "height": 808,
+            "top": 66,
+            "right": 1140,
+            "bottom": 874,
+            "left": 348
+          },
+          "visibility": "visible"
+        }
+      },
+      "reader": {
+        "bodyClass": "vscode-light vscode-using-screen-reader",
+        "themeId": "Light Modern",
+        "viewport": [792, 808],
+        "lineCount": 328,
+        "currentLine": "25",
+        "currentVisible": true,
+        "longestLine": {
+          "line": "17",
+          "lineNumberCount": 1,
+          "codeTextLength": 104,
+          "lineHeight": 49,
+          "codeStyle": {
+            "whiteSpace": "pre-wrap",
+            "overflowWrap": "anywhere",
+            "userSelect": "text",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "colors": {
+          "root": {
+            "foreground": "rgb(59, 59, 59)",
+            "background": "rgb(255, 255, 255)"
+          },
+          "button": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 95, 184)"
+          }
+        },
+        "focus": {
+          "outlineColor": "rgb(0, 95, 184)",
+          "outlineStyle": "solid",
+          "outlineWidth": "1px"
+        },
+        "screenReaderClass": true,
+        "overflow": {
+          "root": [792, 792],
+          "body": [792, 792],
+          "pane": [752, 752]
+        },
+        "overlaps": [],
+        "clipped": []
+      },
+      "accessibility": {
+        "nodeCount": 6379,
+        "roles": {
+          "RootWebArea": 1,
+          "none": 380,
+          "document": 1,
+          "generic": 29,
+          "main": 1,
+          "sectionheader": 26,
+          "toolbar": 1,
+          "list": 1,
+          "heading": 1,
+          "LabelText": 1,
+          "button": 58,
+          "StaticText": 2390,
+          "textbox": 1,
+          "listitem": 328,
+          "InlineTextBox": 2832,
+          "code": 328
+        },
+        "names": [
+          {
+            "role": "toolbar",
+            "name": "Copy actions"
+          },
+          {
+            "role": "list",
+            "name": "Git blame logical lines"
+          },
+          {
+            "role": "heading",
+            "name": "Git Blame Reader: src/extension/bootstrap/create-extension-runtime.ts"
+          },
+          {
+            "role": "button",
+            "name": "Refresh"
+          },
+          {
+            "role": "button",
+            "name": "Copy Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Line With Blame"
+          },
+          {
+            "role": "button",
+            "name": "Copy All Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit SHA"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit Info"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy All With Blame"
+          },
+          {
+            "role": "textbox",
+            "name": "Search source"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          }
+        ]
+      }
+    },
+    {
+      "theme": "Dark Modern",
+      "themeKey": "dark",
+      "zoom": "100",
+      "screenshot": "ui-dark-100.png",
+      "screenshotBytes": 299441,
+      "workbench": {
+        "dpr": 1,
+        "viewport": [1440, 900],
+        "activeTabs": [
+          "webview-vscodeToolboxNamewta.gitBlameReader-3dc96733-dacb-48e6-a558-b16b83bec64a"
+        ],
+        "frame": {
+          "rect": {
+            "x": 348,
+            "y": 66,
+            "width": 792,
+            "height": 808,
+            "top": 66,
+            "right": 1140,
+            "bottom": 874,
+            "left": 348
+          },
+          "visibility": "visible"
+        }
+      },
+      "reader": {
+        "bodyClass": "vscode-dark vscode-using-screen-reader",
+        "themeId": "Dark Modern",
+        "viewport": [792, 808],
+        "lineCount": 328,
+        "currentLine": "25",
+        "currentVisible": true,
+        "longestLine": {
+          "line": "17",
+          "lineNumberCount": 1,
+          "codeTextLength": 104,
+          "lineHeight": 49,
+          "codeStyle": {
+            "whiteSpace": "pre-wrap",
+            "overflowWrap": "anywhere",
+            "userSelect": "text",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "colors": {
+          "root": {
+            "foreground": "rgb(204, 204, 204)",
+            "background": "rgb(31, 31, 31)"
+          },
+          "button": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 120, 212)"
+          }
+        },
+        "focus": {
+          "outlineColor": "rgb(0, 120, 212)",
+          "outlineStyle": "solid",
+          "outlineWidth": "1px"
+        },
+        "screenReaderClass": true,
+        "overflow": {
+          "root": [792, 792],
+          "body": [792, 792],
+          "pane": [752, 752]
+        },
+        "overlaps": [],
+        "clipped": []
+      },
+      "accessibility": {
+        "nodeCount": 6379,
+        "roles": {
+          "RootWebArea": 1,
+          "none": 380,
+          "document": 1,
+          "generic": 29,
+          "main": 1,
+          "sectionheader": 26,
+          "toolbar": 1,
+          "list": 1,
+          "heading": 1,
+          "LabelText": 1,
+          "button": 58,
+          "StaticText": 2390,
+          "textbox": 1,
+          "listitem": 328,
+          "InlineTextBox": 2832,
+          "code": 328
+        },
+        "names": [
+          {
+            "role": "toolbar",
+            "name": "Copy actions"
+          },
+          {
+            "role": "list",
+            "name": "Git blame logical lines"
+          },
+          {
+            "role": "heading",
+            "name": "Git Blame Reader: src/extension/bootstrap/create-extension-runtime.ts"
+          },
+          {
+            "role": "button",
+            "name": "Refresh"
+          },
+          {
+            "role": "button",
+            "name": "Copy Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Line With Blame"
+          },
+          {
+            "role": "button",
+            "name": "Copy All Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit SHA"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit Info"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy All With Blame"
+          },
+          {
+            "role": "textbox",
+            "name": "Search source"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          }
+        ]
+      }
+    },
+    {
+      "theme": "Dark High Contrast",
+      "themeKey": "high-contrast",
+      "zoom": "100",
+      "screenshot": "ui-high-contrast-100.png",
+      "screenshotBytes": 280803,
+      "workbench": {
+        "dpr": 1,
+        "viewport": [1440, 900],
+        "activeTabs": [
+          "webview-vscodeToolboxNamewta.gitBlameReader-3dc96733-dacb-48e6-a558-b16b83bec64a"
+        ],
+        "frame": {
+          "rect": {
+            "x": 349,
+            "y": 67,
+            "width": 792,
+            "height": 808,
+            "top": 67,
+            "right": 1141,
+            "bottom": 875,
+            "left": 349
+          },
+          "visibility": "visible"
+        }
+      },
+      "reader": {
+        "bodyClass": "vscode-high-contrast vscode-using-screen-reader",
+        "themeId": "Default High Contrast",
+        "viewport": [792, 808],
+        "lineCount": 328,
+        "currentLine": "25",
+        "currentVisible": true,
+        "longestLine": {
+          "line": "17",
+          "lineNumberCount": 1,
+          "codeTextLength": 104,
+          "lineHeight": 49,
+          "codeStyle": {
+            "whiteSpace": "pre-wrap",
+            "overflowWrap": "anywhere",
+            "userSelect": "text",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "colors": {
+          "root": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 0, 0)"
+          },
+          "button": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 0, 0)"
+          }
+        },
+        "focus": {
+          "outlineColor": "rgb(243, 133, 24)",
+          "outlineStyle": "solid",
+          "outlineWidth": "1px"
+        },
+        "screenReaderClass": true,
+        "overflow": {
+          "root": [792, 792],
+          "body": [792, 792],
+          "pane": [752, 752]
+        },
+        "overlaps": [],
+        "clipped": []
+      },
+      "accessibility": {
+        "nodeCount": 6379,
+        "roles": {
+          "RootWebArea": 1,
+          "none": 380,
+          "document": 1,
+          "generic": 29,
+          "main": 1,
+          "sectionheader": 26,
+          "toolbar": 1,
+          "list": 1,
+          "heading": 1,
+          "LabelText": 1,
+          "button": 58,
+          "StaticText": 2390,
+          "textbox": 1,
+          "listitem": 328,
+          "InlineTextBox": 2832,
+          "code": 328
+        },
+        "names": [
+          {
+            "role": "toolbar",
+            "name": "Copy actions"
+          },
+          {
+            "role": "list",
+            "name": "Git blame logical lines"
+          },
+          {
+            "role": "heading",
+            "name": "Git Blame Reader: src/extension/bootstrap/create-extension-runtime.ts"
+          },
+          {
+            "role": "button",
+            "name": "Refresh"
+          },
+          {
+            "role": "button",
+            "name": "Copy Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Line With Blame"
+          },
+          {
+            "role": "button",
+            "name": "Copy All Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit SHA"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit Info"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy All With Blame"
+          },
+          {
+            "role": "textbox",
+            "name": "Search source"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          }
+        ]
+      }
+    },
+    {
+      "theme": "Light Modern",
+      "themeKey": "light",
+      "zoom": "125",
+      "screenshot": "ui-light-125.png",
+      "screenshotBytes": 242773,
+      "workbench": {
+        "dpr": 1.25,
+        "viewport": [1152, 720],
+        "activeTabs": [
+          "webview-vscodeToolboxNamewta.gitBlameReader-6f48efe8-e32f-4a3d-87c6-b3b6ce172c31"
+        ],
+        "frame": {
+          "rect": {
+            "x": 336,
+            "y": 65.20000457763672,
+            "width": 528,
+            "height": 628,
+            "top": 65.20000457763672,
+            "right": 864,
+            "bottom": 693.2000045776367,
+            "left": 336
+          },
+          "visibility": "visible"
+        }
+      },
+      "reader": {
+        "bodyClass": "vscode-light vscode-using-screen-reader",
+        "themeId": "Light Modern",
+        "viewport": [528, 628],
+        "lineCount": 328,
+        "currentLine": "25",
+        "currentVisible": true,
+        "longestLine": {
+          "line": "17",
+          "lineNumberCount": 1,
+          "codeTextLength": 104,
+          "lineHeight": 49.60000228881836,
+          "codeStyle": {
+            "whiteSpace": "pre-wrap",
+            "overflowWrap": "anywhere",
+            "userSelect": "text",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "colors": {
+          "root": {
+            "foreground": "rgb(59, 59, 59)",
+            "background": "rgb(255, 255, 255)"
+          },
+          "button": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 95, 184)"
+          }
+        },
+        "focus": {
+          "outlineColor": "rgb(0, 95, 184)",
+          "outlineStyle": "solid",
+          "outlineWidth": "0.8px"
+        },
+        "screenReaderClass": true,
+        "overflow": {
+          "root": [528, 528],
+          "body": [528, 528],
+          "pane": [488, 488]
+        },
+        "overlaps": [],
+        "clipped": []
+      },
+      "accessibility": {
+        "nodeCount": 6309,
+        "roles": {
+          "RootWebArea": 1,
+          "none": 380,
+          "document": 1,
+          "generic": 29,
+          "main": 1,
+          "sectionheader": 26,
+          "toolbar": 1,
+          "list": 1,
+          "heading": 1,
+          "LabelText": 1,
+          "button": 58,
+          "StaticText": 2390,
+          "textbox": 1,
+          "listitem": 328,
+          "InlineTextBox": 2762,
+          "code": 328
+        },
+        "names": [
+          {
+            "role": "toolbar",
+            "name": "Copy actions"
+          },
+          {
+            "role": "list",
+            "name": "Git blame logical lines"
+          },
+          {
+            "role": "heading",
+            "name": "Git Blame Reader: src/extension/bootstrap/create-extension-runtime.ts"
+          },
+          {
+            "role": "button",
+            "name": "Refresh"
+          },
+          {
+            "role": "button",
+            "name": "Copy Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Line With Blame"
+          },
+          {
+            "role": "button",
+            "name": "Copy All Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit SHA"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit Info"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy All With Blame"
+          },
+          {
+            "role": "textbox",
+            "name": "Search source"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          }
+        ]
+      }
+    },
+    {
+      "theme": "Dark Modern",
+      "themeKey": "dark",
+      "zoom": "125",
+      "screenshot": "ui-dark-125.png",
+      "screenshotBytes": 240571,
+      "workbench": {
+        "dpr": 1.25,
+        "viewport": [1152, 720],
+        "activeTabs": [
+          "webview-vscodeToolboxNamewta.gitBlameReader-6f48efe8-e32f-4a3d-87c6-b3b6ce172c31"
+        ],
+        "frame": {
+          "rect": {
+            "x": 336,
+            "y": 65.20000457763672,
+            "width": 528,
+            "height": 628,
+            "top": 65.20000457763672,
+            "right": 864,
+            "bottom": 693.2000045776367,
+            "left": 336
+          },
+          "visibility": "visible"
+        }
+      },
+      "reader": {
+        "bodyClass": "vscode-dark vscode-using-screen-reader",
+        "themeId": "Dark Modern",
+        "viewport": [528, 628],
+        "lineCount": 328,
+        "currentLine": "25",
+        "currentVisible": true,
+        "longestLine": {
+          "line": "17",
+          "lineNumberCount": 1,
+          "codeTextLength": 104,
+          "lineHeight": 49.60000228881836,
+          "codeStyle": {
+            "whiteSpace": "pre-wrap",
+            "overflowWrap": "anywhere",
+            "userSelect": "text",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "colors": {
+          "root": {
+            "foreground": "rgb(204, 204, 204)",
+            "background": "rgb(31, 31, 31)"
+          },
+          "button": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 120, 212)"
+          }
+        },
+        "focus": {
+          "outlineColor": "rgb(0, 120, 212)",
+          "outlineStyle": "solid",
+          "outlineWidth": "0.8px"
+        },
+        "screenReaderClass": true,
+        "overflow": {
+          "root": [528, 528],
+          "body": [528, 528],
+          "pane": [488, 488]
+        },
+        "overlaps": [],
+        "clipped": []
+      },
+      "accessibility": {
+        "nodeCount": 6309,
+        "roles": {
+          "RootWebArea": 1,
+          "none": 380,
+          "document": 1,
+          "generic": 29,
+          "main": 1,
+          "sectionheader": 26,
+          "toolbar": 1,
+          "list": 1,
+          "heading": 1,
+          "LabelText": 1,
+          "button": 58,
+          "StaticText": 2390,
+          "textbox": 1,
+          "listitem": 328,
+          "InlineTextBox": 2762,
+          "code": 328
+        },
+        "names": [
+          {
+            "role": "toolbar",
+            "name": "Copy actions"
+          },
+          {
+            "role": "list",
+            "name": "Git blame logical lines"
+          },
+          {
+            "role": "heading",
+            "name": "Git Blame Reader: src/extension/bootstrap/create-extension-runtime.ts"
+          },
+          {
+            "role": "button",
+            "name": "Refresh"
+          },
+          {
+            "role": "button",
+            "name": "Copy Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Line With Blame"
+          },
+          {
+            "role": "button",
+            "name": "Copy All Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit SHA"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit Info"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy All With Blame"
+          },
+          {
+            "role": "textbox",
+            "name": "Search source"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          }
+        ]
+      }
+    },
+    {
+      "theme": "Dark High Contrast",
+      "themeKey": "high-contrast",
+      "zoom": "125",
+      "screenshot": "ui-high-contrast-125.png",
+      "screenshotBytes": 225768,
+      "workbench": {
+        "dpr": 1.25,
+        "viewport": [1152, 720],
+        "activeTabs": [
+          "webview-vscodeToolboxNamewta.gitBlameReader-6f48efe8-e32f-4a3d-87c6-b3b6ce172c31"
+        ],
+        "frame": {
+          "rect": {
+            "x": 336.8000183105469,
+            "y": 66,
+            "width": 528,
+            "height": 628,
+            "top": 66,
+            "right": 864.8000183105469,
+            "bottom": 694,
+            "left": 336.8000183105469
+          },
+          "visibility": "visible"
+        }
+      },
+      "reader": {
+        "bodyClass": "vscode-high-contrast vscode-using-screen-reader",
+        "themeId": "Default High Contrast",
+        "viewport": [528, 628],
+        "lineCount": 328,
+        "currentLine": "25",
+        "currentVisible": true,
+        "longestLine": {
+          "line": "17",
+          "lineNumberCount": 1,
+          "codeTextLength": 104,
+          "lineHeight": 49.60000228881836,
+          "codeStyle": {
+            "whiteSpace": "pre-wrap",
+            "overflowWrap": "anywhere",
+            "userSelect": "text",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "colors": {
+          "root": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 0, 0)"
+          },
+          "button": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 0, 0)"
+          }
+        },
+        "focus": {
+          "outlineColor": "rgb(243, 133, 24)",
+          "outlineStyle": "solid",
+          "outlineWidth": "0.8px"
+        },
+        "screenReaderClass": true,
+        "overflow": {
+          "root": [528, 528],
+          "body": [528, 528],
+          "pane": [488, 488]
+        },
+        "overlaps": [],
+        "clipped": []
+      },
+      "accessibility": {
+        "nodeCount": 6309,
+        "roles": {
+          "RootWebArea": 1,
+          "none": 380,
+          "document": 1,
+          "generic": 29,
+          "main": 1,
+          "sectionheader": 26,
+          "toolbar": 1,
+          "list": 1,
+          "heading": 1,
+          "LabelText": 1,
+          "button": 58,
+          "StaticText": 2390,
+          "textbox": 1,
+          "listitem": 328,
+          "InlineTextBox": 2762,
+          "code": 328
+        },
+        "names": [
+          {
+            "role": "toolbar",
+            "name": "Copy actions"
+          },
+          {
+            "role": "list",
+            "name": "Git blame logical lines"
+          },
+          {
+            "role": "heading",
+            "name": "Git Blame Reader: src/extension/bootstrap/create-extension-runtime.ts"
+          },
+          {
+            "role": "button",
+            "name": "Refresh"
+          },
+          {
+            "role": "button",
+            "name": "Copy Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Line With Blame"
+          },
+          {
+            "role": "button",
+            "name": "Copy All Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit SHA"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit Info"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy All With Blame"
+          },
+          {
+            "role": "textbox",
+            "name": "Search source"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          }
+        ]
+      }
+    },
+    {
+      "theme": "Light Modern",
+      "themeKey": "light",
+      "zoom": "150",
+      "screenshot": "ui-light-150.png",
+      "screenshotBytes": 238559,
+      "workbench": {
+        "dpr": 1.5,
+        "viewport": [960, 600],
+        "activeTabs": [
+          "webview-vscodeToolboxNamewta.gitBlameReader-ddac08d6-1117-4637-8e11-dd6f2c4781b0"
+        ],
+        "frame": {
+          "rect": {
+            "x": 288,
+            "y": 66,
+            "width": 432,
+            "height": 508,
+            "top": 66,
+            "right": 720,
+            "bottom": 574,
+            "left": 288
+          },
+          "visibility": "visible"
+        }
+      },
+      "reader": {
+        "bodyClass": "vscode-light vscode-using-screen-reader",
+        "themeId": "Light Modern",
+        "viewport": [432, 508],
+        "lineCount": 328,
+        "currentLine": "25",
+        "currentVisible": true,
+        "longestLine": {
+          "line": "17",
+          "lineNumberCount": 1,
+          "codeTextLength": 104,
+          "lineHeight": 80.66667175292969,
+          "codeStyle": {
+            "whiteSpace": "pre-wrap",
+            "overflowWrap": "anywhere",
+            "userSelect": "text",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "colors": {
+          "root": {
+            "foreground": "rgb(59, 59, 59)",
+            "background": "rgb(255, 255, 255)"
+          },
+          "button": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 95, 184)"
+          }
+        },
+        "focus": {
+          "outlineColor": "rgb(0, 95, 184)",
+          "outlineStyle": "solid",
+          "outlineWidth": "0.666667px"
+        },
+        "screenReaderClass": true,
+        "overflow": {
+          "root": [432, 432],
+          "body": [432, 432],
+          "pane": [392, 392]
+        },
+        "overlaps": [],
+        "clipped": []
+      },
+      "accessibility": {
+        "nodeCount": 6424,
+        "roles": {
+          "RootWebArea": 1,
+          "none": 380,
+          "document": 1,
+          "generic": 29,
+          "main": 1,
+          "sectionheader": 26,
+          "toolbar": 1,
+          "list": 1,
+          "heading": 1,
+          "LabelText": 1,
+          "button": 58,
+          "StaticText": 2390,
+          "textbox": 1,
+          "listitem": 328,
+          "InlineTextBox": 2877,
+          "code": 328
+        },
+        "names": [
+          {
+            "role": "toolbar",
+            "name": "Copy actions"
+          },
+          {
+            "role": "list",
+            "name": "Git blame logical lines"
+          },
+          {
+            "role": "heading",
+            "name": "Git Blame Reader: src/extension/bootstrap/create-extension-runtime.ts"
+          },
+          {
+            "role": "button",
+            "name": "Refresh"
+          },
+          {
+            "role": "button",
+            "name": "Copy Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Line With Blame"
+          },
+          {
+            "role": "button",
+            "name": "Copy All Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit SHA"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit Info"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy All With Blame"
+          },
+          {
+            "role": "textbox",
+            "name": "Search source"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          }
+        ]
+      }
+    },
+    {
+      "theme": "Dark Modern",
+      "themeKey": "dark",
+      "zoom": "150",
+      "screenshot": "ui-dark-150.png",
+      "screenshotBytes": 235810,
+      "workbench": {
+        "dpr": 1.5,
+        "viewport": [960, 600],
+        "activeTabs": [
+          "webview-vscodeToolboxNamewta.gitBlameReader-ddac08d6-1117-4637-8e11-dd6f2c4781b0"
+        ],
+        "frame": {
+          "rect": {
+            "x": 288,
+            "y": 66,
+            "width": 432,
+            "height": 508,
+            "top": 66,
+            "right": 720,
+            "bottom": 574,
+            "left": 288
+          },
+          "visibility": "visible"
+        }
+      },
+      "reader": {
+        "bodyClass": "vscode-dark vscode-using-screen-reader",
+        "themeId": "Dark Modern",
+        "viewport": [432, 508],
+        "lineCount": 328,
+        "currentLine": "25",
+        "currentVisible": true,
+        "longestLine": {
+          "line": "17",
+          "lineNumberCount": 1,
+          "codeTextLength": 104,
+          "lineHeight": 80.66667175292969,
+          "codeStyle": {
+            "whiteSpace": "pre-wrap",
+            "overflowWrap": "anywhere",
+            "userSelect": "text",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "colors": {
+          "root": {
+            "foreground": "rgb(204, 204, 204)",
+            "background": "rgb(31, 31, 31)"
+          },
+          "button": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 120, 212)"
+          }
+        },
+        "focus": {
+          "outlineColor": "rgb(0, 120, 212)",
+          "outlineStyle": "solid",
+          "outlineWidth": "0.666667px"
+        },
+        "screenReaderClass": true,
+        "overflow": {
+          "root": [432, 432],
+          "body": [432, 432],
+          "pane": [392, 392]
+        },
+        "overlaps": [],
+        "clipped": []
+      },
+      "accessibility": {
+        "nodeCount": 6424,
+        "roles": {
+          "RootWebArea": 1,
+          "none": 380,
+          "document": 1,
+          "generic": 29,
+          "main": 1,
+          "sectionheader": 26,
+          "toolbar": 1,
+          "list": 1,
+          "heading": 1,
+          "LabelText": 1,
+          "button": 58,
+          "StaticText": 2390,
+          "textbox": 1,
+          "listitem": 328,
+          "InlineTextBox": 2877,
+          "code": 328
+        },
+        "names": [
+          {
+            "role": "toolbar",
+            "name": "Copy actions"
+          },
+          {
+            "role": "list",
+            "name": "Git blame logical lines"
+          },
+          {
+            "role": "heading",
+            "name": "Git Blame Reader: src/extension/bootstrap/create-extension-runtime.ts"
+          },
+          {
+            "role": "button",
+            "name": "Refresh"
+          },
+          {
+            "role": "button",
+            "name": "Copy Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Line With Blame"
+          },
+          {
+            "role": "button",
+            "name": "Copy All Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit SHA"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit Info"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy All With Blame"
+          },
+          {
+            "role": "textbox",
+            "name": "Search source"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          }
+        ]
+      }
+    },
+    {
+      "theme": "Dark High Contrast",
+      "themeKey": "high-contrast",
+      "zoom": "150",
+      "screenshot": "ui-high-contrast-150.png",
+      "screenshotBytes": 220716,
+      "workbench": {
+        "dpr": 1.5,
+        "viewport": [960, 600],
+        "activeTabs": [
+          "webview-vscodeToolboxNamewta.gitBlameReader-ddac08d6-1117-4637-8e11-dd6f2c4781b0"
+        ],
+        "frame": {
+          "rect": {
+            "x": 288.66668701171875,
+            "y": 66.66667175292969,
+            "width": 432,
+            "height": 508,
+            "top": 66.66667175292969,
+            "right": 720.6666870117188,
+            "bottom": 574.6666717529297,
+            "left": 288.66668701171875
+          },
+          "visibility": "visible"
+        }
+      },
+      "reader": {
+        "bodyClass": "vscode-high-contrast vscode-using-screen-reader",
+        "themeId": "Default High Contrast",
+        "viewport": [432, 508],
+        "lineCount": 328,
+        "currentLine": "25",
+        "currentVisible": true,
+        "longestLine": {
+          "line": "17",
+          "lineNumberCount": 1,
+          "codeTextLength": 104,
+          "lineHeight": 80.66667175292969,
+          "codeStyle": {
+            "whiteSpace": "pre-wrap",
+            "overflowWrap": "anywhere",
+            "userSelect": "text",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "colors": {
+          "root": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 0, 0)"
+          },
+          "button": {
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(0, 0, 0)"
+          }
+        },
+        "focus": {
+          "outlineColor": "rgb(243, 133, 24)",
+          "outlineStyle": "solid",
+          "outlineWidth": "0.666667px"
+        },
+        "screenReaderClass": true,
+        "overflow": {
+          "root": [432, 432],
+          "body": [432, 432],
+          "pane": [392, 392]
+        },
+        "overlaps": [],
+        "clipped": []
+      },
+      "accessibility": {
+        "nodeCount": 6424,
+        "roles": {
+          "RootWebArea": 1,
+          "none": 380,
+          "document": 1,
+          "generic": 29,
+          "main": 1,
+          "sectionheader": 26,
+          "toolbar": 1,
+          "list": 1,
+          "heading": 1,
+          "LabelText": 1,
+          "button": 58,
+          "StaticText": 2390,
+          "textbox": 1,
+          "listitem": 328,
+          "InlineTextBox": 2877,
+          "code": 328
+        },
+        "names": [
+          {
+            "role": "toolbar",
+            "name": "Copy actions"
+          },
+          {
+            "role": "list",
+            "name": "Git blame logical lines"
+          },
+          {
+            "role": "heading",
+            "name": "Git Blame Reader: src/extension/bootstrap/create-extension-runtime.ts"
+          },
+          {
+            "role": "button",
+            "name": "Refresh"
+          },
+          {
+            "role": "button",
+            "name": "Copy Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Line With Blame"
+          },
+          {
+            "role": "button",
+            "name": "Copy All Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit SHA"
+          },
+          {
+            "role": "button",
+            "name": "Copy Commit Info"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block Code"
+          },
+          {
+            "role": "button",
+            "name": "Copy All With Blame"
+          },
+          {
+            "role": "textbox",
+            "name": "Search source"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "466cc5e9bb2a"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "2e4efbefa3f8"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          },
+          {
+            "role": "button",
+            "name": "990d7b9c7a94"
+          },
+          {
+            "role": "button",
+            "name": "Copy Block With Blame"
+          }
+        ]
+      }
+    }
+  ]
+}

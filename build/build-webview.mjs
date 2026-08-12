@@ -12,6 +12,7 @@ export async function buildWebview(options = {}) {
     entryPoints: {
       main: 'src/webview/main.tsx',
       'git-review': 'src/webview/git-review-main.tsx',
+      'git-blame-reader': 'src/webview/git-blame-reader-main.tsx',
     },
     bundle: true,
     outdir: 'dist/webview',

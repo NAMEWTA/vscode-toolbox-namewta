@@ -4,6 +4,26 @@
 
 ## [未发布]
 
+## [0.1.6] - 2026-08-12
+
+### 新增
+
+- 增加独立的 Full-file Git Blame Reader Editor Tab，按 logical line 和连续 commit block 展示完整文件历史。
+- Reader 支持源码搜索、键盘导航、源文件双向定位、完整提交详情和八类结构化复制。
+- 超过 5,000 行的文件使用虚拟化渲染；Copy All 始终由 Extension Host 权威模型生成并保留字符与行尾语义。
+
+### 变更
+
+- Normal Editing Mode 删除会改变编辑器布局的拟态 gutter，改为 Status Bar、Hover 和整行 commit block 背景高亮。
+- Reader 的 Git 查询、源文本、消息验证和系统剪贴板操作统一通过类型化 `ToolboxGateway` 与 Host session model 执行。
+- 同步命令、双语本地化、配置、README、构建入口和 VSIX 清单。
+
+### 修复
+
+- 修复 macOS `/tmp` 实路径解析导致 Reader 无法识别仓库资源的问题。
+- 修复未保存文档 Refresh 未使用同一快照、刷新失败状态不可见和 commit detail 缺少邮箱与日期的问题。
+- 修复窄宽、高缩放和高对比主题下 Reader 控件与长行布局问题。
+
 ## [0.1.5] - 2026-08-12
 
 ### 新增

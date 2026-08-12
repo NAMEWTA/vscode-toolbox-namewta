@@ -1,0 +1,196 @@
+:root {
+  color-scheme: light dark;
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-editor-foreground);
+  background: var(--vscode-editor-background);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+}
+button,
+input {
+  font: inherit;
+}
+button {
+  min-height: 26px;
+  padding: 3px 8px;
+  border: 1px solid var(--vscode-button-border, transparent);
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  cursor: pointer;
+}
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 1px;
+}
+.blame-reader-shell {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+.blame-reader-toolbar,
+.blame-reader-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+.blame-reader-toolbar > div {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+h1 {
+  margin: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.blame-reader-status {
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.blame-reader-search {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+.blame-reader-search input {
+  width: 180px;
+  min-height: 26px;
+  padding: 3px 6px;
+  border: 1px solid var(--vscode-input-border);
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+}
+.blame-reader-scroll {
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 20px;
+}
+.blame-reader-virtual {
+  position: relative;
+  width: 100%;
+}
+.blame-reader-virtual-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+.blame-reader-block {
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+.blame-reader-block-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 6px 12px;
+  background: var(--vscode-sideBarSectionHeader-background);
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+.blame-reader-commit {
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  background: transparent;
+  color: var(--vscode-textLink-foreground);
+  cursor: pointer;
+}
+.blame-reader-block-header span:nth-of-type(2) {
+  overflow-wrap: anywhere;
+}
+.blame-reader-block-header button:last-child {
+  margin-left: auto;
+}
+.blame-reader-line {
+  display: grid;
+  grid-template-columns: 42px minmax(230px, 320px) minmax(0, 1fr);
+  width: 100%;
+  padding: 2px 12px;
+  border: 0;
+  border-left: 3px solid transparent;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.blame-reader-line:hover,
+.blame-reader-line:focus-visible {
+  background: var(--vscode-list-hoverBackground);
+}
+.blame-reader-line:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+.blame-reader-line.is-current {
+  border-left-color: var(--vscode-focusBorder);
+  background: var(--vscode-editor-lineHighlightBackground);
+}
+.blame-reader-line.is-match {
+  background: var(--vscode-editor-findMatchHighlightBackground);
+}
+.blame-reader-line-number {
+  color: var(--vscode-editorLineNumber-foreground);
+  text-align: right;
+  padding-right: 12px;
+  user-select: none;
+}
+.blame-reader-meta {
+  color: var(--vscode-descriptionForeground);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.blame-reader-line code {
+  min-width: 0;
+  padding: 0;
+  border-radius: 0;
+  color: var(--vscode-editor-foreground);
+  background: transparent;
+  font-family: var(--vscode-editor-font-family);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+@media (max-width: 760px) {
+  .blame-reader-toolbar > div {
+    flex: 1 0 100%;
+    flex-wrap: wrap;
+  }
+  .blame-reader-status {
+    flex: 1 0 100%;
+  }
+  .blame-reader-search {
+    flex: 1 1 180px;
+  }
+  .blame-reader-search input {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 80px;
+  }
+  .blame-reader-line {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+  .blame-reader-meta {
+    grid-column: 2;
+  }
+  .blame-reader-line code {
+    grid-column: 2;
+  }
+}

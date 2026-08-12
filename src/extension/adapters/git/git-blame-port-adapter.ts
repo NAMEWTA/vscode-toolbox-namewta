@@ -36,6 +36,7 @@ export class GitBlamePortAdapter implements GitBlameDataPort {
         operation: 'blame',
         cwd: request.resource.repositoryRoot,
         args: createBlameArguments(request),
+        ...(request.contents === undefined ? {} : { stdinText: request.contents }),
         signal,
       });
       const lines = parseGitBlamePorcelain(result.stdout);
@@ -131,6 +132,7 @@ function createBlameArguments(request: GitBlameDataRequest): readonly string[] {
     'blame',
     '--line-porcelain',
     ...(request.ignoreWhitespace ? ['-w'] : []),
+    ...(request.contents === undefined ? [] : ['--contents', '-']),
     ...(request.ref === undefined ? [] : [request.ref]),
     '--',
     request.resource.relativePath,

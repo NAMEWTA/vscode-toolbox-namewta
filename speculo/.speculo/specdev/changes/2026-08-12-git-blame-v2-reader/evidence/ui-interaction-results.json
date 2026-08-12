@@ -1,0 +1,171 @@
+{
+  "normalEditor": {
+    "lineCount": 44,
+    "lineLeft": 414,
+    "selection": [
+      {
+        "left": 414,
+        "width": 58,
+        "height": 18
+      }
+    ],
+    "ruler": [
+      {
+        "left": 992.125,
+        "width": 8.1875,
+        "height": 6888
+      }
+    ],
+    "scroll": {
+      "left": 0,
+      "width": 726,
+      "scrollWidth": 16777216
+    },
+    "statusBarContainsDateAuthorSha": true,
+    "unchangedAfterShow": true,
+    "unchangedAfterHide": true
+  },
+  "readerWorkflow": {
+    "copyFormats": {
+      "Copy Code": {
+        "bytes": 25,
+        "sha256": "b6b961d5c83f60280fc702a77618a76a4e71a52cc4f5ed8f3f658e325e2a0778",
+        "exact": true
+      },
+      "Copy Line With Blame": {
+        "bytes": 70,
+        "sha256": "9c9fe7a0be484180e1fa7b84b428efde5bfeb9e338d48a9ef3279fdd5164bbbc",
+        "exact": true
+      },
+      "Copy All Code": {
+        "bytes": 11090,
+        "sha256": "49bf1331ef013f2e3decf48da84222ee82edd897063da1245465414e4ff96369",
+        "exact": true
+      },
+      "Copy Commit SHA": {
+        "bytes": 40,
+        "sha256": "6246e7538033f8f518517d5308d4716104d3c8ea9eac34aa7bbea4d472ef5cea",
+        "exact": true
+      },
+      "Copy Commit Info": {
+        "bytes": 124,
+        "sha256": "6a06e8398b3d6877259a3543a11929aed2cab7c67b8df0edf78fbc5274952ff5",
+        "exact": true
+      },
+      "Copy Block Code": {
+        "bytes": 2088,
+        "sha256": "6d9e5ac4d0ec72bdb0132ad6eecef365c70774fd312ec56c8dea28a066683470",
+        "exact": true
+      },
+      "Copy All With Blame": {
+        "bytes": 26070,
+        "sha256": "a73bd68c46f7290514c8bc7fa8f64c198e5caab7994de022b8c6847433dbba7d",
+        "exact": true
+      },
+      "Copy Block With Blame": {
+        "bytes": 3881,
+        "sha256": "8504905b85cb0476332a807f5c2dbd3d59d60806a690a9db3b5f8c6d4d4307eb",
+        "exact": true
+      },
+      "sourceFileByteExact": true,
+      "sourceFileBytes": 11090,
+      "sourceFileSha256": "49bf1331ef013f2e3decf48da84222ee82edd897063da1245465414e4ff96369"
+    },
+    "selections": {
+      "selectAll": {
+        "bytes": 28999,
+        "sha256": "8ad9a0a539244b6c8d25bec62b3f82696741f88e04f8c9a0684468d503fa27f4",
+        "complete": true
+      },
+      "crossBlock": {
+        "startLine": 2,
+        "endLine": 3,
+        "bytes": 264,
+        "sha256": "2789ed93d24795a74b735f5ccdeaffed5e164bb6c83805dc82d465cc34a9b3fc",
+        "includesMetadata": true,
+        "includesBothSourceLines": true,
+        "selectionMethod": "trusted-mouse-drag-and-trusted-cmd-c"
+      }
+    },
+    "search": {
+      "shortcutFocused": true,
+      "query": "GitBlameVisibilityHost",
+      "status": "2 match(es)"
+    },
+    "commitDetail": {
+      "fullShaVisible": true,
+      "authorAndSummaryVisible": true,
+      "emailAndAuthoredDateVisible": true,
+      "actions": [
+        "Copy Commit SHA",
+        "Copy Commit Info",
+        "Open Commit",
+        "Open Previous Revision"
+      ],
+      "copiedSha": {
+        "bytes": 40,
+        "sha256": "6246e7538033f8f518517d5308d4716104d3c8ea9eac34aa7bbea4d472ef5cea",
+        "exact": true
+      },
+      "copiedInfo": {
+        "bytes": 124,
+        "sha256": "6a06e8398b3d6877259a3543a11929aed2cab7c67b8df0edf78fbc5274952ff5",
+        "exact": true
+      }
+    },
+    "navigation": {
+      "initial": {
+        "line": "25",
+        "visible": true
+      },
+      "keyboard": {
+        "line": 40,
+        "column": 1,
+        "activeSourceTab": true
+      },
+      "click": {
+        "line": 55,
+        "column": 1,
+        "activeSourceTab": true,
+        "method": "dom-click"
+      }
+    },
+    "lifecycle": {
+      "dirtyBeforeRefresh": true,
+      "staleMessage": "Source changed. Refresh to update blame.",
+      "explicitRefresh": {
+        "lineCount": 329,
+        "firstLine": "// 未保存 Reader 快照",
+        "firstMeta": "Working Tree · External file (--contents) · Uncommitted"
+      },
+      "saveReload": {
+        "lineCount": 330,
+        "firstLine": "// 保存后 Reader 快照",
+        "firstMeta": "Working Tree · External file (--contents) · Uncommitted"
+      },
+      "dirtyAfterSave": false
+    },
+    "unavailable": {
+      "fixture": "untracked-reader-fixture.ts",
+      "stableMessage": true,
+      "readerPanelCount": 0
+    },
+    "largeFile": {
+      "modelLines": 5001,
+      "initialRenderedLines": 29,
+      "finalRenderedLines": 29,
+      "firstVisible": true,
+      "lastVisible": true,
+      "generationStable": true,
+      "copyAll": {
+        "bytes": 277842,
+        "sha256": "258b8751caf9518c8adc790d392011d63133510b8b41efc0053e6c1f291cca90",
+        "exact": true
+      }
+    },
+    "refreshFailure": {
+      "visible": true,
+      "message": "Git Blame Reader is unavailable for this file."
+    }
+  }
+}

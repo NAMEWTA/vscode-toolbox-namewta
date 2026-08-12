@@ -15,14 +15,14 @@
 | 能力           | 解决的问题                                               | 入口                                                 |
 | -------------- | -------------------------------------------------------- | ---------------------------------------------------- |
 | Copy Reference | 把当前文件、选区或 Explorer 资源转成可粘贴的代码位置引用 | 编辑器、行号、Explorer 右键菜单                      |
-| Git Blame      | 在代码左侧查看每行提交时间和作者，并继续追踪提交上下文   | 编辑器行号右键、命令面板、`Ctrl+Alt+B` / `Cmd+Alt+B` |
+| Git Blame      | 查看当前行来源，并在独立 Reader 中阅读完整文件历史       | 编辑器行号右键、命令面板、`Ctrl+Alt+B` / `Cmd+Alt+B` |
 | Git Review     | 在一个聚合视图中按冲突、暂存和未暂存分层审核变更         | Source Control 标题栏                                |
 
 扩展不替换 Git，不修改提交历史，也不要求安装其他 Git 扩展。
 
 ## 安装
 
-当前版本为 `0.1.5`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
+当前版本为 `0.1.6`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
 
 在 VS Code 中打开命令面板，执行 **Extensions: Install from VSIX...**，选择下载的 VSIX。安装完成后重新加载窗口；命令面板中应能看到以 `toolbox-` 开头的命令。
 
@@ -30,10 +30,10 @@
 
 1. 在 VS Code 中打开一个文件夹，并在需要 Git 能力的工作区选择 **Trust**。
 2. 在编辑器中打开任意文件，右键选择 `toolbox-复制相对引用`，把结果粘贴到 Issue、Review 或提交信息中。
-3. 对已提交文件执行 `toolbox-切换 Git Blame 注解`，左侧会显示 `YYYY-MM-DD HH:mm`、作者和提交色条。
+3. 对已提交文件执行 `toolbox-切换 Git Blame 注解` 查看当前行信息，或执行 `toolbox-打开完整文件 Blame 阅读器` 阅读整文件历史。
 4. 在 Source Control 标题栏点击 Git Compare 图标，执行 `toolbox-开始审核 Git 变更`。
 
-成功标志：Copy Reference 写入剪贴板；Git Blame 只为当前文档加载注解；Git Review 在单个编辑器标签页中显示变更队列。
+成功标志：Copy Reference 写入剪贴板；Git Blame 不改变源码布局，完整历史在独立 Reader 中呈现；Git Review 在单个编辑器标签页中显示变更队列。
 
 ## 核心能力
 
@@ -49,10 +49,11 @@
 ### Git Blame
 
 - 必须由用户对具体文档显式开启，不会在扩展激活时扫描仓库或启动 Git。
-- 默认日期为运行 Git 的 Extension Host 本地时区，格式为 `YYYY-MM-DD HH:mm`，精确到分钟。
-- 未保存或无法确定归属的行保留等宽空单元，不伪造提交信息，也不会让源码起始列随编辑跳动。
+- Status Bar 和 Hover 显示当前行的作者、提交时间、短 SHA 与摘要，不向源码插入文字。
+- 可选的当前提交高亮只改变整行背景，不改变源码起点、选择、软换行或水平滚动。
 - Hover 提供完整提交元数据、复制 hash、受限 remote 链接、提交 Diff、上一版本和增量 Line History。
-- 使用公开 VS Code API 的左侧拟态注解列；它不是 VS Code 私有 API 提供的独立文本 gutter，因此最终宽度受编辑器主题和字体影响。
+- Full-file Blame Reader 按连续 commit block 展示完整源码、行号与归属信息，支持搜索、键盘导航和八类结构化复制。
+- 超过 5,000 logical lines 时 Reader 使用虚拟化，Copy All 始终从 Extension Host 的完整模型生成。
 
 ### Git Review
 
@@ -66,16 +67,13 @@
 
 所有配置键都以 `vscodeToolboxNamewta.` 开头，可在 Settings JSON 中调整：
 
-| 配置                              | 默认值             | 作用                                                                   |
-| --------------------------------- | ------------------ | ---------------------------------------------------------------------- |
-| `logging.level`                   | `info`             | 扩展输出日志级别                                                       |
-| `webview.requestTimeoutMs`        | `10000`            | Webview 请求超时，范围 `1000-120000` ms                                |
-| `gitBlame.dateFormatStyle`        | `YYYY-MM-DD HH:mm` | Blame 日期格式，也支持 `Y/M/D`、`YYYY-MM-DD`、`DD.MM.YYYY`、`relative` |
-| `gitBlame.authorNameStyle`        | `full`             | 作者名显示为完整名、名或姓                                             |
-| `gitBlame.mergeCommitLines`       | `false`            | 是否显示合并提交行                                                     |
-| `gitBlame.highlightCurrentCommit` | `false`            | 是否高亮当前提交                                                       |
-| `gitBlame.ignoreWhitespace`       | `false`            | 计算 Blame 时忽略空白变化                                              |
-| `gitBlame.maxLines`               | `20000`            | 允许显示 Blame 的最大文档行数，范围 `100-200000`                       |
+| 配置                              | 默认值  | 作用                                             |
+| --------------------------------- | ------- | ------------------------------------------------ |
+| `logging.level`                   | `info`  | 扩展输出日志级别                                 |
+| `webview.requestTimeoutMs`        | `10000` | Webview 请求超时，范围 `1000-120000` ms          |
+| `gitBlame.highlightCurrentCommit` | `false` | 是否高亮当前提交                                 |
+| `gitBlame.ignoreWhitespace`       | `false` | 计算 Blame 时忽略空白变化                        |
+| `gitBlame.maxLines`               | `20000` | 允许显示 Blame 的最大文档行数，范围 `100-200000` |
 
 ## 信任与资源边界
 

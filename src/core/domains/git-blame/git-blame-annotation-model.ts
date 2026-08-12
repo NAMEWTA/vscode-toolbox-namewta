@@ -8,7 +8,9 @@ import type {
 export type GitBlameDataRequest = Pick<
   GitBlameAnnotationsInput,
   'resource' | 'ref' | 'ignoreWhitespace'
->;
+> & {
+  readonly contents?: string;
+};
 
 export type GitBlameDataResult =
   | {

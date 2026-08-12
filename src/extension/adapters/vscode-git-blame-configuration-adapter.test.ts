@@ -13,9 +13,13 @@ vi.mock('vscode', () => ({
 import { VscodeGitBlameConfigurationAdapter } from './vscode-git-blame-configuration-adapter';
 
 describe('VscodeGitBlameConfigurationAdapter', () => {
-  it('defaults blame dates to local year-month-day and minute precision', () => {
+  it('returns the non-layout Git Blame defaults', () => {
     const configuration = new VscodeGitBlameConfigurationAdapter().read();
 
-    expect(configuration.dateFormatStyle).toBe('YYYY-MM-DD HH:mm');
+    expect(configuration).toEqual({
+      highlightCurrentCommit: false,
+      ignoreWhitespace: false,
+      maxLines: 20_000,
+    });
   });
 });

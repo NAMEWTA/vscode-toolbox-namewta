@@ -4,15 +4,7 @@ import {
   type GitBlameLine,
   type GitBlameLineChange,
 } from '../../core/domains/git-blame/public-api';
-import type {
-  GitBlameAuthorNameStyle,
-  GitBlameDateFormatStyle,
-} from '../../core/domains/git-blame/git-blame-annotation-format';
-
 export type GitBlameConfiguration = {
-  readonly dateFormatStyle: GitBlameDateFormatStyle;
-  readonly authorNameStyle: GitBlameAuthorNameStyle;
-  readonly mergeCommitLines: boolean;
   readonly highlightCurrentCommit: boolean;
   readonly ignoreWhitespace: boolean;
   readonly maxLines: number;

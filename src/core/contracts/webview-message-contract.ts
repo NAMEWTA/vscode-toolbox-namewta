@@ -1,6 +1,10 @@
 import type { ToolResult } from './tool-result-contract';
 import { type GitReviewSessionSnapshot } from '../domains/git-review/git-review-model';
 import { isGitReviewSessionSnapshot } from '../domains/git-review/git-review-session-snapshot-contract';
+import {
+  isGitBlameReaderModel,
+  type GitBlameReaderModel,
+} from '../domains/git-blame/git-blame-reader-model';
 
 export type GitReviewWebviewAction = {
   readonly type: 'gitReview.action';
@@ -16,6 +20,26 @@ export type GitReviewWebviewAction = {
   readonly line?: number;
 };
 
+export type GitBlameReaderWebviewAction =
+  | {
+      readonly type: 'gitBlameReader.openSource';
+      readonly generation: number;
+      readonly line: number;
+    }
+  | { readonly type: 'gitBlameReader.refresh'; readonly generation: number }
+  | {
+      readonly type: 'gitBlameReader.copy';
+      readonly generation: number;
+      readonly format: string;
+      readonly line?: number;
+      readonly blockId?: string;
+    }
+  | {
+      readonly type: 'gitBlameReader.commitDetail';
+      readonly generation: number;
+      readonly blockId: string;
+    };
+
 export type WebviewToExtensionMessage =
   | {
       readonly type: 'tool.execute';
@@ -27,7 +51,8 @@ export type WebviewToExtensionMessage =
       readonly type: 'tool.cancel';
       readonly requestId: string;
     }
-  | GitReviewWebviewAction;
+  | GitReviewWebviewAction
+  | GitBlameReaderWebviewAction;
 
 export type ExtensionToWebviewMessage =
   | {
@@ -46,12 +71,29 @@ export type ExtensionToWebviewMessage =
   | {
       readonly type: 'gitReview.focus';
       readonly itemId: string;
+    }
+  | {
+      readonly type: 'gitBlameReader.model';
+      readonly model: GitBlameReaderModel;
+    }
+  | {
+      readonly type: 'gitBlameReader.state';
+      readonly state:
+        | 'loading'
+        | 'ready'
+        | 'stale'
+        | 'failed'
+        | 'unavailable'
+        | 'disposed';
+      readonly generation: number;
+      readonly message?: string;
     };
 
 export type ToolEvent = {
   readonly type: 'capabilities.changed';
 };
 
+// eslint-disable-next-line complexity
 export function isWebviewToExtensionMessage(
   value: unknown,
 ): value is WebviewToExtensionMessage {
@@ -61,6 +103,14 @@ export function isWebviewToExtensionMessage(
 
   if (value.type === 'gitReview.action') {
     return isGitReviewWebviewAction(value);
+  }
+  if (
+    value.type === 'gitBlameReader.openSource' ||
+    value.type === 'gitBlameReader.refresh' ||
+    value.type === 'gitBlameReader.copy' ||
+    value.type === 'gitBlameReader.commitDetail'
+  ) {
+    return isGitBlameReaderAction(value);
   }
   if (!isRequestId(value.requestId)) {
     return false;
@@ -77,6 +127,7 @@ export function isWebviewToExtensionMessage(
   );
 }
 
+// eslint-disable-next-line complexity
 export function isExtensionToWebviewMessage(
   value: unknown,
 ): value is ExtensionToWebviewMessage {
@@ -93,6 +144,19 @@ export function isExtensionToWebviewMessage(
   }
   if (value.type === 'gitReview.focus') {
     return isItemId(value.itemId);
+  }
+  if (value.type === 'gitBlameReader.model') return isGitBlameReaderModel(value.model);
+  if (value.type === 'gitBlameReader.state') {
+    return (
+      isGeneration(value.generation) &&
+      (value.state === 'loading' ||
+        value.state === 'ready' ||
+        value.state === 'stale' ||
+        value.state === 'failed' ||
+        value.state === 'unavailable' ||
+        value.state === 'disposed') &&
+      (value.message === undefined || typeof value.message === 'string')
+    );
   }
 
   return (
@@ -115,6 +179,65 @@ function isGitReviewWebviewAction(value: Record<string, unknown>): boolean {
         value.line >= 1 &&
         value.line <= 10_000_000))
   );
+}
+
+// eslint-disable-next-line complexity
+function isGitBlameReaderAction(value: Record<string, unknown>): boolean {
+  if (!isGeneration(value.generation)) return false;
+  if (value.type === 'gitBlameReader.openSource') {
+    return (
+      Object.keys(value).every(
+        (key) => key === 'type' || key === 'generation' || key === 'line',
+      ) && isPositiveLine(value.line)
+    );
+  }
+  if (value.type === 'gitBlameReader.refresh') return Object.keys(value).length === 2;
+  if (value.type === 'gitBlameReader.commitDetail') {
+    return (
+      Object.keys(value).every(
+        (key) => key === 'type' || key === 'generation' || key === 'blockId',
+      ) &&
+      typeof value.blockId === 'string' &&
+      value.blockId.length > 0 &&
+      value.blockId.length <= 256 &&
+      !value.blockId.includes('\0')
+    );
+  }
+  return (
+    Object.keys(value).every(
+      (key) =>
+        key === 'type' ||
+        key === 'generation' ||
+        key === 'format' ||
+        key === 'line' ||
+        key === 'blockId',
+    ) &&
+    typeof value.format === 'string' &&
+    [
+      'code',
+      'line-with-blame',
+      'commit-sha',
+      'commit-info',
+      'block-code',
+      'block-with-blame',
+      'all-code',
+      'all-with-blame',
+    ].includes(value.format) &&
+    (value.line === undefined || isPositiveLine(value.line)) &&
+    (value.blockId === undefined ||
+      (typeof value.blockId === 'string' &&
+        value.blockId.length > 0 &&
+        value.blockId.length <= 256 &&
+        !value.blockId.includes('\0')))
+  );
+}
+
+function isGeneration(value: unknown): value is number {
+  return Number.isInteger(value) && Number(value) > 0 && Number(value) <= 2_000_000_000;
+}
+
+function isPositiveLine(value: unknown): value is number {
+  return Number.isInteger(value) && Number(value) > 0 && Number(value) <= 10_000_000;
 }
 
 const GIT_REVIEW_ACTIONS = new Set([

@@ -140,6 +140,55 @@ describe('GitCommandRunner', () => {
   });
 });
 
+describe('GitCommandRunner snapshot input', () => {
+  it('pipes bounded snapshot text through stdin without a shell', async () => {
+    const process = new FakeGitProcess();
+    const factory = vi.fn<GitProcessFactory>(() => process);
+    const runner = new GitCommandRunner(factory);
+    const input = new Promise<string>((resolve) => {
+      const chunks: Buffer[] = [];
+      process.stdin?.on('data', (chunk: Buffer) => chunks.push(chunk));
+      process.stdin?.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    });
+    const pending = runner.run({
+      operation: 'blame',
+      cwd: '/workspace/repo',
+      args: ['blame', '--contents', '-', '--', 'main.ts'],
+      stdinText: 'unsaved\nsource',
+    });
+
+    await expect(input).resolves.toBe('unsaved\nsource');
+    process.stdout.end();
+    process.stderr.end();
+    process.close(0);
+
+    await expect(pending).resolves.toMatchObject({ stdout: '' });
+    expect(factory).toHaveBeenCalledWith(
+      'git',
+      ['blame', '--contents', '-', '--', 'main.ts'],
+      expect.objectContaining({ stdio: ['pipe', 'pipe', 'pipe'], shell: false }),
+    );
+  });
+
+  it('terminates when a requested stdin pipe is unavailable', async () => {
+    const process = new FakeGitProcess(null);
+    const runner = new GitCommandRunner(() => process);
+    const pending = runner.run({
+      operation: 'blame',
+      cwd: '/workspace/repo',
+      args: ['blame', '--contents', '-', '--', 'main.ts'],
+      stdinText: 'snapshot',
+    });
+
+    process.close(null);
+
+    await expect(pending).rejects.toMatchObject({
+      code: 'capability-unavailable',
+    });
+    expect(process.kill).toHaveBeenCalledWith('SIGTERM');
+  });
+});
+
 function runGit(
   runner: GitCommandRunner,
   cwd: string,
@@ -152,6 +201,12 @@ class FakeGitProcess extends EventEmitter implements SpawnedGitProcess {
   public readonly stdout = new PassThrough();
   public readonly stderr = new PassThrough();
   public readonly kill = vi.fn((): boolean => true);
+
+  public constructor(
+    public readonly stdin: NodeJS.WritableStream | null = new PassThrough(),
+  ) {
+    super();
+  }
 
   public close(code: number | null): void {
     this.emit('close', code, null);

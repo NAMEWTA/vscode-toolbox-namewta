@@ -127,9 +127,6 @@ function document(lineCount: number): GitBlameDocumentSnapshot {
 
 function config(maxLines = 20_000): GitBlameConfiguration {
   return {
-    dateFormatStyle: 'Y/M/D' as const,
-    authorNameStyle: 'full' as const,
-    mergeCommitLines: false,
     highlightCurrentCommit: false,
     ignoreWhitespace: false,
     maxLines,

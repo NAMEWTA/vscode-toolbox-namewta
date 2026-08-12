@@ -5,6 +5,7 @@ import {
   isWebviewToExtensionMessage,
   type ExtensionToWebviewMessage,
   type GitReviewWebviewAction,
+  type GitBlameReaderWebviewAction,
   type ToolCommandId,
   type ToolResult,
   type WebviewToExtensionMessage,
@@ -17,6 +18,12 @@ export type VscodeWebviewMessageAdapterOptions = {
     input: unknown,
   ) => Promise<ToolResult<never> | undefined>;
   readonly onGitReviewAction?: (message: GitReviewWebviewAction) => Promise<void>;
+  readonly onGitBlameReaderAction?: (
+    message: Extract<
+      WebviewToExtensionMessage,
+      { readonly type: `gitBlameReader.${string}` }
+    >,
+  ) => Promise<void>;
   readonly onToolResult?: (
     command: ToolCommandId,
     result: ToolResult<unknown>,
@@ -53,7 +60,12 @@ export class VscodeWebviewMessageAdapter implements vscode.Disposable {
     }
 
     if (message.type === 'gitReview.action') {
-      await this.options.onGitReviewAction?.(message);
+      await this.runAction(() => this.options.onGitReviewAction?.(message));
+      return;
+    }
+
+    if (isReaderAction(message)) {
+      await this.runAction(() => this.options.onGitBlameReaderAction?.(message));
       return;
     }
 
@@ -63,6 +75,14 @@ export class VscodeWebviewMessageAdapter implements vscode.Disposable {
     }
 
     await this.executeToolCommand(message);
+  }
+
+  private async runAction(action: () => Promise<void> | undefined): Promise<void> {
+    try {
+      await action();
+    } catch (error: unknown) {
+      this.logger.error('Webview action failed.', error, { source: 'webview' });
+    }
   }
 
   private async executeToolCommand(
@@ -123,6 +143,17 @@ export class VscodeWebviewMessageAdapter implements vscode.Disposable {
     };
     await this.webview.postMessage(response);
   }
+}
+
+function isReaderAction(
+  message: WebviewToExtensionMessage,
+): message is GitBlameReaderWebviewAction {
+  return (
+    message.type === 'gitBlameReader.openSource' ||
+    message.type === 'gitBlameReader.refresh' ||
+    message.type === 'gitBlameReader.copy' ||
+    message.type === 'gitBlameReader.commitDetail'
+  );
 }
 
 function createFailure(

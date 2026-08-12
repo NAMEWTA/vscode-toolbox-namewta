@@ -33,7 +33,9 @@ describe('GitResourceResolver', () => {
 
   it('resolves the nearest repository root and a normalized relative path', async () => {
     const git = createGitPort('/workspace/repo\n');
-    const resolver = new GitResourceResolver(git);
+    const resolver = new GitResourceResolver(git, (filePath) =>
+      Promise.resolve(filePath),
+    );
 
     await expect(
       resolver.resolve({
@@ -51,6 +53,27 @@ describe('GitResourceResolver', () => {
         args: ['rev-parse', '--show-toplevel'],
       }),
     );
+  });
+
+  it('canonicalizes filesystem aliases before checking the repository boundary', async () => {
+    const git = createGitPort('/private/tmp/repository\n');
+    const canonicalizePath = vi.fn((filePath: string) =>
+      Promise.resolve(filePath.replace(/^\/tmp(?=\/)/u, '/private/tmp')),
+    );
+    const resolver = new GitResourceResolver(git, canonicalizePath);
+
+    await expect(
+      resolver.resolve({
+        isWorkspaceTrusted: true,
+        scheme: 'file',
+        filePath: '/tmp/repository/src/main.ts',
+      }),
+    ).resolves.toEqual({
+      repositoryRoot: '/private/tmp/repository',
+      relativePath: 'src/main.ts',
+    });
+    expect(canonicalizePath).toHaveBeenCalledWith('/private/tmp/repository');
+    expect(canonicalizePath).toHaveBeenCalledWith('/tmp/repository/src');
   });
 });
 

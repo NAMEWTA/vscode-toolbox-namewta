@@ -12,6 +12,7 @@ export type GitCommandRequest = {
   readonly operation: string;
   readonly cwd: string;
   readonly args: readonly string[];
+  readonly stdinText?: string;
   readonly signal?: GitCancellationSignal;
   readonly timeoutMs?: number;
   readonly maxOutputBytes?: number;

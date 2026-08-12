@@ -37,6 +37,9 @@ export type {
 } from './git-blame-annotation-model';
 export { isBlameDataComplete } from './git-blame-annotation-model';
 export { GitBlameHandler } from './git-blame-handler';
+export { GitBlameReaderHandler } from './git-blame-reader-handler';
+export { GitBlameReaderCopyHandler } from './git-blame-reader-copy-handler';
+export type { GitBlameReaderSessionModelPort } from './git-blame-reader-copy-handler';
 export type { GitBlameLineChange } from './git-blame-line-mapper';
 export { isUncommittedBlameLine, mapGitBlameLines } from './git-blame-line-mapper';
 export { GitCommitChangesHandler } from './git-commit-changes-handler';
@@ -46,7 +49,19 @@ export {
   type GitCommitHashClipboardPort,
 } from './git-copy-commit-hash-handler';
 export { createGitRemoteCommitUrl } from './git-remote-commit-url';
-export { formatGitBlameLocalDateTime } from './git-blame-annotation-format';
+export { formatGitBlameLocalDateTime } from './git-blame-local-date-time';
+export {
+  buildGitBlameReaderModel,
+  formatGitBlameReaderCopy,
+  isGitBlameReaderModel,
+  type GitBlameReaderBlock,
+  type GitBlameReaderBuildInput,
+  type GitBlameReaderCopyFormat,
+  type GitBlameReaderCopyRequest,
+  type GitBlameReaderLine,
+  type GitBlameReaderLineKind,
+  type GitBlameReaderModel,
+} from './git-blame-reader-model';
 export { GIT_EMPTY_TREE_HASH, type GitHistoryPort } from './git-history-model';
 export { GitLineHistoryHandler } from './git-line-history-handler';
 export type {

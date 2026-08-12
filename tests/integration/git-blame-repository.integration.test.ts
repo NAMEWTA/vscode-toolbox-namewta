@@ -41,6 +41,40 @@ suite('Git blame repository integration', () => {
       await rm(repository, { recursive: true, force: true });
     }
   });
+
+  test('returns the complete Reader model through the public API', async () => {
+    const repository = await createRepository();
+    try {
+      const extension =
+        vscode.extensions.getExtension<VscodeToolboxNamewtaExtensionApi>(
+          'NAMEWTA.vscode-toolbox-namewta',
+        );
+      assert.ok(extension);
+      const api = await extension.activate();
+      const uri = vscode.Uri.file(path.join(repository, 'main.ts'));
+      const result = await api.execute('gitBlame.getReaderModel', {
+        resource: { repositoryRoot: repository, relativePath: 'main.ts' },
+        sourceUri: uri.toString(true),
+        revision: 'HEAD',
+        documentVersion: 1,
+        lineCount: 3,
+        ignoreWhitespace: false,
+        maxLines: 20_000,
+        sourceText: 'first\nsecond\n',
+        generation: 9,
+        sourceLine: 1,
+      });
+      assert.equal(result.ok, true);
+      if (result.ok) {
+        assert.equal(result.data.generation, 9);
+        assert.equal(result.data.lineCount, 2);
+        assert.equal(result.data.blocks.length, 1);
+        assert.equal(result.data.hasFinalNewline, true);
+      }
+    } finally {
+      await rm(repository, { recursive: true, force: true });
+    }
+  });
 });
 
 async function createRepository(): Promise<string> {

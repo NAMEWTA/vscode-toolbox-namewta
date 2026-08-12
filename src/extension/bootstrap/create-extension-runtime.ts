@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import * as vscode from 'vscode';
 import type { VscodeToolboxNamewtaExtensionApi } from '../../core/contracts';
 import { DisposableStore } from '../../core/kernel/disposable';
@@ -43,6 +44,8 @@ import { GitBlameHoverProvider } from '../presentation/git-blame-hover-provider'
 import { GitReviewSessionExperience } from '../commands/git-review-session-experience';
 import { ApplicationError } from '../../core/kernel/application-error';
 import { ToolboxPanelController } from '../presentation/toolbox-panel-controller';
+import { GitBlameReaderController } from '../presentation/git-blame-reader-controller';
+import { GitBlameReaderSessionModelStore } from '../presentation/git-blame-reader-session-model-store';
 import { createExtensionPublicApi } from './create-extension-public-api';
 import { registerDomainModules } from './register-domain-modules';
 
@@ -50,6 +53,8 @@ export type ExtensionRuntime = vscode.Disposable & {
   readonly publicApi: VscodeToolboxNamewtaExtensionApi;
 };
 
+// Reader 与现有 Git Blame 共享唯一组合根，因此注册逻辑在此集中编排。
+// eslint-disable-next-line max-lines-per-function
 export function createExtensionRuntime(
   context: vscode.ExtensionContext,
 ): ExtensionRuntime {
@@ -61,8 +66,11 @@ export function createExtensionRuntime(
     readExtensionVersion(context.extension.packageJSON),
   );
   const clipboardPort = new VscodeClipboardAdapter();
+  const readerModels = new GitBlameReaderSessionModelStore();
 
-  disposables.add(registerDomainModules({ clipboardPort, registry, runtimeInfoPort }));
+  disposables.add(
+    registerDomainModules({ clipboardPort, readerModels, registry, runtimeInfoPort }),
+  );
   const historicalProvider = disposables.add(
     new GitHistoricalDocumentProvider(gateway),
   );
@@ -75,6 +83,15 @@ export function createExtensionRuntime(
 
   const panelController = disposables.add(
     new ToolboxPanelController(context.extensionUri, gateway, logger),
+  );
+  const readerController = disposables.add(
+    new GitBlameReaderController(
+      context.extensionUri,
+      gateway,
+      logger,
+      readerModels,
+      historicalProvider,
+    ),
   );
   const commandRegistration = new VscodeCommandRegistrationAdapter(logger, () =>
     logger.show(),
@@ -104,6 +121,10 @@ export function createExtensionRuntime(
     })),
     ...gitReviewExperience.commands,
     ...blameCommands,
+    {
+      id: 'vscodeToolboxNamewta.gitBlame.openReader',
+      execute: () => readerController.open(),
+    },
   ]);
 
   const publicApi = createExtensionPublicApi(gateway);

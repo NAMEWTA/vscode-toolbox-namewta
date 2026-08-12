@@ -15,6 +15,9 @@ import {
   GitCopyCommitHashHandler,
   GitHistoricalContentHandler,
   GitLineHistoryHandler,
+  type GitBlameReaderSessionModelPort,
+  GitBlameReaderHandler,
+  GitBlameReaderCopyHandler,
 } from '../../core/domains/git-blame/public-api';
 import { GitBlamePortAdapter } from '../adapters/git/git-blame-port-adapter';
 import { GitCommandRunner } from '../adapters/git/git-command-runner';
@@ -27,17 +30,25 @@ export type DomainModuleDependencies = {
   readonly registry: ToolRegistry;
   readonly clipboardPort: ClipboardPort;
   readonly runtimeInfoPort: RuntimeInfoPort;
+  readonly readerModels: GitBlameReaderSessionModelPort;
 };
 
 export function registerDomainModules(
   dependencies: DomainModuleDependencies,
 ): Disposable {
-  const { clipboardPort, registry, runtimeInfoPort } = dependencies;
+  const { clipboardPort, readerModels, registry, runtimeInfoPort } = dependencies;
   registry.register(new CopyReferenceHandler(clipboardPort));
   registry.register(new GitCopyCommitHashHandler(clipboardPort));
   const git = new GitCommandRunner();
+  const blamePort = new GitBlamePortAdapter(git, () => vscode.workspace.isTrusted);
+  registry.register(new GitBlameHandler(blamePort));
+  registry.register(new GitBlameReaderHandler(blamePort));
   registry.register(
-    new GitBlameHandler(new GitBlamePortAdapter(git, () => vscode.workspace.isTrusted)),
+    new GitBlameReaderCopyHandler(
+      clipboardPort,
+      readerModels,
+      () => vscode.workspace.isTrusted,
+    ),
   );
   const history = new GitHistoryPortAdapter(git, () => vscode.workspace.isTrusted);
   registry.register(new GitCommitChangesHandler(history));

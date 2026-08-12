@@ -198,7 +198,8 @@ function verifyReleaseSurface(manifest, contributedCommands) {
   const changeCommands = contributedCommands.filter(
     (command) =>
       command.startsWith('vscodeToolboxNamewta.copyReference.') ||
-      command.startsWith('vscodeToolboxNamewta.gitBlame.'),
+      (command.startsWith('vscodeToolboxNamewta.gitBlame.') &&
+        command !== 'vscodeToolboxNamewta.gitBlame.openReader'),
   );
   if (changeCommands.length !== 9) {
     failures.push(
@@ -211,9 +212,9 @@ function verifyReleaseSurface(manifest, contributedCommands) {
   const blameConfigurations = Object.keys(
     manifest.contributes?.configuration?.properties ?? {},
   ).filter((key) => key.startsWith('vscodeToolboxNamewta.gitBlame.'));
-  if (blameConfigurations.length !== 6) {
+  if (blameConfigurations.length !== 3) {
     failures.push(
-      `Git Blame 公开配置必须恰好为 6 项，当前为 ${blameConfigurations.length} 项。`,
+      `Git Blame 公开配置必须恰好为 3 项，当前为 ${blameConfigurations.length} 项。`,
     );
   }
   const keybindings = manifest.contributes?.keybindings ?? [];

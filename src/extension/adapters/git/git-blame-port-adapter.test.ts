@@ -46,6 +46,26 @@ describe('GitBlamePortAdapter', () => {
           { aborted: false },
         ),
       ).resolves.toMatchObject({ status: 'available' });
+      const snapshot = await adapter.getAnnotations(
+        {
+          resource,
+          ignoreWhitespace: false,
+          contents: 'unsaved line\nfirst\nsecond\nworking tree\n',
+        },
+        { aborted: false },
+      );
+      expect(snapshot).toMatchObject({ status: 'available' });
+      if (snapshot.status === 'available') {
+        expect(snapshot.lines).toHaveLength(4);
+        expect(snapshot.lines[0]).toMatchObject({
+          line: 1,
+          commit: '0'.repeat(40),
+        });
+        expect(snapshot.lines[1]).toMatchObject({
+          line: 2,
+          author: 'vscode-toolbox-namewta Test',
+        });
+      }
     } finally {
       await rm(repository, { recursive: true, force: true });
     }

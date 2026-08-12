@@ -2,6 +2,8 @@ import * as assert from 'node:assert/strict';
 import * as vscode from 'vscode';
 import type { VscodeToolboxNamewtaExtensionApi } from '../core/contracts';
 
+// 集成测试按扩展公共 API 和命令注册边界分组，保持单一激活上下文。
+// eslint-disable-next-line max-lines-per-function
 suite('vscode-toolbox-namewta extension', () => {
   test('activates and exposes the versioned public API', async () => {
     const extension = vscode.extensions.getExtension<VscodeToolboxNamewtaExtensionApi>(
@@ -14,10 +16,12 @@ suite('vscode-toolbox-namewta extension', () => {
     assert.deepEqual(api.getCapabilities(), [
       { command: 'copyReference.copy', available: true },
       { command: 'gitBlame.copyCommitHash', available: true },
+      { command: 'gitBlame.copyReader', available: true },
       { command: 'gitBlame.getAnnotations', available: true },
       { command: 'gitBlame.getCommitChanges', available: true },
       { command: 'gitBlame.getHistoricalContent', available: true },
       { command: 'gitBlame.getLineHistory', available: true },
+      { command: 'gitBlame.getReaderModel', available: true },
       { command: 'gitReview.discardItem', available: true },
       { command: 'gitReview.end', available: true },
       { command: 'gitReview.getItemContent', available: true },
@@ -49,6 +53,7 @@ suite('vscode-toolbox-namewta extension', () => {
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.hide'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.refresh'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.viewLineHistory'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.openReader'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.start'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.previous'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.next'));

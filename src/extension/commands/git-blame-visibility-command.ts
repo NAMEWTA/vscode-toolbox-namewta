@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
-import type { GitBlameLineChange } from '../../core/domains/git-blame/public-api';
+import {
+  formatGitBlameLocalDateTime,
+  type GitBlameLineChange,
+} from '../../core/domains/git-blame/public-api';
 import type { VscodeGitBlameConfigurationAdapter } from '../adapters/vscode-git-blame-configuration-adapter';
 import type {
   GitBlameAnnotationController,
@@ -17,6 +20,10 @@ const COMMAND_IDS: Readonly<Record<GitBlameVisibilityMode, string>> = {
 
 export class GitBlameVisibilityHost implements vscode.Disposable {
   readonly #disposables: vscode.Disposable[];
+  readonly #statusBar = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    90,
+  );
 
   public constructor(
     private readonly controller: GitBlameAnnotationController,
@@ -29,25 +36,21 @@ export class GitBlameVisibilityHost implements vscode.Disposable {
       vscode.workspace.onDidSaveTextDocument(
         (document) => void this.refreshDocument(document),
       ),
-      vscode.workspace.onDidChangeTextDocument((event) =>
+      vscode.workspace.onDidChangeTextDocument((event) => {
         this.controller.applyContentChanges(
           event.document.uri.toString(true),
           event.contentChanges.map(snapshotChange),
           event.document.version,
           event.document.lineCount,
-        ),
-      ),
+        );
+        this.rerenderAtActiveCursor(event.document.uri.toString(true));
+      }),
       vscode.workspace.onDidChangeConfiguration((event) =>
         this.handleConfiguration(event),
       ),
       vscode.window.onDidChangeVisibleTextEditors(() => this.rerenderTracked()),
       vscode.window.onDidChangeTextEditorSelection((event) =>
-        this.controller.rerender(
-          event.textEditor.document.uri.toString(true),
-          event.selections[0]?.active.line === undefined
-            ? undefined
-            : event.selections[0].active.line + 1,
-        ),
+        this.rerenderAtActiveCursor(event.textEditor.document.uri.toString(true)),
       ),
     ];
   }
@@ -66,6 +69,7 @@ export class GitBlameVisibilityHost implements vscode.Disposable {
       (mode === 'toggle' && this.controller.getState(key) !== 'disabled')
     ) {
       this.controller.hide(key);
+      this.#statusBar.hide();
       return;
     }
     await this.controller.show(snapshot(editor.document), this.configuration.read());
@@ -77,6 +81,7 @@ export class GitBlameVisibilityHost implements vscode.Disposable {
       disposable.dispose();
     }
     this.controller.dispose();
+    this.#statusBar.dispose();
   }
 
   private async refreshDocument(document: vscode.TextDocument): Promise<void> {
@@ -101,9 +106,15 @@ export class GitBlameVisibilityHost implements vscode.Disposable {
   }
 
   private rerenderTracked(): void {
-    for (const key of this.controller.getTrackedDocumentKeys()) {
-      this.rerenderAtActiveCursor(key);
+    const key = vscode.window.activeTextEditor?.document.uri.toString(true);
+    if (
+      key === undefined ||
+      !this.controller.getTrackedDocumentKeys().some((candidate) => candidate === key)
+    ) {
+      this.#statusBar.hide();
+      return;
     }
+    this.rerenderAtActiveCursor(key);
   }
 
   private rerenderAtActiveCursor(documentKey: string): void {
@@ -113,6 +124,18 @@ export class GitBlameVisibilityHost implements vscode.Disposable {
         ? editor.selection.active.line + 1
         : undefined;
     this.controller.rerender(documentKey, highlightedLine);
+    const identity =
+      highlightedLine === undefined
+        ? undefined
+        : this.controller.getLineIdentity(documentKey, highlightedLine);
+    if (identity === undefined) {
+      this.#statusBar.hide();
+      return;
+    }
+    this.#statusBar.text = `$(git-commit) ${formatGitBlameLocalDateTime(identity.blame.authoredAt)} · ${identity.blame.author} · ${identity.blame.commit.slice(0, 12)}`;
+    this.#statusBar.tooltip = identity.blame.summary;
+    this.#statusBar.command = 'vscodeToolboxNamewta.gitBlame.openReader';
+    this.#statusBar.show();
   }
 }
 
