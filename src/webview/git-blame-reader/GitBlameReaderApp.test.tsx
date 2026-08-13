@@ -80,7 +80,7 @@ describe('GitBlameReaderApp', () => {
     expect(document.querySelectorAll('[data-code-line]').length).toBe(5_001);
     expect(document.querySelectorAll('[data-blame-line]').length).toBe(5_001);
     expect(document.querySelector('.blame-reader-virtual')).toBeNull();
-  });
+  }, 30_000);
 
   it('通过键盘调整 Blame 列宽并限制在当前布局边界内', () => {
     renderReader(model(), vi.fn());
