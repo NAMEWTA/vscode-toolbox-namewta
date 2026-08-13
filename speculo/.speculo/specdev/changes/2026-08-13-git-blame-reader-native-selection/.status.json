@@ -1,0 +1,15 @@
+{
+  "schema_version": 3,
+  "artifact": "change-status",
+  "change": "2026-08-13-git-blame-reader-native-selection",
+  "change_status": "active",
+  "current_work": "specdev/implement",
+  "created_at": "2026-08-13T10:59:54+08:00",
+  "updated_at": "2026-08-13T10:59:54+08:00",
+  "completed_at": null,
+  "archived": false,
+  "archive_path": null,
+  "blockers": [],
+  "deviations": [],
+  "worktrees": []
+}

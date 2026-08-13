@@ -22,7 +22,7 @@
 
 ## 安装
 
-当前版本为 `0.1.6`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
+当前版本为 `0.1.7`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
 
 在 VS Code 中打开命令面板，执行 **Extensions: Install from VSIX...**，选择下载的 VSIX。安装完成后重新加载窗口；命令面板中应能看到以 `toolbox-` 开头的命令。
 
@@ -52,8 +52,9 @@
 - Status Bar 和 Hover 显示当前行的作者、提交时间、短 SHA 与摘要，不向源码插入文字。
 - 可选的当前提交高亮只改变整行背景，不改变源码起点、选择、软换行或水平滚动。
 - Hover 提供完整提交元数据、复制 hash、受限 remote 链接、提交 Diff、上一版本和增量 Line History。
-- Full-file Blame Reader 按连续 commit block 展示完整源码、行号与归属信息，支持搜索、键盘导航和八类结构化复制。
-- 超过 5,000 logical lines 时 Reader 使用虚拟化，Copy All 始终从 Extension Host 的完整模型生成。
+- Full-file Blame Reader 将 Blame 与 Code 分成两个独立的原生文本选择区，按 commit 着色、支持软换行、搜索和拖动分隔线。
+- Reader 不再用复制按钮或整行点击驱动操作；在任一列直接拖选后使用系统 `Ctrl/Cmd+C`，只有显式图标会打开源码行或提交详情。
+- 大文件保留完整 logical line DOM，并使用浏览器离屏绘制抑制来维持跨屏原生选择。
 
 ### Git Review
 

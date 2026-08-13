@@ -2,91 +2,143 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GitBlameReaderModel } from '../../core/domains/git-blame/public-api';
-import { GitBlameReaderApp } from './GitBlameReaderApp';
+import {
+  GitBlameReaderApp,
+  type GitBlameReaderWebviewStrings,
+} from './GitBlameReaderApp';
 
 describe('GitBlameReaderApp', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();
   });
-  it('renders selectable source text and sends typed navigation/copy actions', () => {
-    const post = vi.fn();
-    render(
-      <GitBlameReaderApp
-        model={model()}
-        strings={strings()}
-        status={undefined}
-        post={post}
-      />,
-    );
 
-    const source = screen.getByText('const value = "<safe>";');
-    expect(source).toBeInTheDocument();
-    fireEvent.click(source);
-    fireEvent.doubleClick(source);
-    expect(post).toHaveBeenCalledWith({
+  it('使用彼此独立的 Blame 与 Code 文本层，并删除复制按钮带', () => {
+    renderReader(model(), vi.fn());
+
+    const blame = screen.getByRole('region', { name: 'Blame' });
+    const code = screen.getByRole('region', { name: 'Code' });
+    expect(blame).toHaveTextContent('Alice');
+    expect(blame).not.toHaveTextContent('const first = 1;');
+    expect(code).toHaveTextContent('const first = 1;');
+    expect(code).not.toHaveTextContent('Alice');
+    expect(screen.queryByRole('toolbar', { name: 'Copy actions' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Copy All Code' })).toBeNull();
+  });
+
+  it('普通文本点击无副作用，只有显式图标发送导航与提交详情', () => {
+    const post = vi.fn();
+    renderReader(model(), post);
+
+    fireEvent.click(screen.getByText('const first = 1;'));
+    fireEvent.click(screen.getAllByText(/Alice/)[0]!);
+    expect(post).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open source line 1' }));
+    expect(post).toHaveBeenLastCalledWith({
       type: 'gitBlameReader.openSource',
       generation: 7,
       line: 1,
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Copy All Code' }));
-    expect(post).toHaveBeenCalledWith({
-      type: 'gitBlameReader.copy',
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Show commit details' })[0]!);
+    expect(post).toHaveBeenLastCalledWith({
+      type: 'gitBlameReader.commitDetail',
       generation: 7,
-      format: 'all-code',
+      blockId: 'block-1-aaaaaaaaaaaa',
     });
   });
 
-  it('uses Ctrl+F to focus source search and reports matches', () => {
-    render(
+  it('为相邻 commit 分配不同颜色，并让同一 SHA 始终复用颜色', () => {
+    renderReader(model(), vi.fn());
+
+    const first = document.querySelector('[data-blame-line="1"]');
+    const second = document.querySelector('[data-blame-line="2"]');
+    const third = document.querySelector('[data-blame-line="3"]');
+    expect(first).toHaveAttribute('data-commit-color');
+    expect(second).toHaveAttribute('data-commit-color');
+    expect(third).toHaveAttribute('data-commit-color');
+    expect(first?.getAttribute('data-commit-color')).not.toBe(
+      second?.getAttribute('data-commit-color'),
+    );
+    expect(first?.getAttribute('data-commit-color')).toBe(
+      third?.getAttribute('data-commit-color'),
+    );
+  });
+
+  it('使用 Ctrl+F 搜索源码并报告匹配数', () => {
+    renderReader(model(), vi.fn());
+    fireEvent.keyDown(window, { key: 'f', ctrlKey: true });
+    const search = screen.getByRole('textbox', { name: 'Search source' });
+    expect(search).toHaveFocus();
+    fireEvent.change(search, { target: { value: 'second' } });
+    expect(screen.getByText('1 match(es)')).toBeInTheDocument();
+  });
+
+  it('保留大型模型的全部 logical lines，不再受虚拟窗口限制', () => {
+    renderReader(largeModel(), vi.fn());
+
+    expect(document.querySelectorAll('[data-code-line]').length).toBe(5_001);
+    expect(document.querySelectorAll('[data-blame-line]').length).toBe(5_001);
+    expect(document.querySelector('.blame-reader-virtual')).toBeNull();
+  });
+
+  it('通过键盘调整 Blame 列宽并限制在当前布局边界内', () => {
+    renderReader(model(), vi.fn());
+    const separator = screen.getByRole('separator', { name: 'Resize Blame column' });
+    expect(separator).toHaveAttribute('aria-valuenow', '360');
+    fireEvent.keyDown(separator, { key: 'ArrowRight' });
+    expect(separator).toHaveAttribute('aria-valuenow', '376');
+    fireEvent.keyDown(separator, { key: 'Home' });
+    expect(separator).toHaveAttribute('aria-valuenow', '220');
+  });
+
+  it('刷新模型时保留当前 Reader 会话的列宽', () => {
+    const view = renderReader(model(), vi.fn());
+    const separator = screen.getByRole('separator', { name: 'Resize Blame column' });
+    fireEvent.keyDown(separator, { key: 'ArrowRight' });
+    view.rerender(
       <GitBlameReaderApp
-        model={model()}
+        model={{ ...model(), generation: 8, sourceLine: 2 }}
         strings={strings()}
         status={undefined}
         post={vi.fn()}
       />,
     );
-    fireEvent.keyDown(window, { key: 'f', ctrlKey: true });
-    const search = screen.getByRole('textbox', { name: 'Search source' });
-    expect(search).toHaveFocus();
-    fireEvent.change(search, { target: { value: 'safe' } });
-    expect(screen.getByText('1 match(es)')).toBeInTheDocument();
-  });
-
-  it('virtualizes large models while Copy All remains a host-model action', () => {
-    const post = vi.fn();
-    render(
-      <GitBlameReaderApp
-        model={largeModel()}
-        strings={strings()}
-        status={undefined}
-        post={post}
-      />,
-    );
-    expect(document.querySelectorAll('[data-reader-line]').length).toBeLessThan(100);
-    fireEvent.click(screen.getByRole('button', { name: 'Copy All Code' }));
-    expect(post).toHaveBeenCalledWith({
-      type: 'gitBlameReader.copy',
-      generation: 7,
-      format: 'all-code',
-    });
+    expect(
+      screen.getByRole('separator', { name: 'Resize Blame column' }),
+    ).toHaveAttribute('aria-valuenow', '376');
   });
 });
 
+function renderReader(
+  readerModel: GitBlameReaderModel,
+  post: ReturnType<typeof vi.fn>,
+): ReturnType<typeof render> {
+  return render(
+    <GitBlameReaderApp
+      model={readerModel}
+      strings={strings()}
+      status={undefined}
+      post={post}
+    />,
+  );
+}
+
 function model(): GitBlameReaderModel {
-  const blame = {
-    line: 1,
-    commit: 'a'.repeat(40),
-    author: 'Alice',
-    email: 'alice@example.com',
-    authoredAt: 1_700_000_000,
-    summary: 'Initial',
-  };
-  const line = {
-    line: 1,
-    text: 'const value = "<safe>";',
-    blame,
+  const commits = ['a'.repeat(40), 'b'.repeat(40), 'a'.repeat(40)];
+  const lines = commits.map((commit, index) => ({
+    line: index + 1,
+    text: ['const first = 1;', 'const second = 2;', 'return first;'][index] ?? '',
+    blame: {
+      line: index + 1,
+      commit,
+      author: index === 1 ? 'Bob' : 'Alice',
+      email: index === 1 ? 'bob@example.com' : 'alice@example.com',
+      authoredAt: 1_700_000_000 + index,
+      summary: `Commit ${index + 1}`,
+    },
     kind: 'committed' as const,
-  };
+  }));
   return {
     version: 1,
     generation: 7,
@@ -95,84 +147,57 @@ function model(): GitBlameReaderModel {
     revision: 'HEAD',
     documentVersion: 1,
     sourceLine: 1,
-    lineCount: 1,
+    lineCount: lines.length,
     lineEnding: '\n',
     hasFinalNewline: false,
-    lines: [line],
-    blocks: [
-      {
-        blockId: 'block-1-aaaaaaaaaaaa',
-        startLine: 1,
-        endLine: 1,
-        commit: blame.commit,
-        kind: 'committed',
-        author: blame.author,
-        email: blame.email,
-        authoredAt: blame.authoredAt,
-        summary: blame.summary,
-        lines: [line],
-      },
-    ],
+    lines,
+    blocks: lines.map((line) => ({
+      blockId: `block-${line.line}-${line.blame.commit.slice(0, 12)}`,
+      startLine: line.line,
+      endLine: line.line,
+      commit: line.blame.commit,
+      kind: 'committed' as const,
+      author: line.blame.author,
+      email: line.blame.email,
+      authoredAt: line.blame.authoredAt,
+      summary: line.blame.summary,
+      lines: [line],
+    })),
   };
 }
 
 function largeModel(): GitBlameReaderModel {
   const first = model();
+  const template = first.lines[0];
+  if (template === undefined) throw new Error('测试模型缺少模板行。');
   const lines = Array.from({ length: 5_001 }, (_, index) => ({
-    ...first.lines[0],
+    ...template,
     line: index + 1,
     text: `line-${index + 1}`,
-    blame: { ...first.lines[0]?.blame, line: index + 1 },
+    blame: { ...template.blame, line: index + 1 },
   }));
+  const block = first.blocks[0];
+  if (block === undefined) throw new Error('测试模型缺少模板 block。');
   return {
     ...first,
     sourceLine: 5_001,
     lineCount: lines.length,
     lines,
-    blocks: [
-      {
-        ...first.blocks[0],
-        endLine: lines.length,
-        lines,
-      },
-    ],
-  } as GitBlameReaderModel;
+    blocks: [{ ...block, endLine: lines.length, lines }],
+  };
 }
 
-function strings(): {
-  readonly title: string;
-  readonly search: string;
-  readonly logicalLines: string;
-  readonly refresh: string;
-  readonly copyActions: string;
-  readonly copyCode: string;
-  readonly copyLineWithBlame: string;
-  readonly copyCommitSha: string;
-  readonly copyCommitInfo: string;
-  readonly copyBlockCode: string;
-  readonly copyBlockWithBlame: string;
-  readonly copyAllCode: string;
-  readonly copyAllWithBlame: string;
-  readonly lines: string;
-  readonly matches: string;
-  readonly noMatches: string;
-  readonly workingTree: string;
-  readonly uncommitted: string;
-} {
+function strings(): GitBlameReaderWebviewStrings {
   return {
     title: 'Git Blame Reader',
     search: 'Search source',
     logicalLines: 'Git blame logical lines',
     refresh: 'Refresh',
-    copyActions: 'Copy actions',
-    copyCode: 'Copy Code',
-    copyLineWithBlame: 'Copy Line With Blame',
-    copyCommitSha: 'Copy Commit SHA',
-    copyCommitInfo: 'Copy Commit Info',
-    copyBlockCode: 'Copy Block Code',
-    copyBlockWithBlame: 'Copy Block With Blame',
-    copyAllCode: 'Copy All Code',
-    copyAllWithBlame: 'Copy All With Blame',
+    blameColumn: 'Blame',
+    codeColumn: 'Code',
+    openSource: 'Open source line {0}',
+    commitDetails: 'Show commit details',
+    resizeBlameColumn: 'Resize Blame column',
     lines: '{0} lines',
     matches: '{0} match(es)',
     noMatches: 'No matches',
