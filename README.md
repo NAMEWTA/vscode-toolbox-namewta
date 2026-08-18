@@ -12,17 +12,18 @@
 
 如果你经常在编辑器、终端和 Git 客户端之间切换，这个扩展提供三条紧凑的路径：
 
-| 能力           | 解决的问题                                               | 入口                                                 |
-| -------------- | -------------------------------------------------------- | ---------------------------------------------------- |
-| Copy Reference | 把当前文件、选区或 Explorer 资源转成可粘贴的代码位置引用 | 编辑器、行号、Explorer 右键菜单                      |
-| Git Blame      | 查看当前行来源，并在独立 Reader 中阅读完整文件历史       | 编辑器行号右键、命令面板、`Ctrl+Alt+B` / `Cmd+Alt+B` |
-| Git Review     | 在一个聚合视图中按冲突、暂存和未暂存分层审核变更         | Source Control 标题栏                                |
+| 能力               | 解决的问题                                               | 入口                                                 |
+| ------------------ | -------------------------------------------------------- | ---------------------------------------------------- |
+| Copy Reference     | 把当前文件、选区或 Explorer 资源转成可粘贴的代码位置引用 | 编辑器、行号、Explorer 右键菜单                      |
+| Git Blame          | 查看当前行来源，并在独立 Reader 中阅读完整文件历史       | 编辑器行号右键、命令面板、`Ctrl+Alt+B` / `Cmd+Alt+B` |
+| Git Review         | 在一个聚合视图中按冲突、暂存和未暂存分层审核变更         | Source Control 标题栏                                |
+| Git Commit Compare | 选择基础 commit，与当前选中的 commit 比较全部快照差异    | Explorer 中的 Git 提交历史和比较变更视图             |
 
 扩展不替换 Git，不修改提交历史，也不要求安装其他 Git 扩展。
 
 ## 安装
 
-当前版本为 `0.1.7`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
+当前开发版本为 `0.1.8`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
 
 在 VS Code 中打开命令面板，执行 **Extensions: Install from VSIX...**，选择下载的 VSIX。安装完成后重新加载窗口；命令面板中应能看到以 `toolbox-` 开头的命令。
 
@@ -31,7 +32,8 @@
 1. 在 VS Code 中打开一个文件夹，并在需要 Git 能力的工作区选择 **Trust**。
 2. 在编辑器中打开任意文件，右键选择 `toolbox-复制相对引用`，把结果粘贴到 Issue、Review 或提交信息中。
 3. 对已提交文件执行 `toolbox-切换 Git Blame 注解` 查看当前行信息，或执行 `toolbox-打开完整文件 Blame 阅读器` 阅读整文件历史。
-4. 在 Source Control 标题栏点击 Git Compare 图标，执行 `toolbox-开始审核 Git 变更`。
+4. 执行 `toolbox-打开 Git 提交比较`，在 Explorer 的 Git 提交历史视图中选择仓库。
+5. 需要审核工作树变更时，在 Source Control 标题栏执行 `toolbox-开始审核 Git 变更`。
 
 成功标志：Copy Reference 写入剪贴板；Git Blame 不改变源码布局，完整历史在独立 Reader 中呈现；Git Review 在单个编辑器标签页中显示变更队列。
 
@@ -63,6 +65,15 @@
 - 每个条目支持打开文件、打开原生 Diff、复制引用、标记已审核和跳过。
 - 适用时提供 Stage、Unstage、确认后的 Discard 和 Merge Changes；Discard 始终逐文件二次确认。
 - 聚合 patch 单项限制为 8 MiB，最多同时加载两个文件；面板关闭或状态变化时会取消旧请求。
+
+### Git Commit Compare
+
+- 执行 `toolbox-打开 Git 提交比较`，扩展会优先使用活动编辑器文件所属仓库；无法确定时从 QuickPick 选择仓库。
+- 历史视图显示当前 `HEAD` 可达的全部提交，首屏分页加载，末尾的 `toolbox-加载更多提交` 继续加载。
+- 在提交行右键执行 `toolbox-设为比较参考提交`，再在另一个提交行右键执行 `toolbox-与参考提交比较`。
+- 参考提交会持续保留，允许连续比较多个目标；通过标题栏的 `toolbox-清除比较参考` 显式清除。
+- 比较变更视图按状态分组并显示文件数、增删统计和重命名路径。文本文件打开原生 Diff；二进制、子模块和过大文件显示摘要。
+- 比较只读取两个 commit 快照，不修改工作树、index、分支或远程状态；切换仓库或重启扩展后 reference 会清除。
 
 ## 配置
 

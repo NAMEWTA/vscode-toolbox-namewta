@@ -18,7 +18,7 @@ describe('Toolbox 命令清单', () => {
     const english = readJson('package.nls.json');
     const chinese = readJson('package.nls.zh-cn.json');
 
-    expect(commands).toHaveLength(20);
+    expect(commands).toHaveLength(27);
     for (const command of commands) {
       expect(command.command).toEqual(
         expect.stringMatching(/^vscodeToolboxNamewta\./u),

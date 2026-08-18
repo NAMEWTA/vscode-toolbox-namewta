@@ -32,6 +32,17 @@ import {
   type GitBlameReaderCopyFormat,
   type GitBlameReaderModel,
 } from '../domains/git-blame/git-blame-reader-model';
+import {
+  isGitCompareHistoryInput,
+  isGitCompareInput,
+  isGitCompareRevisionInput,
+  type GitCompareHistoryInput,
+  type GitCompareHistoryPage,
+  type GitCompareInput,
+  type GitCompareResult,
+  type GitCompareRevisionInput,
+  type GitCompareRevisionResult,
+} from '../domains/git-compare/public-api';
 
 export type {
   GitBlameAnnotationsInput,
@@ -43,6 +54,14 @@ export type {
   GitHistoricalContentResult,
   GitLineHistoryInput,
   GitLineHistoryPage,
+};
+export type {
+  GitCompareHistoryInput,
+  GitCompareHistoryPage,
+  GitCompareInput,
+  GitCompareResult,
+  GitCompareRevisionInput,
+  GitCompareRevisionResult,
 };
 export type GitBlameReaderModelInput = {
   readonly resource: GitBlameAnnotationsInput['resource'];
@@ -141,6 +160,18 @@ export type ToolCommandMap = {
     input: GitCopyCommitHashInput;
     output: string;
   };
+  'gitCompare.listCommits': {
+    input: GitCompareHistoryInput;
+    output: GitCompareHistoryPage;
+  };
+  'gitCompare.compareCommits': {
+    input: GitCompareInput;
+    output: GitCompareResult;
+  };
+  'gitCompare.getRevisionContent': {
+    input: GitCompareRevisionInput;
+    output: GitCompareRevisionResult;
+  };
   'gitReview.start': {
     input: GitReviewStartInput;
     output: GitReviewSessionSnapshot;
@@ -226,6 +257,9 @@ const TOOL_COMMAND_IDS = [
   'gitBlame.getCommitChanges',
   'gitBlame.getHistoricalContent',
   'gitBlame.getLineHistory',
+  'gitCompare.listCommits',
+  'gitCompare.compareCommits',
+  'gitCompare.getRevisionContent',
   'gitReview.end',
   'gitReview.getItemContent',
   'gitReview.getItemPatch',
@@ -262,6 +296,7 @@ export function isToolCommandInput<TCommand extends ToolCommandId>(
   return isNonGitReviewCommandInput(command, input);
 }
 
+// eslint-disable-next-line complexity
 function isNonGitReviewCommandInput(
   command: NonGitReviewCommandId,
   input: unknown,
@@ -283,6 +318,12 @@ function isNonGitReviewCommandInput(
       return isGitHistoricalContentInput(input);
     case 'gitBlame.getLineHistory':
       return isGitLineHistoryInput(input);
+    case 'gitCompare.listCommits':
+      return isGitCompareHistoryInput(input);
+    case 'gitCompare.compareCommits':
+      return isGitCompareInput(input);
+    case 'gitCompare.getRevisionContent':
+      return isGitCompareRevisionInput(input);
     case 'system.getRuntimeInfo':
       return isEmptyRecord(input);
   }

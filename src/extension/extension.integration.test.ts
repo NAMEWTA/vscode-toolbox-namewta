@@ -22,6 +22,9 @@ suite('vscode-toolbox-namewta extension', () => {
       { command: 'gitBlame.getHistoricalContent', available: true },
       { command: 'gitBlame.getLineHistory', available: true },
       { command: 'gitBlame.getReaderModel', available: true },
+      { command: 'gitCompare.compareCommits', available: true },
+      { command: 'gitCompare.getRevisionContent', available: true },
+      { command: 'gitCompare.listCommits', available: true },
       { command: 'gitReview.discardItem', available: true },
       { command: 'gitReview.end', available: true },
       { command: 'gitReview.getItemContent', available: true },
@@ -40,7 +43,7 @@ suite('vscode-toolbox-namewta extension', () => {
     ]);
   });
 
-  test('注册基础、复制、Git Blame 与 Git Review 命令', async () => {
+  test('注册基础、复制、Git Blame、Git Review 与 Git Compare 命令', async () => {
     const commands = await vscode.commands.getCommands(true);
     assert.ok(commands.includes('vscodeToolboxNamewta.openToolbox'));
     assert.ok(commands.includes('vscodeToolboxNamewta.showRuntimeInfo'));
@@ -62,6 +65,15 @@ suite('vscode-toolbox-namewta extension', () => {
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.skip'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.refresh'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.end'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.openHistory'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.refresh'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.setReference'));
+    assert.ok(
+      commands.includes('vscodeToolboxNamewta.gitCompare.compareWithReference'),
+    );
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.clearReference'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.loadMore'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.openFileDiff'));
   });
 
   test('executes runtime info through the public API', async () => {

@@ -25,6 +25,12 @@ import { GitHistoryPortAdapter } from '../adapters/git/git-history-port-adapter'
 import { GitLineHistoryPortAdapter } from '../adapters/git/git-line-history-port-adapter';
 import { registerGitReviewHandlers } from '../adapters/git/git-review-handler-registration';
 import { GitReviewPortAdapter } from '../adapters/git/git-review-port-adapter';
+import {
+  GitCompareCommitsHandler,
+  GitCompareListCommitsHandler,
+  GitCompareRevisionContentHandler,
+} from '../../core/domains/git-compare/public-api';
+import { GitComparePortAdapter } from '../adapters/git/git-compare-port-adapter';
 
 export type DomainModuleDependencies = {
   readonly registry: ToolRegistry;
@@ -40,6 +46,10 @@ export function registerDomainModules(
   registry.register(new CopyReferenceHandler(clipboardPort));
   registry.register(new GitCopyCommitHashHandler(clipboardPort));
   const git = new GitCommandRunner();
+  const compare = new GitComparePortAdapter(git, () => vscode.workspace.isTrusted);
+  registry.register(new GitCompareListCommitsHandler(compare));
+  registry.register(new GitCompareCommitsHandler(compare));
+  registry.register(new GitCompareRevisionContentHandler(compare));
   const blamePort = new GitBlamePortAdapter(git, () => vscode.workspace.isTrusted);
   registry.register(new GitBlameHandler(blamePort));
   registry.register(new GitBlameReaderHandler(blamePort));

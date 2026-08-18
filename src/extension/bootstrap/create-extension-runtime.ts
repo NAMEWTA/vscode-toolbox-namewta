@@ -48,6 +48,8 @@ import { GitBlameReaderController } from '../presentation/git-blame-reader-contr
 import { GitBlameReaderSessionModelStore } from '../presentation/git-blame-reader-session-model-store';
 import { createExtensionPublicApi } from './create-extension-public-api';
 import { registerDomainModules } from './register-domain-modules';
+import { GitCompareController } from '../presentation/git-compare-controller';
+import { GIT_COMPARE_DOCUMENT_SCHEME } from '../presentation/vscode-git-compare-document-provider';
 
 export type ExtensionRuntime = vscode.Disposable & {
   readonly publicApi: VscodeToolboxNamewtaExtensionApi;
@@ -70,6 +72,13 @@ export function createExtensionRuntime(
 
   disposables.add(
     registerDomainModules({ clipboardPort, readerModels, registry, runtimeInfoPort }),
+  );
+  const gitCompareController = disposables.add(new GitCompareController(gateway));
+  disposables.add(
+    vscode.workspace.registerTextDocumentContentProvider(
+      GIT_COMPARE_DOCUMENT_SCHEME,
+      gitCompareController.documentProvider,
+    ),
   );
   const historicalProvider = disposables.add(
     new GitHistoricalDocumentProvider(gateway),
@@ -124,6 +133,38 @@ export function createExtensionRuntime(
     {
       id: 'vscodeToolboxNamewta.gitBlame.openReader',
       execute: () => readerController.open(),
+    },
+    {
+      id: 'vscodeToolboxNamewta.gitCompare.openHistory',
+      execute: () => gitCompareController.openHistory(),
+    },
+    {
+      id: 'vscodeToolboxNamewta.gitCompare.refresh',
+      execute: () => gitCompareController.refresh(),
+    },
+    {
+      id: 'vscodeToolboxNamewta.gitCompare.setReference',
+      execute: (...args: readonly unknown[]) => {
+        gitCompareController.setReference(args[0]);
+      },
+    },
+    {
+      id: 'vscodeToolboxNamewta.gitCompare.compareWithReference',
+      execute: (...args: readonly unknown[]) =>
+        gitCompareController.compareWithReference(args[0]),
+    },
+    {
+      id: 'vscodeToolboxNamewta.gitCompare.clearReference',
+      execute: () => gitCompareController.clearReference(),
+    },
+    {
+      id: 'vscodeToolboxNamewta.gitCompare.loadMore',
+      execute: () => gitCompareController.loadMore(),
+    },
+    {
+      id: 'vscodeToolboxNamewta.gitCompare.openFileDiff',
+      execute: (...args: readonly unknown[]) =>
+        gitCompareController.openFileDiff(args[0]),
     },
   ]);
 

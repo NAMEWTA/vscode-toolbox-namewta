@@ -4,6 +4,12 @@
 
 ## [未发布]
 
+### 新增
+
+- 增加 Git Commit Compare：在 Explorer 的原生提交历史视图中分页浏览当前 HEAD 的全部祖先提交，将任意 commit 设为比较参考，并与另一个 commit 直接比较快照。
+- 增加独立的比较变更 TreeView，按状态显示全部文件、增删统计、重命名路径以及二进制和子模块摘要；文本文件使用 VS Code 原生 Diff 打开。
+- 新增 `gitCompare.listCommits`、`gitCompare.compareCommits` 和 `gitCompare.getRevisionContent` Gateway 能力，所有 Git 查询支持受信任工作区、参数数组、取消、超时和输出限制。
+
 ## [0.1.7] - 2026-08-13
 
 ### 变更
