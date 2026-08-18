@@ -12,8 +12,8 @@
 2. `docs/rules/01-project-scope-and-fixed-stack.md`
 3. `docs/rules/03-project-architecture-and-directory-layout.md`
 4. 与本次修改相关的规则文档
-5. `docs/architecture/overview.md`
-6. `docs/adr/` 中相关 ADR
+5. `speculo/.speculo/specdev/context/overview.md`
+6. `speculo/.speculo/specdev/adr/` 中相关 ADR
 
 用户明确决定和平台硬约束优先于仓库默认规则。不得重复询问这些文档已经回答的问题。
 

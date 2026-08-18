@@ -119,7 +119,7 @@ pnpm dev
 
 ## 贡献与发布
 
-修改前请阅读 [AGENTS.md](./AGENTS.md)、[架构总览](./docs/architecture/overview.md) 和相关 `docs/rules/` / ADR。新行为先增加测试，再运行 `pnpm check`；涉及 VS Code 宿主或发布时运行 `pnpm check:ci`。
+修改前请阅读 [AGENTS.md](./AGENTS.md)、[架构总览](./speculo/.speculo/specdev/context/overview.md) 和相关 `docs/rules/` / ADR。新行为先增加测试，再运行 `pnpm check`；涉及 VS Code 宿主或发布时运行 `pnpm check:ci`。
 
 提交信息使用简洁的 Conventional Commits 风格。发布由 GitHub Actions 执行：推送与 `package.json` 版本严格一致的 `v<version>` 标签后，工作流会重新运行完整门禁并创建 GitHub Release 上传 VSIX。项目不发布到 Marketplace 或 npm。
 
