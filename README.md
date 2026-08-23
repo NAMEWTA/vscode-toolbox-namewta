@@ -10,14 +10,14 @@
 
 ## 适合什么场景
 
-如果你经常在编辑器、终端和 Git 客户端之间切换，这个扩展提供三条紧凑的路径：
+如果你经常在编辑器、终端和 Git 客户端之间切换，这个扩展提供四条紧凑的路径：
 
 | 能力               | 解决的问题                                               | 入口                                                 |
 | ------------------ | -------------------------------------------------------- | ---------------------------------------------------- |
 | Copy Reference     | 把当前文件、选区或 Explorer 资源转成可粘贴的代码位置引用 | 编辑器、行号、Explorer 右键菜单                      |
 | Git Blame          | 查看当前行来源，并在独立 Reader 中阅读完整文件历史       | 编辑器行号右键、命令面板、`Ctrl+Alt+B` / `Cmd+Alt+B` |
 | Git Review         | 在一个聚合视图中按冲突、暂存和未暂存分层审核变更         | Source Control 标题栏                                |
-| Git Commit Compare | 选择基础 commit，与当前选中的 commit 比较全部快照差异    | Explorer 中的 Git 提交历史和比较变更视图             |
+| Git Commit Compare | 选择或输入两个 commit，查看有明确方向的完整快照差异      | Source Control 标题栏                                |
 
 扩展不替换 Git，不修改提交历史，也不要求安装其他 Git 扩展。
 
@@ -32,10 +32,10 @@
 1. 在 VS Code 中打开一个文件夹，并在需要 Git 能力的工作区选择 **Trust**。
 2. 在编辑器中打开任意文件，右键选择 `toolbox-复制相对引用`，把结果粘贴到 Issue、Review 或提交信息中。
 3. 对已提交文件执行 `toolbox-切换 Git Blame 注解` 查看当前行信息，或执行 `toolbox-打开完整文件 Blame 阅读器` 阅读整文件历史。
-4. 执行 `toolbox-打开 Git 提交比较`，在 Explorer 的 Git 提交历史视图中选择仓库。
+4. 在 Source Control 标题栏点击 Git 比较图标，先选择基准提交，再选择目标提交。
 5. 需要审核工作树变更时，在 Source Control 标题栏执行 `toolbox-开始审核 Git 变更`。
 
-成功标志：Copy Reference 写入剪贴板；Git Blame 不改变源码布局，完整历史在独立 Reader 中呈现；Git Review 在单个编辑器标签页中显示变更队列。
+成功标志：Copy Reference 写入剪贴板；Git Blame 不改变源码布局，完整历史在独立 Reader 中呈现；Git Compare 在原生多文件比较中显示明确的两个端点；Git Review 在单个编辑器标签页中显示变更队列。
 
 ## 核心能力
 
@@ -68,12 +68,13 @@
 
 ### Git Commit Compare
 
-- 执行 `toolbox-打开 Git 提交比较`，扩展会优先使用活动编辑器文件所属仓库；无法确定时从 QuickPick 选择仓库。
-- 历史视图显示当前 `HEAD` 可达的全部提交，首屏分页加载，末尾的 `toolbox-加载更多提交` 继续加载。
-- 在提交行右键执行 `toolbox-设为比较参考提交`，再在另一个提交行右键执行 `toolbox-与参考提交比较`。
-- 参考提交会持续保留，允许连续比较多个目标；通过标题栏的 `toolbox-清除比较参考` 显式清除。
-- 比较变更视图按状态分组并显示文件数、增删统计和重命名路径。文本文件打开原生 Diff；二进制、子模块和过大文件显示摘要。
-- 比较只读取两个 commit 快照，不修改工作树、index、分支或远程状态；切换仓库或重启扩展后 reference 会清除。
+- 从 Source Control 标题栏的 Git 比较图标进入；扩展优先使用活动编辑器文件所属仓库，无法唯一确定时再选择仓库。
+- 第一步选择基准端，第二步选择目标端；目标端默认激活当前 `HEAD`，标题始终显示 `base → target` 方向。
+- 两端都可以从分页提交历史中选择。已知提交编号时，输入 4 到 64 位十六进制 SHA 前缀，再选择对应的“使用提交编号”项。
+- 加载更多只扩展当前列表；第二步可返回重新选择基准端，取消会终止未完成的 Git 请求。
+- 完成选择后使用 VS Code 原生多文件更改视图一次显示全部文件，并在标题中显示两个短 SHA、文件数和增删统计；从列表可继续打开单文件原生 Diff。
+- 新增、删除和重命名保留正确的前后路径；二进制、子模块和过大文件使用包含端点的只读摘要。
+- 比较严格读取用户所选的两个 commit 快照，不自动计算 merge-base，也不包含工作树或 index，更不会修改分支、远程或任何 Git 状态。
 
 ## 配置
 
@@ -90,10 +91,10 @@
 ## 信任与资源边界
 
 - Copy Reference、工具箱 UI 和运行时信息可在受限工作区使用。
-- Git Blame 和 Git Review 只在受信任工作区运行，并要求 Extension Host 能映射到可执行 Git 的仓库。
+- Git Blame、Git Compare 和 Git Review 只在受信任工作区运行，并要求 Extension Host 能映射到可执行 Git 的仓库。
 - 远程工作区由远程 Extension Host 的实际路径和 Git 环境决定。
 - 扩展不会记录秘密、令牌、Cookie、私钥或源码全文；日志只记录诊断所需的最小信息。
-- Git Blame 和 Git Review 不修改 Git index、工作树、分支或远程状态。
+- Git Blame、Git Compare 和 Git Review 不修改 Git index、工作树、分支或远程状态。
 
 ## 开发
 

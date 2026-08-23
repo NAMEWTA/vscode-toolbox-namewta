@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   GIT_COMPARE_EMPTY_TREE_HASH,
   isFullCommitHash,
+  isGitCommitObjectIdPrefix,
   isGitCompareCursor,
   isGitCompareHistoryInput,
   isGitCompareInput,
   isGitCompareRepository,
+  isGitCompareResolveRevisionInput,
   isGitCompareRevisionInput,
   isRepositoryRelativePath,
 } from './git-compare-model';
@@ -21,6 +23,9 @@ describe('Git compare model guards', () => {
       isGitCompareHistoryInput({ ...resource, limit: 100, cursor: `${sha}.100` }),
     ).toBe(true);
     expect(isGitCompareInput({ ...resource, base: sha, target: otherSha })).toBe(true);
+    expect(isGitCompareResolveRevisionInput({ ...resource, revision: 'a1b2' })).toBe(
+      true,
+    );
     expect(
       isGitCompareRevisionInput({ ...resource, ref: sha, path: 'src/main.ts' }),
     ).toBe(true);
@@ -34,6 +39,15 @@ describe('Git compare model guards', () => {
       isGitCompareHistoryInput({ ...resource, limit: 10, cursor: 'invalid' }),
     ).toBe(false);
     expect(isGitCompareInput({ ...resource, base: sha, target: 'short' })).toBe(false);
+    expect(isGitCompareResolveRevisionInput({ ...resource, revision: 'abc' })).toBe(
+      false,
+    );
+    expect(isGitCompareResolveRevisionInput({ ...resource, revision: '--help' })).toBe(
+      false,
+    );
+    expect(
+      isGitCompareResolveRevisionInput({ ...resource, revision: 'a'.repeat(65) }),
+    ).toBe(false);
     expect(
       isGitCompareRevisionInput({ ...resource, ref: sha, path: '../secret' }),
     ).toBe(false);
@@ -49,6 +63,9 @@ describe('Git compare model guards', () => {
     expect(isFullCommitHash(sha)).toBe(true);
     expect(isFullCommitHash('c'.repeat(64))).toBe(true);
     expect(isFullCommitHash('not-a-hash')).toBe(false);
+    expect(isGitCommitObjectIdPrefix('a1B2')).toBe(true);
+    expect(isGitCommitObjectIdPrefix('abc')).toBe(false);
+    expect(isGitCommitObjectIdPrefix('g123')).toBe(false);
     expect(isGitCompareCursor(`${sha}.0`)).toBe(true);
     expect(isGitCompareCursor(`${sha}.123456789`)).toBe(true);
     expect(isGitCompareCursor(`${sha}.1234567890`)).toBe(false);

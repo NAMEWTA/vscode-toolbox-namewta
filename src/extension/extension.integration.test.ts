@@ -25,6 +25,7 @@ suite('vscode-toolbox-namewta extension', () => {
       { command: 'gitCompare.compareCommits', available: true },
       { command: 'gitCompare.getRevisionContent', available: true },
       { command: 'gitCompare.listCommits', available: true },
+      { command: 'gitCompare.resolveRevision', available: true },
       { command: 'gitReview.discardItem', available: true },
       { command: 'gitReview.end', available: true },
       { command: 'gitReview.getItemContent', available: true },
@@ -65,15 +66,18 @@ suite('vscode-toolbox-namewta extension', () => {
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.skip'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.refresh'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.end'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.start'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.openHistory'));
-    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.refresh'));
-    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.setReference'));
-    assert.ok(
-      commands.includes('vscodeToolboxNamewta.gitCompare.compareWithReference'),
-    );
-    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.clearReference'));
-    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.loadMore'));
-    assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.openFileDiff'));
+    for (const retired of [
+      'vscodeToolboxNamewta.gitCompare.refresh',
+      'vscodeToolboxNamewta.gitCompare.setReference',
+      'vscodeToolboxNamewta.gitCompare.compareWithReference',
+      'vscodeToolboxNamewta.gitCompare.clearReference',
+      'vscodeToolboxNamewta.gitCompare.loadMore',
+      'vscodeToolboxNamewta.gitCompare.openFileDiff',
+    ]) {
+      assert.equal(commands.includes(retired), false);
+    }
   });
 
   test('executes runtime info through the public API', async () => {

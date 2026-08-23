@@ -2,14 +2,17 @@
 import {
   GIT_COMPARE_EMPTY_TREE_HASH,
   isFullCommitHash,
+  isGitCommitObjectIdPrefix,
   isGitCompareCursor,
   type GitCompareCancellationSignal,
   type GitCompareContentKind,
+  type GitCompareCommit,
   type GitCompareFileChange,
   type GitCompareHistoryInput,
   type GitCompareHistoryPage,
   type GitCompareInput,
   type GitComparePort,
+  type GitCompareResolveRevisionInput,
   type GitCompareRevisionInput,
   type GitCompareRevisionResult,
 } from '../../../core/domains/git-compare/public-api';
@@ -99,6 +102,48 @@ export class GitComparePortAdapter implements GitComparePort {
       complete,
       ...(complete ? {} : { nextCursor: `${headSha}.${offset + commits.length}` }),
     };
+  }
+
+  public async resolveRevision(
+    input: GitCompareResolveRevisionInput,
+    signal: GitCompareCancellationSignal,
+  ): Promise<GitCompareCommit> {
+    this.assertTrusted();
+    if (!isGitCommitObjectIdPrefix(input.revision)) {
+      throw invalidInputError();
+    }
+    const resolved = await this.runNotFound(
+      input.repositoryRoot,
+      'compare-resolve-revision',
+      ['rev-parse', '--verify', '--end-of-options', `${input.revision}^{commit}`],
+      signal,
+    );
+    const sha = resolved.stdout.trim();
+    if (!isFullCommitHash(sha)) {
+      throw new ApplicationError('Resolved Git revision is invalid.', {
+        code: 'internal-error',
+      });
+    }
+    const metadata = await this.runNotFound(
+      input.repositoryRoot,
+      'compare-revision-metadata',
+      [
+        '--no-pager',
+        'show',
+        '-s',
+        '--no-decorate',
+        '--format=%H%x00%P%x00%an%x00%aI%x00%s%x00',
+        sha,
+      ],
+      signal,
+    );
+    const [commit] = parseCommitLog(metadata.stdout);
+    if (commit === undefined || commit.sha.toLowerCase() !== sha.toLowerCase()) {
+      throw new ApplicationError('Resolved Git commit metadata is invalid.', {
+        code: 'internal-error',
+      });
+    }
+    return commit;
   }
 
   // eslint-disable-next-line max-lines-per-function

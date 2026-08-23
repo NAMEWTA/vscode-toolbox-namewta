@@ -22,6 +22,11 @@ export type GitCompareHistoryPage = {
   readonly nextCursor?: string;
 };
 
+export type GitCompareResolveRevisionInput = {
+  readonly repositoryRoot: string;
+  readonly revision: string;
+};
+
 export type GitCompareFileStatus =
   | 'added'
   | 'copied'
@@ -103,6 +108,16 @@ export function isGitCompareInput(value: unknown): value is GitCompareInput {
   );
 }
 
+export function isGitCompareResolveRevisionInput(
+  value: unknown,
+): value is GitCompareResolveRevisionInput {
+  return (
+    isRecordWithKeys(value, ['repositoryRoot', 'revision']) &&
+    isAbsolutePath(value.repositoryRoot) &&
+    isGitCommitObjectIdPrefix(value.revision)
+  );
+}
+
 export function isGitCompareRevisionInput(
   value: unknown,
 ): value is GitCompareRevisionInput {
@@ -116,6 +131,10 @@ export function isGitCompareRevisionInput(
 
 export function isFullCommitHash(value: unknown): value is string {
   return typeof value === 'string' && /^(?:[a-f\d]{40}|[a-f\d]{64})$/iu.test(value);
+}
+
+export function isGitCommitObjectIdPrefix(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-f\d]{4,64}$/iu.test(value);
 }
 
 export function isGitCompareCursor(value: unknown): value is string {

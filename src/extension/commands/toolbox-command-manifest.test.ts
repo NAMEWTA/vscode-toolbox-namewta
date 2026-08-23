@@ -18,7 +18,7 @@ describe('Toolbox 命令清单', () => {
     const english = readJson('package.nls.json');
     const chinese = readJson('package.nls.zh-cn.json');
 
-    expect(commands).toHaveLength(27);
+    expect(commands).toHaveLength(22);
     for (const command of commands) {
       expect(command.command).toEqual(
         expect.stringMatching(/^vscodeToolboxNamewta\./u),
@@ -30,6 +30,34 @@ describe('Toolbox 命令清单', () => {
     }
 
     const menus = record(contributes.menus);
+    const scmTitle = records(menus['scm/title']);
+    expect(scmTitle).toContainEqual({
+      command: 'vscodeToolboxNamewta.gitCompare.start',
+      when: 'scmProvider == git',
+      group: 'navigation@9',
+    });
+    expect(commands).toContainEqual({
+      command: 'vscodeToolboxNamewta.gitCompare.start',
+      title: '%commands.gitCompare.start%',
+      icon: '$(git-compare)',
+    });
+    const commandIds = commands.map((command) => command.command);
+    expect(commandIds).toEqual(
+      expect.arrayContaining([
+        'vscodeToolboxNamewta.gitCompare.start',
+        'vscodeToolboxNamewta.gitCompare.openHistory',
+      ]),
+    );
+    for (const retired of [
+      'vscodeToolboxNamewta.gitCompare.refresh',
+      'vscodeToolboxNamewta.gitCompare.setReference',
+      'vscodeToolboxNamewta.gitCompare.compareWithReference',
+      'vscodeToolboxNamewta.gitCompare.clearReference',
+      'vscodeToolboxNamewta.gitCompare.loadMore',
+      'vscodeToolboxNamewta.gitCompare.openFileDiff',
+    ]) {
+      expect(commandIds).not.toContain(retired);
+    }
     const editorContext = records(menus['editor/context']);
     expect(editorContext.map((item) => item.command)).toEqual(
       expect.arrayContaining([
@@ -46,6 +74,10 @@ describe('Toolbox 命令清单', () => {
         }),
         expect.objectContaining({
           command: 'vscodeToolboxNamewta.copyReference.editor.absolute',
+          when: 'false',
+        }),
+        expect.objectContaining({
+          command: 'vscodeToolboxNamewta.gitCompare.openHistory',
           when: 'false',
         }),
       ]),

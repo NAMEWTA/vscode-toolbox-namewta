@@ -6,9 +6,10 @@
 
 ### 新增
 
-- 增加 Git Commit Compare：在 Explorer 的原生提交历史视图中分页浏览当前 HEAD 的全部祖先提交，将任意 commit 设为比较参考，并与另一个 commit 直接比较快照。
-- 增加独立的比较变更 TreeView，按状态显示全部文件、增删统计、重命名路径以及二进制和子模块摘要；文本文件使用 VS Code 原生 Diff 打开。
-- 新增 `gitCompare.listCommits`、`gitCompare.compareCommits` 和 `gitCompare.getRevisionContent` Gateway 能力，所有 Git 查询支持受信任工作区、参数数组、取消、超时和输出限制。
+- 增加 Git Commit Compare：从 Source Control 标题栏分两步选择基准端与目标端，目标端默认当前 `HEAD`，两端均支持分页历史和 4 到 64 位 SHA 前缀输入。
+- 比较结果通过 VS Code 公开的原生多文件更改视图一次展示，标题明确显示 `base → target`、文件数和增删统计；新增、删除、重命名及特殊内容保留正确端点语义。
+- 新增 `gitCompare.resolveRevision` Gateway 能力，并与 `listCommits`、`compareCommits`、`getRevisionContent` 一起固定完整 commit OID；所有 Git 查询支持受信任工作区、参数数组、取消、超时和输出限制。
+- 移除旧 Git Compare Explorer TreeView 及其 reference 状态命令；`gitCompare.openHistory` 暂时保留为新流程的隐藏兼容入口。
 
 ## [0.1.7] - 2026-08-13
 

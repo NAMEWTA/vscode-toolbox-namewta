@@ -57,6 +57,22 @@ describe('tool command contract', () => {
     }
   });
 
+  it('validates Git revision resolution at the Gateway boundary', () => {
+    expect(isToolCommandId('gitCompare.resolveRevision')).toBe(true);
+    expect(
+      isToolCommandInput('gitCompare.resolveRevision', {
+        repositoryRoot: '/workspace/repository',
+        revision: 'a1B2',
+      }),
+    ).toBe(true);
+    expect(
+      isToolCommandInput('gitCompare.resolveRevision', {
+        repositoryRoot: '/workspace/repository',
+        revision: '--help',
+      }),
+    ).toBe(false);
+  });
+
   it('rejects traversal, abbreviated hashes and invalid Git options at the Gateway boundary', () => {
     const resource = {
       repositoryRoot: '/workspace/repo',

@@ -35,11 +35,14 @@ import {
 import {
   isGitCompareHistoryInput,
   isGitCompareInput,
+  isGitCompareResolveRevisionInput,
+  type GitCompareCommit,
   isGitCompareRevisionInput,
   type GitCompareHistoryInput,
   type GitCompareHistoryPage,
   type GitCompareInput,
   type GitCompareResult,
+  type GitCompareResolveRevisionInput,
   type GitCompareRevisionInput,
   type GitCompareRevisionResult,
 } from '../domains/git-compare/public-api';
@@ -60,6 +63,7 @@ export type {
   GitCompareHistoryPage,
   GitCompareInput,
   GitCompareResult,
+  GitCompareResolveRevisionInput,
   GitCompareRevisionInput,
   GitCompareRevisionResult,
 };
@@ -164,6 +168,10 @@ export type ToolCommandMap = {
     input: GitCompareHistoryInput;
     output: GitCompareHistoryPage;
   };
+  'gitCompare.resolveRevision': {
+    input: GitCompareResolveRevisionInput;
+    output: GitCompareCommit;
+  };
   'gitCompare.compareCommits': {
     input: GitCompareInput;
     output: GitCompareResult;
@@ -258,6 +266,7 @@ const TOOL_COMMAND_IDS = [
   'gitBlame.getHistoricalContent',
   'gitBlame.getLineHistory',
   'gitCompare.listCommits',
+  'gitCompare.resolveRevision',
   'gitCompare.compareCommits',
   'gitCompare.getRevisionContent',
   'gitReview.end',
@@ -320,6 +329,8 @@ function isNonGitReviewCommandInput(
       return isGitLineHistoryInput(input);
     case 'gitCompare.listCommits':
       return isGitCompareHistoryInput(input);
+    case 'gitCompare.resolveRevision':
+      return isGitCompareResolveRevisionInput(input);
     case 'gitCompare.compareCommits':
       return isGitCompareInput(input);
     case 'gitCompare.getRevisionContent':

@@ -135,36 +135,12 @@ export function createExtensionRuntime(
       execute: () => readerController.open(),
     },
     {
+      id: 'vscodeToolboxNamewta.gitCompare.start',
+      execute: () => gitCompareController.start(),
+    },
+    {
       id: 'vscodeToolboxNamewta.gitCompare.openHistory',
       execute: () => gitCompareController.openHistory(),
-    },
-    {
-      id: 'vscodeToolboxNamewta.gitCompare.refresh',
-      execute: () => gitCompareController.refresh(),
-    },
-    {
-      id: 'vscodeToolboxNamewta.gitCompare.setReference',
-      execute: (...args: readonly unknown[]) => {
-        gitCompareController.setReference(args[0]);
-      },
-    },
-    {
-      id: 'vscodeToolboxNamewta.gitCompare.compareWithReference',
-      execute: (...args: readonly unknown[]) =>
-        gitCompareController.compareWithReference(args[0]),
-    },
-    {
-      id: 'vscodeToolboxNamewta.gitCompare.clearReference',
-      execute: () => gitCompareController.clearReference(),
-    },
-    {
-      id: 'vscodeToolboxNamewta.gitCompare.loadMore',
-      execute: () => gitCompareController.loadMore(),
-    },
-    {
-      id: 'vscodeToolboxNamewta.gitCompare.openFileDiff',
-      execute: (...args: readonly unknown[]) =>
-        gitCompareController.openFileDiff(args[0]),
     },
   ]);
 

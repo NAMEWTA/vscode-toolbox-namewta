@@ -1,14 +1,17 @@
 import * as vscode from 'vscode';
 import {
-  GIT_COMPARE_EMPTY_TREE_HASH,
-  type GitCompareFileChange,
   type GitCompareRevisionInput,
+  type GitCompareResult,
 } from '../../core/domains/git-compare/public-api';
 import type { ToolboxGateway } from '../../core/orchestration/public-api';
 import {
   GitCompareDocumentStore,
   GIT_COMPARE_DOCUMENT_SCHEME,
 } from './git-compare-document-uri';
+import {
+  createGitCompareNativeChanges,
+  type GitCompareNativeDocument,
+} from './git-compare-native-changes';
 
 export class VscodeGitCompareDocumentProvider
   implements vscode.TextDocumentContentProvider, vscode.Disposable
@@ -64,48 +67,46 @@ export class VscodeGitCompareDocumentProvider
     }
   }
 
-  public async openChangeDiff(
-    resourceRoot: string,
-    base: string,
-    target: string,
-    change: GitCompareFileChange,
+  public async openComparison(
+    repositoryRoot: string,
+    result: GitCompareResult,
   ): Promise<void> {
-    const before = {
-      repositoryRoot: resourceRoot,
-      ref: change.status === 'added' ? GIT_COMPARE_EMPTY_TREE_HASH : base,
-      path: change.previousPath ?? change.path,
-    };
-    const after = {
-      repositoryRoot: resourceRoot,
-      ref: change.status === 'deleted' ? GIT_COMPARE_EMPTY_TREE_HASH : target,
-      path: change.path,
-    };
-    if (change.contentKind !== 'text') {
-      await vscode.window.showTextDocument(
-        this.createSummaryUri(
-          [
-            vscode.l10n.t('Git comparison file'),
-            vscode.l10n.t('Path: {0}', change.path),
-            vscode.l10n.t('Change: {0}', change.status),
-            summaryForResult(
-              change.contentKind === 'binary'
-                ? 'binary'
-                : change.contentKind === 'submodule'
-                  ? 'submodule'
-                  : 'too-large',
-            ),
-          ].join('\n'),
+    if (result.changes.length === 0) {
+      await vscode.window.showInformationMessage(
+        vscode.l10n.t(
+          'No changes between {0} and {1}.',
+          result.base.slice(0, 8),
+          result.target.slice(0, 8),
         ),
-        { preview: true },
       );
       return;
     }
+    const resources = createGitCompareNativeChanges(repositoryRoot, result).map(
+      (change) =>
+        [
+          vscode.Uri.joinPath(
+            vscode.Uri.file(repositoryRoot),
+            ...change.labelPath.split('/'),
+          ),
+          change.original === undefined
+            ? undefined
+            : this.createNativeDocumentUri(change.original),
+          change.modified === undefined
+            ? undefined
+            : this.createNativeDocumentUri(change.modified),
+        ] as const,
+    );
     await vscode.commands.executeCommand(
-      'vscode.diff',
-      this.createRevisionUri(before),
-      this.createRevisionUri(after),
-      vscode.l10n.t('Git comparison: {0}', change.path),
-      { preview: true },
+      'vscode.changes',
+      vscode.l10n.t(
+        'Git comparison {0} → {1} · {2} files · +{3} -{4}',
+        result.base.slice(0, 8),
+        result.target.slice(0, 8),
+        result.stats.files,
+        result.stats.additions,
+        result.stats.deletions,
+      ),
+      resources,
     );
   }
 
@@ -118,6 +119,19 @@ export class VscodeGitCompareDocumentProvider
 
   private assertAvailable(): void {
     if (this.#isDisposed) throw unavailableError();
+  }
+
+  private createNativeDocumentUri(document: GitCompareNativeDocument): vscode.Uri {
+    if (document.kind === 'revision') return this.createRevisionUri(document.input);
+    return this.createSummaryUri(
+      [
+        vscode.l10n.t('Git comparison file'),
+        vscode.l10n.t('Endpoint: {0}', document.endpoint.slice(0, 8)),
+        vscode.l10n.t('Path: {0}', document.path),
+        vscode.l10n.t('Change: {0}', document.status),
+        summaryForResult(document.contentKind),
+      ].join('\n'),
+    );
   }
 }
 

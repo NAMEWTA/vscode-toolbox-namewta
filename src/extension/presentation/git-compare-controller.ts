@@ -1,41 +1,27 @@
 import * as vscode from 'vscode';
 import type { ToolErrorCode } from '../../core/contracts/tool-error-contract';
-import {
-  isFullCommitHash,
-  isRepositoryRelativePath,
-  type GitCompareCommit,
-  type GitCompareFileChange,
-  type GitCompareHistoryPage,
-} from '../../core/domains/git-compare/public-api';
-import type { ToolboxGateway } from '../../core/orchestration/public-api';
-import { DisposableStore } from '../../core/kernel/disposable';
 import { ApplicationError } from '../../core/kernel/application-error';
+import { DisposableStore } from '../../core/kernel/disposable';
+import type { ToolboxGateway } from '../../core/orchestration/public-api';
 import { GitCommandRunner } from '../adapters/git/git-command-runner';
 import { VscodeGitCompareRepositoryAdapter } from '../adapters/vscode-git-compare-repository-adapter';
-import { VscodeGitCompareDocumentProvider } from './vscode-git-compare-document-provider';
 import {
-  VscodeGitCompareChangesTree,
-  VscodeGitCompareHistoryTree,
-  type GitCompareChangeNode,
-  type GitCompareCommitNode,
-} from './vscode-git-compare-tree';
+  GitCompareRevisionQuickPick,
+  type GitCompareHistoryPageLoader,
+  type GitCompareRevisionQuickPickItem,
+  type GitCompareRevisionResolver,
+} from './git-compare-revision-quick-pick';
+import { VscodeGitCompareDocumentProvider } from './vscode-git-compare-document-provider';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 50;
 
 export class GitCompareController implements vscode.Disposable {
   readonly #disposables = new DisposableStore();
   readonly #repositoryResolver = new VscodeGitCompareRepositoryAdapter(
     new GitCommandRunner(),
   );
-  readonly #historyTree: VscodeGitCompareHistoryTree;
-  readonly #changesTree: VscodeGitCompareChangesTree;
   readonly #documentProvider: VscodeGitCompareDocumentProvider;
-  #repositoryRoot: string | undefined;
-  #commits: readonly GitCompareCommit[] = [];
-  #cursor: string | undefined;
-  #hasMore = false;
-  #reference: GitCompareCommit | undefined;
-  #target: GitCompareCommit | undefined;
+  readonly #revisionPicker: GitCompareRevisionQuickPick;
   #request: AbortController | undefined;
   #isDisposed = false;
 
@@ -47,143 +33,69 @@ export class GitCompareController implements vscode.Disposable {
     this.#documentProvider = this.#disposables.add(
       new VscodeGitCompareDocumentProvider(gateway),
     );
-    this.#historyTree = this.#disposables.add(
-      new VscodeGitCompareHistoryTree(
-        (node) => this.selectTarget(node),
-        () => void this.loadMore(),
+    this.#revisionPicker = this.#disposables.add(
+      new GitCompareRevisionQuickPick(
+        () => vscode.window.createQuickPick<GitCompareRevisionQuickPickItem>(),
+        createHistoryPageLoader(gateway),
+        createRevisionResolver(gateway),
+        {
+          baseTitle: vscode.l10n.t('Select comparison base'),
+          targetTitle: (base) =>
+            vscode.l10n.t('Select comparison target · base {0}', base.sha.slice(0, 8)),
+          basePlaceholder: vscode.l10n.t(
+            'Choose a commit or enter a commit number for the base',
+          ),
+          targetPlaceholder: vscode.l10n.t(
+            'Choose a commit or enter a commit number for the target',
+          ),
+          loadMore: vscode.l10n.t('Load more commits'),
+          back: vscode.l10n.t('Back to base selection'),
+          useRevision: (revision) => vscode.l10n.t('Use commit number {0}', revision),
+          sameRevision: vscode.l10n.t(
+            'The base and target resolve to the same commit. Select another target.',
+          ),
+        },
+        (error) => this.reportPickerError(error),
+        PAGE_SIZE,
       ),
-    );
-    this.#changesTree = this.#disposables.add(
-      new VscodeGitCompareChangesTree((node) => void this.openFileDiff(node)),
     );
   }
 
-  public async openHistory(): Promise<void> {
+  public async start(): Promise<void> {
     this.assertAvailable();
+    this.#revisionPicker.cancel();
     this.cancelRequest();
     const controller = new AbortController();
     this.#request = controller;
     try {
       const repositoryRoot = await this.#repositoryResolver.resolve(controller.signal);
-      if (this.#repositoryRoot !== repositoryRoot) {
-        this.#reference = undefined;
-        this.#changesTree.render(undefined);
-      }
-      this.#repositoryRoot = repositoryRoot;
-      this.#commits = [];
-      this.#cursor = undefined;
-      this.#hasMore = false;
-      await this.loadPage(controller.signal);
-      void vscode.commands.executeCommand(
-        'setContext',
-        'vscodeToolboxNamewta.gitCompare.hasReference',
-        this.#reference !== undefined,
-      );
-    } finally {
-      if (this.#request === controller) this.#request = undefined;
-    }
-  }
-
-  public async refresh(): Promise<void> {
-    return this.openHistory();
-  }
-
-  public setReference(node: unknown): void {
-    const commit = this.toCommit(node);
-    if (commit === undefined) return;
-    this.#reference = commit;
-    this.#historyTree.render(this.#commits, this.#hasMore, commit.sha);
-    void vscode.commands.executeCommand(
-      'setContext',
-      'vscodeToolboxNamewta.gitCompare.hasReference',
-      true,
-    );
-    void vscode.window.showInformationMessage(
-      vscode.l10n.t('Comparison reference set: {0}', commit.sha.slice(0, 8)),
-    );
-  }
-
-  public async compareWithReference(node: unknown): Promise<void> {
-    const target = this.toCommit(node) ?? this.#target;
-    if (
-      target === undefined ||
-      this.#reference === undefined ||
-      this.#repositoryRoot === undefined
-    ) {
-      void vscode.window.showInformationMessage(
-        vscode.l10n.t('Select a reference commit first.'),
-      );
-      return;
-    }
-    this.#target = target;
-    this.cancelRequest();
-    const controller = new AbortController();
-    this.#request = controller;
-    try {
+      if (!this.isCurrent(controller)) return;
+      const selection = await this.#revisionPicker.show(repositoryRoot);
+      if (selection === undefined || !this.isCurrent(controller)) return;
       const result = await this.gateway.execute(
         'gitCompare.compareCommits',
         {
-          repositoryRoot: this.#repositoryRoot,
-          base: this.#reference.sha,
-          target: target.sha,
+          repositoryRoot,
+          base: selection.base.sha,
+          target: selection.target.sha,
         },
         { signal: controller.signal, source: 'extension-command' },
       );
       if (!result.ok) throw toApplicationError(result.error);
-      this.#changesTree.render(result.data);
-      void vscode.commands.executeCommand(
-        'setContext',
-        'vscodeToolboxNamewta.gitCompare.hasComparison',
-        true,
-      );
+      if (this.isCurrent(controller)) {
+        await this.#documentProvider.openComparison(repositoryRoot, result.data);
+      }
+    } catch (error: unknown) {
+      if (!isCancellation(error) && !controller.signal.aborted) {
+        this.reportError(error);
+      }
     } finally {
       if (this.#request === controller) this.#request = undefined;
     }
   }
 
-  public clearReference(): void {
-    this.#reference = undefined;
-    this.#changesTree.render(undefined);
-    this.#historyTree.render(this.#commits, this.#hasMore);
-    void vscode.commands.executeCommand(
-      'setContext',
-      'vscodeToolboxNamewta.gitCompare.hasReference',
-      false,
-    );
-    void vscode.commands.executeCommand(
-      'setContext',
-      'vscodeToolboxNamewta.gitCompare.hasComparison',
-      false,
-    );
-  }
-
-  public async loadMore(): Promise<void> {
-    if (!this.#hasMore || this.#repositoryRoot === undefined) return;
-    this.cancelRequest();
-    const controller = new AbortController();
-    this.#request = controller;
-    try {
-      await this.loadPage(controller.signal);
-    } finally {
-      if (this.#request === controller) this.#request = undefined;
-    }
-  }
-
-  public async openFileDiff(node: unknown): Promise<void> {
-    const change = this.toChange(node);
-    if (
-      change === undefined ||
-      this.#repositoryRoot === undefined ||
-      this.#reference === undefined ||
-      this.#target === undefined
-    )
-      return;
-    await this.#documentProvider.openChangeDiff(
-      this.#repositoryRoot,
-      this.#reference.sha,
-      this.#target.sha,
-      change,
-    );
+  public openHistory(): Promise<void> {
+    return this.start();
   }
 
   public dispose(): void {
@@ -193,35 +105,30 @@ export class GitCompareController implements vscode.Disposable {
     this.#disposables.dispose();
   }
 
-  private async loadPage(signal: AbortSignal): Promise<void> {
-    if (this.#repositoryRoot === undefined) return;
-    const result = await this.gateway.execute(
-      'gitCompare.listCommits',
-      {
-        repositoryRoot: this.#repositoryRoot,
-        limit: PAGE_SIZE,
-        ...(this.#cursor === undefined ? {} : { cursor: this.#cursor }),
-      },
-      { signal, source: 'extension-command' },
-    );
-    if (!result.ok) throw toApplicationError(result.error);
-    const page: GitCompareHistoryPage = result.data;
-    this.#commits = [...this.#commits, ...page.commits];
-    this.#cursor = page.nextCursor;
-    this.#hasMore = !page.complete;
-    this.#historyTree.render(this.#commits, this.#hasMore, this.#reference?.sha);
+  private reportPickerError(error: unknown): void {
+    if (typeof error === 'string') {
+      void vscode.window.showWarningMessage(error);
+      return;
+    }
+    if (!isCancellation(error)) this.reportError(error);
   }
 
-  private selectTarget(node: GitCompareCommitNode): void {
-    this.#target = node.commit;
+  private reportError(error: unknown): void {
+    const message =
+      error instanceof ApplicationError && error.code === 'not-found'
+        ? vscode.l10n.t(
+            'No unique commit matches that number. Enter a longer commit number.',
+          )
+        : error instanceof ApplicationError && error.code === 'permission-denied'
+          ? vscode.l10n.t('Git comparison requires a trusted workspace.')
+          : error instanceof ApplicationError && error.code === 'capability-unavailable'
+            ? vscode.l10n.t('No Git repository or commit history is available.')
+            : vscode.l10n.t('Git comparison could not be completed.');
+    void vscode.window.showErrorMessage(message);
   }
 
-  private toCommit(value: unknown): GitCompareCommit | undefined {
-    return isCommitNode(value) ? value.commit : undefined;
-  }
-
-  private toChange(value: unknown): GitCompareFileChange | undefined {
-    return isChangeNode(value) ? value.change : undefined;
+  private isCurrent(controller: AbortController): boolean {
+    return this.#request === controller && !controller.signal.aborted;
   }
 
   private cancelRequest(): void {
@@ -230,83 +137,38 @@ export class GitCompareController implements vscode.Disposable {
   }
 
   private assertAvailable(): void {
-    if (this.#isDisposed)
+    if (this.#isDisposed) {
       throw new Error(vscode.l10n.t('Git comparison is no longer active.'));
+    }
   }
 }
 
-// TreeView 命令参数在注册边界视为外部输入，执行前必须再次验证。
-// eslint-disable-next-line complexity
-function isCommitNode(value: unknown): value is GitCompareCommitNode {
-  if (
-    typeof value !== 'object' ||
-    value === null ||
-    !('kind' in value) ||
-    value.kind !== 'commit' ||
-    !('commit' in value) ||
-    typeof value.commit !== 'object' ||
-    value.commit === null
-  )
-    return false;
-  const commit = value.commit as Record<string, unknown>;
-  return (
-    isFullCommitHash(commit.sha) &&
-    Array.isArray(commit.parents) &&
-    commit.parents.every(isFullCommitHash) &&
-    typeof commit.author === 'string' &&
-    typeof commit.authoredAt === 'number' &&
-    Number.isFinite(commit.authoredAt) &&
-    typeof commit.subject === 'string'
-  );
+function createHistoryPageLoader(gateway: ToolboxGateway): GitCompareHistoryPageLoader {
+  return async (input, signal) => {
+    const result = await gateway.execute('gitCompare.listCommits', input, {
+      signal,
+      source: 'extension-command',
+    });
+    if (!result.ok) throw toApplicationError(result.error);
+    return result.data;
+  };
 }
 
-// eslint-disable-next-line complexity
-function isChangeNode(value: unknown): value is GitCompareChangeNode {
-  if (
-    typeof value === 'object' &&
-    value !== null &&
-    'kind' in value &&
-    value.kind === 'change' &&
-    'change' in value
-  ) {
-    const change = value.change;
-    if (typeof change !== 'object' || change === null) return false;
-    const candidate = change as Record<string, unknown>;
-    return (
-      typeof candidate.path === 'string' &&
-      isRepositoryRelativePath(candidate.path) &&
-      (candidate.previousPath === undefined ||
-        isRepositoryRelativePath(candidate.previousPath)) &&
-      isGitCompareFileStatus(candidate.status) &&
-      isGitCompareContentKind(candidate.contentKind)
-    );
-  }
-  return false;
+function createRevisionResolver(gateway: ToolboxGateway): GitCompareRevisionResolver {
+  return async (input, signal) => {
+    const result = await gateway.execute('gitCompare.resolveRevision', input, {
+      signal,
+      source: 'extension-command',
+    });
+    if (!result.ok) throw toApplicationError(result.error);
+    return result.data;
+  };
 }
 
-function isGitCompareFileStatus(
-  value: unknown,
-): value is GitCompareFileChange['status'] {
+function isCancellation(error: unknown): boolean {
   return (
-    value === 'added' ||
-    value === 'copied' ||
-    value === 'deleted' ||
-    value === 'modified' ||
-    value === 'renamed' ||
-    value === 'type-changed' ||
-    value === 'unmerged' ||
-    value === 'unknown'
-  );
-}
-
-function isGitCompareContentKind(
-  value: unknown,
-): value is GitCompareFileChange['contentKind'] {
-  return (
-    value === 'text' ||
-    value === 'binary' ||
-    value === 'submodule' ||
-    value === 'unavailable'
+    (error instanceof Error && error.name === 'AbortError') ||
+    (error instanceof ApplicationError && error.code === 'cancelled')
   );
 }
 
@@ -316,18 +178,9 @@ function toApplicationError(error: {
   readonly retryable: boolean;
   readonly details?: Readonly<Record<string, unknown>>;
 }): ApplicationError {
-  return createError(error.code, error.message, error.retryable, error.details);
-}
-
-function createError(
-  code: ToolErrorCode,
-  message: string,
-  retryable: boolean,
-  details?: Readonly<Record<string, unknown>>,
-): ApplicationError {
-  return new ApplicationError(message, {
-    code,
-    retryable,
-    ...(details === undefined ? {} : { details }),
+  return new ApplicationError(error.message, {
+    code: error.code,
+    retryable: error.retryable,
+    ...(error.details === undefined ? {} : { details: error.details }),
   });
 }

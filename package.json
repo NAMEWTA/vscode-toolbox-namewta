@@ -130,32 +130,13 @@
         "title": "%commands.gitReview.end%"
       },
       {
+        "command": "vscodeToolboxNamewta.gitCompare.start",
+        "title": "%commands.gitCompare.start%",
+        "icon": "$(git-compare)"
+      },
+      {
         "command": "vscodeToolboxNamewta.gitCompare.openHistory",
         "title": "%commands.gitCompare.openHistory%"
-      },
-      {
-        "command": "vscodeToolboxNamewta.gitCompare.refresh",
-        "title": "%commands.gitCompare.refresh%"
-      },
-      {
-        "command": "vscodeToolboxNamewta.gitCompare.setReference",
-        "title": "%commands.gitCompare.setReference%"
-      },
-      {
-        "command": "vscodeToolboxNamewta.gitCompare.compareWithReference",
-        "title": "%commands.gitCompare.compareWithReference%"
-      },
-      {
-        "command": "vscodeToolboxNamewta.gitCompare.clearReference",
-        "title": "%commands.gitCompare.clearReference%"
-      },
-      {
-        "command": "vscodeToolboxNamewta.gitCompare.loadMore",
-        "title": "%commands.gitCompare.loadMore%"
-      },
-      {
-        "command": "vscodeToolboxNamewta.gitCompare.openFileDiff",
-        "title": "%commands.gitCompare.openFileDiff%"
       }
     ],
     "views": {
@@ -164,57 +145,18 @@
           "id": "vscodeToolboxNamewta.gitReview.queue",
           "name": "%views.gitReview.queue%"
         }
-      ],
-      "explorer": [
-        {
-          "id": "vscodeToolboxNamewta.gitCompare.history",
-          "name": "%views.gitCompare.history%"
-        },
-        {
-          "id": "vscodeToolboxNamewta.gitCompare.changes",
-          "name": "%views.gitCompare.changes%"
-        }
       ]
     },
     "menus": {
       "scm/title": [
         {
+          "command": "vscodeToolboxNamewta.gitCompare.start",
+          "when": "scmProvider == git",
+          "group": "navigation@9"
+        },
+        {
           "command": "vscodeToolboxNamewta.gitReview.start",
           "group": "navigation@10"
-        }
-      ],
-      "view/title": [
-        {
-          "command": "vscodeToolboxNamewta.gitCompare.openHistory",
-          "when": "view == vscodeToolboxNamewta.gitCompare.history",
-          "group": "navigation@1"
-        },
-        {
-          "command": "vscodeToolboxNamewta.gitCompare.refresh",
-          "when": "view == vscodeToolboxNamewta.gitCompare.history",
-          "group": "navigation@2"
-        },
-        {
-          "command": "vscodeToolboxNamewta.gitCompare.clearReference",
-          "when": "view == vscodeToolboxNamewta.gitCompare.history && vscodeToolboxNamewta.gitCompare.hasReference",
-          "group": "navigation@3"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "vscodeToolboxNamewta.gitCompare.setReference",
-          "when": "view == vscodeToolboxNamewta.gitCompare.history && (viewItem == gitCompare.commit || viewItem == gitCompare.commit.reference)",
-          "group": "navigation@1"
-        },
-        {
-          "command": "vscodeToolboxNamewta.gitCompare.compareWithReference",
-          "when": "view == vscodeToolboxNamewta.gitCompare.history && vscodeToolboxNamewta.gitCompare.hasReference && (viewItem == gitCompare.commit || viewItem == gitCompare.commit.reference)",
-          "group": "navigation@2"
-        },
-        {
-          "command": "vscodeToolboxNamewta.gitCompare.loadMore",
-          "when": "view == vscodeToolboxNamewta.gitCompare.history && viewItem == gitCompare.loadMore",
-          "group": "navigation@3"
         }
       ],
       "explorer/context": [
@@ -268,6 +210,10 @@
         },
         {
           "command": "vscodeToolboxNamewta.copyReference.editor.absolute",
+          "when": "false"
+        },
+        {
+          "command": "vscodeToolboxNamewta.gitCompare.openHistory",
           "when": "false"
         }
       ]

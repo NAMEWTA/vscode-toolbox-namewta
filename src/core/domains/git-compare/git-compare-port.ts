@@ -3,6 +3,8 @@ import type {
   GitCompareHistoryInput,
   GitCompareHistoryPage,
   GitCompareInput,
+  GitCompareCommit,
+  GitCompareResolveRevisionInput,
   GitCompareRevisionInput,
   GitCompareRevisionResult,
 } from './git-compare-model';
@@ -22,6 +24,10 @@ export type GitComparePort = {
     input: GitCompareHistoryInput,
     signal: GitCompareCancellationSignal,
   ): Promise<GitCompareHistoryPage>;
+  resolveRevision(
+    input: GitCompareResolveRevisionInput,
+    signal: GitCompareCancellationSignal,
+  ): Promise<GitCompareCommit>;
   compareCommits(
     input: GitCompareInput,
     signal: GitCompareCancellationSignal,

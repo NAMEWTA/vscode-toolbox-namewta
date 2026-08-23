@@ -3,6 +3,7 @@ import type { ToolExecutionContext } from '../../orchestration/tool-execution-co
 import {
   GitCompareCommitsHandler,
   GitCompareListCommitsHandler,
+  GitCompareResolveRevisionHandler,
   GitCompareRevisionContentHandler,
 } from './git-compare-handler';
 import type { GitComparePort } from './git-compare-port';
@@ -12,7 +13,7 @@ const target = 'b'.repeat(40);
 const input = { repositoryRoot: '/repo' };
 
 describe('Git compare handlers', () => {
-  it('delegates history, comparison and revision content through the port', async () => {
+  it('delegates history, revision resolution, comparison and content through the port', async () => {
     const port = createPort();
     port.listCommits.mockResolvedValue({ commits: [], complete: true });
     port.compareCommits.mockResolvedValue({
@@ -20,6 +21,13 @@ describe('Git compare handlers', () => {
       stats: { files: 0, additions: 0, deletions: 0 },
     });
     port.getRevisionContent.mockResolvedValue({ kind: 'text', content: 'code' });
+    port.resolveRevision.mockResolvedValue({
+      sha: base,
+      parents: [],
+      author: 'Alice',
+      authoredAt: 1_700_000_000_000,
+      subject: 'Initial',
+    });
     const context = createContext();
     await expect(
       new GitCompareListCommitsHandler(port).execute({ ...input, limit: 10 }, context),
@@ -28,6 +36,12 @@ describe('Git compare handlers', () => {
       new GitCompareCommitsHandler(port).execute({ ...input, base, target }, context),
     ).resolves.toMatchObject({ base, target, stats: { files: 0 } });
     await expect(
+      new GitCompareResolveRevisionHandler(port).execute(
+        { ...input, revision: 'aaaa' },
+        context,
+      ),
+    ).resolves.toMatchObject({ sha: base, subject: 'Initial' });
+    await expect(
       new GitCompareRevisionContentHandler(port).execute(
         { ...input, ref: base, path: 'main.ts' },
         context,
@@ -35,6 +49,7 @@ describe('Git compare handlers', () => {
     ).resolves.toEqual({ kind: 'text', content: 'code' });
     expect(port.listCommits).toHaveBeenCalledOnce();
     expect(port.compareCommits).toHaveBeenCalledOnce();
+    expect(port.resolveRevision).toHaveBeenCalledOnce();
     expect(port.getRevisionContent).toHaveBeenCalledOnce();
   });
 
@@ -48,6 +63,12 @@ describe('Git compare handlers', () => {
       new GitCompareCommitsHandler(port).execute({ ...input, base, target }, context),
     ).rejects.toMatchObject({ name: 'AbortError' });
     await expect(
+      new GitCompareResolveRevisionHandler(port).execute(
+        { ...input, revision: 'aaaa' },
+        context,
+      ),
+    ).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(
       new GitCompareRevisionContentHandler(port).execute(
         { ...input, ref: base, path: 'main.ts' },
         context,
@@ -55,6 +76,7 @@ describe('Git compare handlers', () => {
     ).rejects.toMatchObject({ name: 'AbortError' });
     expect(port.listCommits).not.toHaveBeenCalled();
     expect(port.compareCommits).not.toHaveBeenCalled();
+    expect(port.resolveRevision).not.toHaveBeenCalled();
     expect(port.getRevisionContent).not.toHaveBeenCalled();
   });
 });
@@ -62,9 +84,15 @@ describe('Git compare handlers', () => {
 function createPort(): GitComparePort & {
   readonly listCommits: ReturnType<typeof vi.fn>;
   readonly compareCommits: ReturnType<typeof vi.fn>;
+  readonly resolveRevision: ReturnType<typeof vi.fn>;
   readonly getRevisionContent: ReturnType<typeof vi.fn>;
 } {
-  return { listCommits: vi.fn(), compareCommits: vi.fn(), getRevisionContent: vi.fn() };
+  return {
+    listCommits: vi.fn(),
+    compareCommits: vi.fn(),
+    resolveRevision: vi.fn(),
+    getRevisionContent: vi.fn(),
+  };
 }
 
 function createContext(aborted = false): ToolExecutionContext {

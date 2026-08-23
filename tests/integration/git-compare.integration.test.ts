@@ -29,14 +29,23 @@ suite('Git Commit Compare integration', () => {
       assert.equal(firstPage.data.commits[0]?.sha, repository.target);
       assert.equal(firstPage.data.complete, true);
 
+      const resolved = await api.execute('gitCompare.resolveRevision', {
+        repositoryRoot: repository.root,
+        revision: repository.side.slice(0, 8),
+      });
+      assert.equal(resolved.ok, true);
+      if (!resolved.ok) return;
+      assert.equal(resolved.data.sha, repository.side);
+      assert.equal(resolved.data.subject, 'side');
+
       const comparison = await api.execute('gitCompare.compareCommits', {
         repositoryRoot: repository.root,
-        base: repository.base,
+        base: repository.side,
         target: repository.target,
       });
       assert.equal(comparison.ok, true);
       if (!comparison.ok) return;
-      assert.equal(comparison.data.stats.files, 3);
+      assert.equal(comparison.data.stats.files, 4);
       assert.deepEqual(
         comparison.data.changes
           .map((change) => [change.status, change.path, change.contentKind])
@@ -45,6 +54,7 @@ suite('Git Commit Compare integration', () => {
           ['added', 'asset.bin', 'binary'],
           ['modified', 'main.ts', 'text'],
           ['renamed', 'renamed.ts', 'text'],
+          ['deleted', 'side.ts', 'text'],
         ],
       );
     } finally {
@@ -57,6 +67,7 @@ type CompareFixture = {
   readonly root: string;
   readonly base: string;
   readonly target: string;
+  readonly side: string;
 };
 
 async function createRepository(): Promise<CompareFixture> {
@@ -75,7 +86,13 @@ async function createRepository(): Promise<CompareFixture> {
   await git(root, ['add', '--', 'main.ts', 'renamed.ts', 'asset.bin']);
   await git(root, ['commit', '-m', 'target']);
   const target = await revParse(root);
-  return { root, base, target };
+  await git(root, ['checkout', '-b', 'comparison-side', base]);
+  await writeFile(path.join(root, 'side.ts'), 'side only\n');
+  await git(root, ['add', '--', 'side.ts']);
+  await git(root, ['commit', '-m', 'side']);
+  const side = await revParse(root);
+  await git(root, ['checkout', '--detach', target]);
+  return { root, base, target, side };
 }
 
 async function revParse(cwd: string): Promise<string> {

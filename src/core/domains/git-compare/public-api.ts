@@ -7,6 +7,7 @@ export type {
   GitCompareHistoryPage,
   GitCompareInput,
   GitCompareRepository,
+  GitCompareResolveRevisionInput,
   GitCompareResult,
   GitCompareRevisionInput,
   GitCompareRevisionResult,
@@ -14,10 +15,12 @@ export type {
 export {
   GIT_COMPARE_EMPTY_TREE_HASH,
   isFullCommitHash,
+  isGitCommitObjectIdPrefix,
   isGitCompareCursor,
   isGitCompareHistoryInput,
   isGitCompareInput,
   isGitCompareRepository,
+  isGitCompareResolveRevisionInput,
   isGitCompareRevisionInput,
   isRepositoryRelativePath,
 } from './git-compare-model';
@@ -25,5 +28,6 @@ export type { GitCompareCancellationSignal, GitComparePort } from './git-compare
 export {
   GitCompareCommitsHandler,
   GitCompareListCommitsHandler,
+  GitCompareResolveRevisionHandler,
   GitCompareRevisionContentHandler,
 } from './git-compare-handler';

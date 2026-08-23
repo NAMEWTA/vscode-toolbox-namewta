@@ -28,6 +28,7 @@ import { GitReviewPortAdapter } from '../adapters/git/git-review-port-adapter';
 import {
   GitCompareCommitsHandler,
   GitCompareListCommitsHandler,
+  GitCompareResolveRevisionHandler,
   GitCompareRevisionContentHandler,
 } from '../../core/domains/git-compare/public-api';
 import { GitComparePortAdapter } from '../adapters/git/git-compare-port-adapter';
@@ -48,6 +49,7 @@ export function registerDomainModules(
   const git = new GitCommandRunner();
   const compare = new GitComparePortAdapter(git, () => vscode.workspace.isTrusted);
   registry.register(new GitCompareListCommitsHandler(compare));
+  registry.register(new GitCompareResolveRevisionHandler(compare));
   registry.register(new GitCompareCommitsHandler(compare));
   registry.register(new GitCompareRevisionContentHandler(compare));
   const blamePort = new GitBlamePortAdapter(git, () => vscode.workspace.isTrusted);

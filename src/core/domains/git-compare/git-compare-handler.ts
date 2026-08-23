@@ -3,8 +3,10 @@ import type { ToolHandler } from '../../orchestration/tool-handler';
 import type {
   GitCompareHistoryInput,
   GitCompareHistoryPage,
+  GitCompareCommit,
   GitCompareInput,
   GitCompareResult,
+  GitCompareResolveRevisionInput,
   GitCompareRevisionInput,
   GitCompareRevisionResult,
 } from './git-compare-model';
@@ -23,6 +25,22 @@ export class GitCompareListCommitsHandler
   ): Promise<GitCompareHistoryPage> {
     assertActive(context);
     return this.port.listCommits(input, context.signal);
+  }
+}
+
+export class GitCompareResolveRevisionHandler
+  implements ToolHandler<'gitCompare.resolveRevision'>
+{
+  public readonly command = 'gitCompare.resolveRevision' as const;
+
+  public constructor(private readonly port: GitComparePort) {}
+
+  public async execute(
+    input: GitCompareResolveRevisionInput,
+    context: ToolExecutionContext,
+  ): Promise<GitCompareCommit> {
+    assertActive(context);
+    return this.port.resolveRevision(input, context.signal);
   }
 }
 
