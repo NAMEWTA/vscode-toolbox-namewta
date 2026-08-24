@@ -34,6 +34,43 @@ describe('GitBlameHandler', () => {
       documentVersion: 7,
       lines,
     });
+    expect(port.getAnnotations).toHaveBeenCalledWith(
+      expect.objectContaining({ includeRevisionNumbers: false }),
+      expect.any(Object),
+    );
+  });
+
+  it('forwards revision number collection only when the annotation requests it', async () => {
+    const port = createPort({ status: 'available', lines: [] });
+    const handler = new GitBlameHandler(port);
+
+    await handler.execute(
+      { ...input(), lineCount: 0, showCommitNumber: true },
+      context(),
+    );
+
+    expect(port.getAnnotations).not.toHaveBeenCalled();
+
+    const availablePort = createPort({
+      status: 'available',
+      lines: [
+        {
+          line: 1,
+          commit: 'a'.repeat(40),
+          author: 'Alice',
+          email: 'alice@example.com',
+          authoredAt: 1_700_000_000,
+          summary: 'initial',
+          revisionNumber: 1,
+        },
+      ],
+    });
+    const availableHandler = new GitBlameHandler(availablePort);
+    await availableHandler.execute({ ...input(), showCommitNumber: true }, context());
+    expect(availablePort.getAnnotations).toHaveBeenCalledWith(
+      expect.objectContaining({ includeRevisionNumbers: true }),
+      expect.any(Object),
+    );
   });
 
   it('accepts the terminal empty line that VS Code includes in document lineCount', async () => {
@@ -70,6 +107,7 @@ function input(): GitBlameAnnotationsInput {
     documentVersion: 7,
     lineCount: 1,
     ignoreWhitespace: false,
+    showCommitNumber: false,
     maxLines: 20_000,
   };
 }

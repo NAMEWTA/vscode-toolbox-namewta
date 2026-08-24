@@ -10,6 +10,7 @@ export type GitBlameLine = {
   readonly email: string;
   readonly authoredAt: number;
   readonly summary: string;
+  readonly revisionNumber?: number;
   readonly originalPath?: string;
   readonly originalLine?: number;
   readonly parentCommit?: string;
@@ -21,6 +22,7 @@ export type GitBlameAnnotationsInput = {
   readonly documentVersion: number;
   readonly lineCount: number;
   readonly ignoreWhitespace: boolean;
+  readonly showCommitNumber: boolean;
   readonly maxLines: number;
 };
 
@@ -157,14 +159,28 @@ export function isGitBlameAnnotationsInput(
   return (
     isRecordWithOptionalKeys(
       value,
-      ['resource', 'documentVersion', 'lineCount', 'ignoreWhitespace', 'maxLines'],
+      [
+        'resource',
+        'documentVersion',
+        'lineCount',
+        'ignoreWhitespace',
+        'showCommitNumber',
+        'maxLines',
+      ],
       ['ref'],
     ) &&
     isExecutableGitResource(value.resource) &&
     (value.ref === undefined || isGitReference(value.ref)) &&
     isNonNegativeInteger(value.documentVersion) &&
     isNonNegativeInteger(value.lineCount) &&
+    isGitBlameAnnotationConfiguration(value)
+  );
+}
+
+function isGitBlameAnnotationConfiguration(value: Record<string, unknown>): boolean {
+  return (
     typeof value.ignoreWhitespace === 'boolean' &&
+    typeof value.showCommitNumber === 'boolean' &&
     Number.isInteger(value.maxLines) &&
     Number(value.maxLines) >= 100 &&
     Number(value.maxLines) <= 200_000

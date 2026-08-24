@@ -212,9 +212,20 @@ function verifyReleaseSurface(manifest, contributedCommands) {
   const blameConfigurations = Object.keys(
     manifest.contributes?.configuration?.properties ?? {},
   ).filter((key) => key.startsWith('vscodeToolboxNamewta.gitBlame.'));
-  if (blameConfigurations.length !== 3) {
+  const expectedBlameConfigurations = [
+    'vscodeToolboxNamewta.gitBlame.authorNameStyle',
+    'vscodeToolboxNamewta.gitBlame.dateFormatStyle',
+    'vscodeToolboxNamewta.gitBlame.highlightCurrentCommit',
+    'vscodeToolboxNamewta.gitBlame.ignoreWhitespace',
+    'vscodeToolboxNamewta.gitBlame.maxLines',
+    'vscodeToolboxNamewta.gitBlame.mergeCommitLines',
+    'vscodeToolboxNamewta.gitBlame.showCommitNumber',
+  ];
+  if (
+    blameConfigurations.toSorted().join('\n') !== expectedBlameConfigurations.join('\n')
+  ) {
     failures.push(
-      `Git Blame 公开配置必须恰好为 3 项，当前为 ${blameConfigurations.length} 项。`,
+      `Git Blame 公开配置不符合固定合同：${blameConfigurations.toSorted().join(', ')}`,
     );
   }
   const keybindings = manifest.contributes?.keybindings ?? [];

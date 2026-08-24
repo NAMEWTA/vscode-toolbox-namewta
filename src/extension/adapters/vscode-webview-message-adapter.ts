@@ -152,7 +152,7 @@ function isReaderAction(
     message.type === 'gitBlameReader.openSource' ||
     message.type === 'gitBlameReader.refresh' ||
     message.type === 'gitBlameReader.copy' ||
-    message.type === 'gitBlameReader.commitDetail'
+    message.type === 'gitBlameReader.commitAction'
   );
 }
 

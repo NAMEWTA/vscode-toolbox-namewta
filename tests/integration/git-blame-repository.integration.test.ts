@@ -25,6 +25,7 @@ suite('Git blame repository integration', () => {
         documentVersion: 3,
         lineCount: 3,
         ignoreWhitespace: false,
+        showCommitNumber: true,
         maxLines: 20_000,
       });
 

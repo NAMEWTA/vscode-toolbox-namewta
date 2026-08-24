@@ -15,3 +15,7 @@
 ## LOG-004 — 2026-08-13
 
 实现采用 `ResizeObserver` 同步独立 Blame/Code DOM 的 logical row 最大高度，不使用 subgrid。原因是保持两个连续原生选择树，同时避免依赖 subgrid 重新耦合选择边界；不改变用户可观察契约或公共接口。
+
+## LOG-005 — 2026-08-24
+
+真实使用截图证明本 change 尚未满足提交分块辨识度与提交详情交互要求，且编辑器注解需要改用新的固定宽度元数据设计。用户批准由 `2026-08-24-git-visual-clarity-overhaul` 接替未完成验收；本 change 保留 `review` 历史状态并结束当前 Implement work，不把新合同反写进旧 Spec。

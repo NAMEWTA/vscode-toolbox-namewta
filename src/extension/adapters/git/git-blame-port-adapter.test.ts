@@ -15,24 +15,35 @@ describe('GitBlamePortAdapter', () => {
       const initialCommit = (
         await runGit(git, repository, ['rev-parse', 'HEAD'])
       ).stdout.trim();
+      await writeFile(path.join(repository, 'main.ts'), 'first\nsecond updated\n');
+      await runGit(git, repository, ['add', '--', 'main.ts']);
+      await runGit(git, repository, ['commit', '-m', 'update second line']);
       await runGit(git, repository, ['mv', 'main.ts', 'renamed.ts']);
       await runGit(git, repository, ['commit', '-m', 'rename']);
       await writeFile(
         path.join(repository, 'renamed.ts'),
-        'first\nsecond\nworking tree\n',
+        'first\nsecond updated\nworking tree\n',
       );
       const resource = { repositoryRoot: repository, relativePath: 'renamed.ts' };
 
       await expect(
         adapter.getAnnotations(
-          { resource, ignoreWhitespace: false },
+          { resource, ignoreWhitespace: false, includeRevisionNumbers: true },
           { aborted: false },
         ),
       ).resolves.toMatchObject({
         status: 'available',
         lines: [
-          { line: 1, author: 'vscode-toolbox-namewta Test' },
-          { line: 2, author: 'vscode-toolbox-namewta Test' },
+          {
+            line: 1,
+            author: 'vscode-toolbox-namewta Test',
+            revisionNumber: 1,
+          },
+          {
+            line: 2,
+            author: 'vscode-toolbox-namewta Test',
+            revisionNumber: 2,
+          },
           { line: 3, commit: '0'.repeat(40), author: 'Not Committed Yet' },
         ],
       });
@@ -42,6 +53,7 @@ describe('GitBlamePortAdapter', () => {
             resource: { repositoryRoot: repository, relativePath: 'main.ts' },
             ref: initialCommit,
             ignoreWhitespace: false,
+            includeRevisionNumbers: false,
           },
           { aborted: false },
         ),
@@ -50,7 +62,8 @@ describe('GitBlamePortAdapter', () => {
         {
           resource,
           ignoreWhitespace: false,
-          contents: 'unsaved line\nfirst\nsecond\nworking tree\n',
+          includeRevisionNumbers: false,
+          contents: 'unsaved line\nfirst\nsecond updated\nworking tree\n',
         },
         { aborted: false },
       );
@@ -82,6 +95,7 @@ describe('GitBlamePortAdapter', () => {
           {
             resource: { repositoryRoot: repository, relativePath: 'draft.ts' },
             ignoreWhitespace: false,
+            includeRevisionNumbers: false,
           },
           { aborted: false },
         ),

@@ -42,6 +42,7 @@ export class GitBlameReaderHandler
         ...(input.revision === 'HEAD' ? {} : { ref: input.revision }),
         ...(input.revision === 'HEAD' ? { contents: input.sourceText } : {}),
         ignoreWhitespace: input.ignoreWhitespace,
+        includeRevisionNumbers: false,
       },
       context.signal,
     );

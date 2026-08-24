@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GitBlameReaderModel } from '../../core/domains/git-blame/public-api';
 import {
@@ -7,11 +7,11 @@ import {
   type GitBlameReaderWebviewStrings,
 } from './GitBlameReaderApp';
 
-describe('GitBlameReaderApp', () => {
-  beforeEach(() => {
-    Element.prototype.scrollIntoView = vi.fn();
-  });
+beforeEach(() => {
+  Element.prototype.scrollIntoView = vi.fn();
+});
 
+describe('GitBlameReaderApp', () => {
   it('使用彼此独立的 Blame 与 Code 文本层，并删除复制按钮带', () => {
     renderReader(model(), vi.fn());
 
@@ -25,7 +25,16 @@ describe('GitBlameReaderApp', () => {
     expect(screen.queryByRole('button', { name: 'Copy All Code' })).toBeNull();
   });
 
-  it('普通文本点击无副作用，只有显式图标发送导航与提交详情', () => {
+  it('每个连续提交块只显示一次 commit hash', () => {
+    renderReader(singleBlockModel(), vi.fn());
+
+    const blame = screen.getByRole('region', { name: 'Blame' });
+    expect(blame.textContent?.match(/aaaaaaaaaaaa/gu)).toHaveLength(1);
+  });
+});
+
+describe('GitBlameReaderApp commit details', () => {
+  it('在 React 模态中显示提交详情，并只为特权操作发送结构化消息', () => {
     const post = vi.fn();
     renderReader(model(), post);
 
@@ -41,13 +50,32 @@ describe('GitBlameReaderApp', () => {
     });
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Show commit details' })[0]!);
+    const dialog = screen.getByRole('dialog', { name: 'Commit details' });
+    expect(dialog).toHaveTextContent('a'.repeat(40));
+    expect(dialog).toHaveTextContent('Alice <alice@example.com>');
+    expect(dialog).toHaveTextContent('Commit 1');
+    expect(post).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Copy commit SHA' }));
     expect(post).toHaveBeenLastCalledWith({
-      type: 'gitBlameReader.commitDetail',
+      type: 'gitBlameReader.copy',
       generation: 7,
+      format: 'commit-sha',
       blockId: 'block-1-aaaaaaaaaaaa',
     });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Open commit' }));
+    expect(post).toHaveBeenLastCalledWith({
+      type: 'gitBlameReader.commitAction',
+      generation: 7,
+      blockId: 'block-1-aaaaaaaaaaaa',
+      action: 'open-remote',
+    });
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
+});
 
+describe('GitBlameReaderApp layout', () => {
   it('为相邻 commit 分配不同颜色，并让同一 SHA 始终复用颜色', () => {
     renderReader(model(), vi.fn());
 
@@ -63,6 +91,19 @@ describe('GitBlameReaderApp', () => {
     expect(first?.getAttribute('data-commit-color')).toBe(
       third?.getAttribute('data-commit-color'),
     );
+  });
+
+  it('在 Blame 与 Code 两列标出相同的提交块首尾', () => {
+    renderReader(singleBlockModel(), vi.fn());
+
+    expect(document.querySelector('[data-blame-line="1"]')).toHaveClass(
+      'is-block-start',
+    );
+    expect(document.querySelector('[data-code-line="1"]')).toHaveClass(
+      'is-block-start',
+    );
+    expect(document.querySelector('[data-blame-line="2"]')).toHaveClass('is-block-end');
+    expect(document.querySelector('[data-code-line="2"]')).toHaveClass('is-block-end');
   });
 
   it('使用 Ctrl+F 搜索源码并报告匹配数', () => {
@@ -143,6 +184,7 @@ function model(): GitBlameReaderModel {
     version: 1,
     generation: 7,
     sourceUri: 'file:///repo/main.ts',
+    remoteUrl: 'git@github.com:owner/repo.git',
     resource: { repositoryRoot: '/repo', relativePath: 'main.ts' },
     revision: 'HEAD',
     documentVersion: 1,
@@ -187,6 +229,30 @@ function largeModel(): GitBlameReaderModel {
   };
 }
 
+function singleBlockModel(): GitBlameReaderModel {
+  const first = model();
+  const template = first.lines[0];
+  const block = first.blocks[0];
+  if (template === undefined || block === undefined) {
+    throw new Error('测试模型缺少提交块。');
+  }
+  const lines = [
+    template,
+    {
+      ...template,
+      line: 2,
+      text: 'const next = 2;',
+      blame: { ...template.blame, line: 2 },
+    },
+  ];
+  return {
+    ...first,
+    lineCount: lines.length,
+    lines,
+    blocks: [{ ...block, endLine: 2, lines }],
+  };
+}
+
 function strings(): GitBlameReaderWebviewStrings {
   return {
     title: 'Git Blame Reader',
@@ -197,6 +263,17 @@ function strings(): GitBlameReaderWebviewStrings {
     codeColumn: 'Code',
     openSource: 'Open source line {0}',
     commitDetails: 'Show commit details',
+    commitDetailTitle: 'Commit details',
+    closeCommitDetails: 'Close commit details',
+    commitSha: 'Commit SHA',
+    author: 'Author',
+    authoredAt: 'Authored at',
+    summary: 'Summary',
+    affectedLines: 'Affected lines',
+    copyCommitSha: 'Copy commit SHA',
+    copyCommitInfo: 'Copy commit info',
+    openRemoteCommit: 'Open commit',
+    openPreviousRevision: 'Open previous revision',
     resizeBlameColumn: 'Resize Blame column',
     lines: '{0} lines',
     matches: '{0} match(es)',

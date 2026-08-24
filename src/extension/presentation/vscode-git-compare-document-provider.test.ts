@@ -65,6 +65,39 @@ describe('VscodeGitCompareDocumentProvider', () => {
         ],
       ]),
     );
+    const resources = vscodeState.executeCommand.mock
+      .calls[0]?.[2] as readonly (readonly [
+      UriLike,
+      UriLike | undefined,
+      UriLike | undefined,
+    ])[];
+    expect(resources[0]?.[2]?.value).toMatch(/\/src\/added\.ts$/u);
+    expect(resources[1]?.[1]?.value).toMatch(/\/src\/deleted\.ts$/u);
+  });
+
+  it('uses the old and new repository paths for renamed revision resources', async () => {
+    const provider = new VscodeGitCompareDocumentProvider(createGateway());
+
+    await provider.openComparison(
+      '/repo',
+      comparison([
+        {
+          status: 'renamed',
+          path: 'src/new-name.ts',
+          previousPath: 'src/old-name.ts',
+          contentKind: 'text',
+        },
+      ]),
+    );
+
+    const resources = vscodeState.executeCommand.mock
+      .calls[0]?.[2] as readonly (readonly [
+      UriLike,
+      UriLike | undefined,
+      UriLike | undefined,
+    ])[];
+    expect(resources[0]?.[1]?.value).toMatch(/\/src\/old-name\.ts$/u);
+    expect(resources[0]?.[2]?.value).toMatch(/\/src\/new-name\.ts$/u);
   });
 
   it('reports an empty comparison without opening a native changes editor', async () => {
@@ -94,3 +127,7 @@ function createGateway(): ToolboxGateway {
     getCapabilities: vi.fn(() => []),
   } as unknown as ToolboxGateway;
 }
+
+type UriLike = {
+  readonly value: string;
+};

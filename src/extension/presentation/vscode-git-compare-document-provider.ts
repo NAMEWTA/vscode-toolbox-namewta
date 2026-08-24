@@ -27,9 +27,9 @@ export class VscodeGitCompareDocumentProvider
     return vscode.Uri.parse(this.#store.createRevisionUri(input), true);
   }
 
-  public createSummaryUri(summary: string): vscode.Uri {
+  public createSummaryUri(summary: string, displayPath: string): vscode.Uri {
     this.assertAvailable();
-    return vscode.Uri.parse(this.#store.createSummaryUri(summary), true);
+    return vscode.Uri.parse(this.#store.createSummaryUri(summary, displayPath), true);
   }
 
   public async provideTextDocumentContent(
@@ -131,6 +131,7 @@ export class VscodeGitCompareDocumentProvider
         vscode.l10n.t('Change: {0}', document.status),
         summaryForResult(document.contentKind),
       ].join('\n'),
+      document.path,
     );
   }
 }

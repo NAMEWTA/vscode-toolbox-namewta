@@ -130,6 +130,10 @@ function config(maxLines = 20_000): GitBlameConfiguration {
     highlightCurrentCommit: false,
     ignoreWhitespace: false,
     maxLines,
+    dateFormatStyle: 'Y/M/D',
+    authorNameStyle: 'full',
+    showCommitNumber: false,
+    mergeCommitLines: false,
   };
 }
 

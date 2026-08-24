@@ -123,6 +123,7 @@ export function ReaderColumns({
                 codeRows.current[index] = element;
               }}
               line={line}
+              block={block}
               color={getLineColor(line, block, colorByCommit)}
               height={rowHeights[index]}
               currentLine={currentLine}
@@ -150,8 +151,18 @@ function rowStyle(height: number | undefined): CSSProperties {
   return height === undefined || height <= 0 ? {} : { minHeight: `${height}px` };
 }
 
-function lineClassName(currentLine: number, line: number, isMatch: boolean): string {
-  return [currentLine === line ? 'is-current' : '', isMatch ? 'is-match' : '']
+function lineClassName(
+  currentLine: number,
+  line: number,
+  isMatch: boolean,
+  block: GitBlameReaderBlock | undefined,
+): string {
+  return [
+    currentLine === line ? 'is-current' : '',
+    isMatch ? 'is-match' : '',
+    block?.startLine === line ? 'is-block-start' : '',
+    block?.endLine === line ? 'is-block-end' : '',
+  ]
     .filter(Boolean)
     .join(' ');
 }
@@ -172,7 +183,7 @@ function metadata(
   if (line.kind === 'uncommitted') {
     return `${strings.workingTree} · ${line.blame.author} · ${strings.uncommitted}`;
   }
-  return `${new Date(line.blame.authoredAt * 1_000).toISOString()} · ${line.blame.author} · ${line.blame.commit.slice(0, 12)}`;
+  return `${new Date(line.blame.authoredAt * 1_000).toISOString()} · ${line.blame.author}`;
 }
 
 function colorAttribute(color: ReaderCommitColor): string {
@@ -234,7 +245,7 @@ const ReaderBlameRow = ({
 }): JSX.Element => (
   <div
     ref={rowRef}
-    className={`blame-reader-blame-row ${lineClassName(currentLine, line.line, isMatch)}`}
+    className={`blame-reader-blame-row ${lineClassName(currentLine, line.line, isMatch, block)}`}
     data-blame-line={line.line}
     {...blockStyle(color)}
     style={rowStyle(height)}
@@ -253,6 +264,7 @@ const ReaderBlameRow = ({
 
 const ReaderCodeRow = ({
   line,
+  block,
   color,
   height,
   currentLine,
@@ -262,6 +274,7 @@ const ReaderCodeRow = ({
   rowRef,
 }: {
   readonly line: GitBlameReaderLine;
+  readonly block: GitBlameReaderBlock | undefined;
   readonly color: ReaderCommitColor;
   readonly height: number | undefined;
   readonly currentLine: number;
@@ -272,7 +285,7 @@ const ReaderCodeRow = ({
 }): JSX.Element => (
   <div
     ref={rowRef}
-    className={`blame-reader-code-row ${lineClassName(currentLine, line.line, isMatch)}`}
+    className={`blame-reader-code-row ${lineClassName(currentLine, line.line, isMatch, block)}`}
     data-code-line={line.line}
     {...blockStyle(color)}
     style={rowStyle(height)}

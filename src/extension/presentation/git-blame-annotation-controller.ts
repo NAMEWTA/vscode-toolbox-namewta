@@ -1,4 +1,6 @@
 import {
+  type GitBlameAuthorNameStyle,
+  type GitBlameDateFormatStyle,
   mapGitBlameLines,
   type GitBlameAnnotationsResult,
   type GitBlameLine,
@@ -8,6 +10,10 @@ export type GitBlameConfiguration = {
   readonly highlightCurrentCommit: boolean;
   readonly ignoreWhitespace: boolean;
   readonly maxLines: number;
+  readonly dateFormatStyle: GitBlameDateFormatStyle;
+  readonly authorNameStyle: GitBlameAuthorNameStyle;
+  readonly showCommitNumber: boolean;
+  readonly mergeCommitLines: boolean;
 };
 
 export type GitBlameDocumentSnapshot = {

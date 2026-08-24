@@ -325,6 +325,7 @@ function createBlameLoader(
         documentVersion: document.version,
         lineCount: document.lineCount,
         ignoreWhitespace: config.ignoreWhitespace,
+        showCommitNumber: config.showCommitNumber,
         maxLines: config.maxLines,
       },
       { signal, source: 'extension-command' },

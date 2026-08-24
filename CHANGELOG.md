@@ -4,6 +4,17 @@
 
 ## [未发布]
 
+## [0.1.10] - 2026-08-24
+
+### 变更
+
+- 彻底替换编辑器 Git Blame Annotations：行首改为固定宽度日期、作者与可选版本编号列，增加连续提交合并、提交时间色条和仅限行首的 Hover；旧 renderer 不保留兼容层。
+- Full-file Git Blame Reader 每个连续提交块只显示一次 SHA 与摘要，Blame 与 Code 使用一致且相邻区分更清晰的提交背景；提交详情改为 Reader 内 React 模态。
+
+### 修复
+
+- Git Commit Compare 的原生多文件更改视图现在为每项显示真实仓库相对路径，不再重复显示 `revision /`。
+
 ## [0.1.9] - 2026-08-24
 
 ### 新增

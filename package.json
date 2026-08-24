@@ -2,7 +2,7 @@
   "name": "vscode-toolbox-namewta",
   "displayName": "vscode-toolbox-namewta",
   "description": "%extension.description%",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "publisher": "NAMEWTA",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -254,6 +254,42 @@
           "default": false,
           "scope": "window",
           "description": "%configuration.gitBlame.highlightCurrentCommit%"
+        },
+        "vscodeToolboxNamewta.gitBlame.dateFormatStyle": {
+          "type": "string",
+          "enum": [
+            "Y/M/D",
+            "YYYY-MM-DD",
+            "YYYY-MM-DD HH:mm",
+            "DD.MM.YYYY",
+            "relative"
+          ],
+          "default": "Y/M/D",
+          "scope": "window",
+          "description": "%configuration.gitBlame.dateFormatStyle%"
+        },
+        "vscodeToolboxNamewta.gitBlame.authorNameStyle": {
+          "type": "string",
+          "enum": [
+            "full",
+            "first",
+            "last"
+          ],
+          "default": "full",
+          "scope": "window",
+          "description": "%configuration.gitBlame.authorNameStyle%"
+        },
+        "vscodeToolboxNamewta.gitBlame.showCommitNumber": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window",
+          "description": "%configuration.gitBlame.showCommitNumber%"
+        },
+        "vscodeToolboxNamewta.gitBlame.mergeCommitLines": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window",
+          "description": "%configuration.gitBlame.mergeCommitLines%"
         },
         "vscodeToolboxNamewta.gitBlame.ignoreWhitespace": {
           "type": "boolean",

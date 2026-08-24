@@ -34,4 +34,19 @@ describe('Git Blame Reader responsive stylesheet', () => {
     expect(stylesheet).toContain('contain-intrinsic-block-size:');
     expect(stylesheet).not.toContain('.blame-reader-virtual-row');
   });
+
+  it('让 Blame 与 Code 共享提交底色，并用块边界补充颜色区分', () => {
+    expect(stylesheet.match(/background: var\(--reader-commit-tint/gu)).toHaveLength(2);
+    expect(stylesheet).toContain('.is-block-start');
+    expect(stylesheet).toContain('.is-block-end');
+    expect(stylesheet).toContain('outline: 1px solid');
+  });
+
+  it('为浅色、深色与高对比主题提供明确的八色色板', () => {
+    expect(stylesheet).toContain('body.vscode-light');
+    expect(stylesheet).toContain('body.vscode-dark');
+    expect(stylesheet).toContain('body.vscode-high-contrast');
+    expect(stylesheet).toContain('--reader-color-7:');
+    expect(stylesheet).not.toContain("data-commit-color='8'");
+  });
 });

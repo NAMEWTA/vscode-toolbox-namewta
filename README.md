@@ -23,7 +23,7 @@
 
 ## 安装
 
-当前开发版本为 `0.1.9`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
+当前开发版本为 `0.1.10`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
 
 在 VS Code 中打开命令面板，执行 **Extensions: Install from VSIX...**，选择下载的 VSIX。安装完成后重新加载窗口；命令面板中应能看到以 `toolbox-` 开头的命令。
 
@@ -35,7 +35,7 @@
 4. 在 Source Control 标题栏点击 Git 比较图标，先选择基准提交，再选择目标提交。
 5. 需要审核工作树变更时，在 Source Control 标题栏执行 `toolbox-开始审核 Git 变更`。
 
-成功标志：Copy Reference 写入剪贴板；Git Blame 不改变源码布局，完整历史在独立 Reader 中呈现；Git Compare 在原生多文件比较中显示明确的两个端点；Git Review 在单个编辑器标签页中显示变更队列。
+成功标志：Copy Reference 写入剪贴板；Git Blame 只添加可关闭的行首注解，不修改源码内容，完整历史在独立 Reader 中呈现；Git Compare 在原生多文件比较中显示明确的两个端点；Git Review 在单个编辑器标签页中显示变更队列。
 
 ## 核心能力
 
@@ -51,10 +51,11 @@
 ### Git Blame
 
 - 必须由用户对具体文档显式开启，不会在扩展激活时扫描仓库或启动 Git。
-- Status Bar 和 Hover 显示当前行的作者、提交时间、短 SHA 与摘要，不向源码插入文字。
+- 编辑器行首使用固定宽度的日期、作者与可选版本编号列，并以窄色条表达提交时间；连续提交块可只在首行显示元数据。
+- Status Bar 显示当前行的作者、提交时间与短 SHA；Hover 只在行首注解位置出现，提供完整提交元数据、复制 hash、受限 remote 链接、提交 Diff、上一版本和增量 Line History。
 - 可选的当前提交高亮只改变整行背景，不改变源码起点、选择、软换行或水平滚动。
-- Hover 提供完整提交元数据、复制 hash、受限 remote 链接、提交 Diff、上一版本和增量 Line History。
-- Full-file Blame Reader 将 Blame 与 Code 分成两个独立的原生文本选择区，按 commit 着色、支持软换行、搜索和拖动分隔线。
+- Full-file Blame Reader 将 Blame 与 Code 分成两个独立的原生文本选择区；同一提交在两列使用一致背景，相邻提交同时由高区分度颜色和块边界分隔。
+- Reader 每个连续提交块只显示一次短 SHA 与摘要；info 图标在 Reader 内打开可键盘操作的提交详情模态，不再触发 VS Code 通知。
 - Reader 不再用复制按钮或整行点击驱动操作；在任一列直接拖选后使用系统 `Ctrl/Cmd+C`，只有显式图标会打开源码行或提交详情。
 - 大文件保留完整 logical line DOM，并使用浏览器离屏绘制抑制来维持跨屏原生选择。
 
@@ -85,6 +86,10 @@
 | `logging.level`                   | `info`  | 扩展输出日志级别                                 |
 | `webview.requestTimeoutMs`        | `10000` | Webview 请求超时，范围 `1000-120000` ms          |
 | `gitBlame.highlightCurrentCommit` | `false` | 是否高亮当前提交                                 |
+| `gitBlame.dateFormatStyle`        | `Y/M/D` | 行首注解日期格式，可选绝对或相对时间             |
+| `gitBlame.authorNameStyle`        | `full`  | 行首注解显示作者全名、名或姓                     |
+| `gitBlame.showCommitNumber`       | `false` | 是否显示提交在仓库历史中的版本编号               |
+| `gitBlame.mergeCommitLines`       | `false` | 同一提交连续出现时是否只在块首显示元数据         |
 | `gitBlame.ignoreWhitespace`       | `false` | 计算 Blame 时忽略空白变化                        |
 | `gitBlame.maxLines`               | `20000` | 允许显示 Blame 的最大文档行数，范围 `100-200000` |
 

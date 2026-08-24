@@ -12,6 +12,37 @@ body {
   margin: 0;
   overflow: hidden;
 }
+body.vscode-light {
+  --reader-color-0: #0969da;
+  --reader-color-1: #1a7f37;
+  --reader-color-2: #bc4c00;
+  --reader-color-3: #cf222e;
+  --reader-color-4: #8250df;
+  --reader-color-5: #9a6700;
+  --reader-color-6: #0a7b83;
+  --reader-color-7: #bf3989;
+}
+body.vscode-dark {
+  --reader-color-0: #58a6ff;
+  --reader-color-1: #56d364;
+  --reader-color-2: #ffa657;
+  --reader-color-3: #ff7b72;
+  --reader-color-4: #d2a8ff;
+  --reader-color-5: #e3b341;
+  --reader-color-6: #39c5cf;
+  --reader-color-7: #f778ba;
+}
+body.vscode-high-contrast,
+body.vscode-high-contrast-light {
+  --reader-color-0: #75beff;
+  --reader-color-1: #89d185;
+  --reader-color-2: #cca700;
+  --reader-color-3: #f14c4c;
+  --reader-color-4: #b180d7;
+  --reader-color-5: #dcdcaa;
+  --reader-color-6: #4ec9b0;
+  --reader-color-7: #ff8ad8;
+}
 button,
 input {
   font: inherit;
@@ -191,7 +222,15 @@ h1 {
   padding: 2px 10px 2px 12px;
   border-left: 1px solid var(--vscode-panel-border);
   border-right: 1px solid var(--reader-commit-accent, transparent);
-  background: var(--vscode-editor-background);
+  background: var(--reader-commit-tint, transparent);
+}
+.blame-reader-blame-row.is-block-start,
+.blame-reader-code-row.is-block-start {
+  border-top: 1px solid var(--reader-commit-accent, var(--vscode-panel-border));
+}
+.blame-reader-blame-row.is-block-end,
+.blame-reader-code-row.is-block-end {
+  border-bottom: 1px solid var(--reader-commit-accent, var(--vscode-panel-border));
 }
 .blame-reader-blame-row.is-current,
 .blame-reader-code-row.is-current {
@@ -199,7 +238,9 @@ h1 {
 }
 .blame-reader-blame-row.is-match,
 .blame-reader-code-row.is-match {
-  background: var(--vscode-editor-findMatchHighlightBackground);
+  outline: 1px solid
+    var(--vscode-editor-findMatchHighlightBorder, var(--vscode-focusBorder));
+  outline-offset: -1px;
 }
 .blame-reader-line-number {
   min-width: 0;
@@ -263,125 +304,119 @@ h1 {
 }
 .blame-reader-blame-row[data-commit-color='0'],
 .blame-reader-code-row[data-commit-color='0'] {
-  --reader-commit-accent: var(--vscode-charts-blue);
-  --reader-commit-tint: color-mix(in srgb, var(--vscode-charts-blue) 12%, transparent);
+  --reader-commit-accent: var(--reader-color-0);
 }
 .blame-reader-blame-row[data-commit-color='1'],
 .blame-reader-code-row[data-commit-color='1'] {
-  --reader-commit-accent: var(--vscode-charts-green);
-  --reader-commit-tint: color-mix(in srgb, var(--vscode-charts-green) 12%, transparent);
+  --reader-commit-accent: var(--reader-color-1);
 }
 .blame-reader-blame-row[data-commit-color='2'],
 .blame-reader-code-row[data-commit-color='2'] {
-  --reader-commit-accent: var(--vscode-charts-orange);
-  --reader-commit-tint: color-mix(
-    in srgb,
-    var(--vscode-charts-orange) 12%,
-    transparent
-  );
+  --reader-commit-accent: var(--reader-color-2);
 }
 .blame-reader-blame-row[data-commit-color='3'],
 .blame-reader-code-row[data-commit-color='3'] {
-  --reader-commit-accent: var(--vscode-charts-red);
-  --reader-commit-tint: color-mix(in srgb, var(--vscode-charts-red) 12%, transparent);
+  --reader-commit-accent: var(--reader-color-3);
 }
 .blame-reader-blame-row[data-commit-color='4'],
 .blame-reader-code-row[data-commit-color='4'] {
-  --reader-commit-accent: var(--vscode-charts-purple);
-  --reader-commit-tint: color-mix(
-    in srgb,
-    var(--vscode-charts-purple) 12%,
-    transparent
-  );
+  --reader-commit-accent: var(--reader-color-4);
 }
 .blame-reader-blame-row[data-commit-color='5'],
 .blame-reader-code-row[data-commit-color='5'] {
-  --reader-commit-accent: var(--vscode-charts-yellow);
-  --reader-commit-tint: color-mix(
-    in srgb,
-    var(--vscode-charts-yellow) 12%,
-    transparent
-  );
+  --reader-commit-accent: var(--reader-color-5);
 }
 .blame-reader-blame-row[data-commit-color='6'],
 .blame-reader-code-row[data-commit-color='6'] {
-  --reader-commit-accent: var(--vscode-charts-cyan, var(--vscode-charts-blue));
-  --reader-commit-tint: color-mix(
-    in srgb,
-    var(--vscode-charts-cyan, var(--vscode-charts-blue)) 12%,
-    transparent
-  );
+  --reader-commit-accent: var(--reader-color-6);
 }
 .blame-reader-blame-row[data-commit-color='7'],
 .blame-reader-code-row[data-commit-color='7'] {
-  --reader-commit-accent: var(
-    --vscode-charts-foreground,
-    var(--vscode-editor-foreground)
-  );
-  --reader-commit-tint: color-mix(
-    in srgb,
-    var(--vscode-charts-foreground, var(--vscode-editor-foreground)) 12%,
-    transparent
-  );
-}
-.blame-reader-blame-row[data-commit-color='8'],
-.blame-reader-code-row[data-commit-color='8'] {
-  --reader-commit-accent: var(
-    --vscode-gitDecoration-modifiedResourceForeground,
-    var(--vscode-charts-orange)
-  );
-  --reader-commit-tint: color-mix(
-    in srgb,
-    var(--vscode-gitDecoration-modifiedResourceForeground, var(--vscode-charts-orange))
-      12%,
-    transparent
-  );
-}
-.blame-reader-blame-row[data-commit-color='9'],
-.blame-reader-code-row[data-commit-color='9'] {
-  --reader-commit-accent: var(
-    --vscode-gitDecoration-addedResourceForeground,
-    var(--vscode-charts-green)
-  );
-  --reader-commit-tint: color-mix(
-    in srgb,
-    var(--vscode-gitDecoration-addedResourceForeground, var(--vscode-charts-green)) 12%,
-    transparent
-  );
-}
-.blame-reader-blame-row[data-commit-color='10'],
-.blame-reader-code-row[data-commit-color='10'] {
-  --reader-commit-accent: var(
-    --vscode-gitDecoration-deletedResourceForeground,
-    var(--vscode-charts-red)
-  );
-  --reader-commit-tint: color-mix(
-    in srgb,
-    var(--vscode-gitDecoration-deletedResourceForeground, var(--vscode-charts-red)) 12%,
-    transparent
-  );
-}
-.blame-reader-blame-row[data-commit-color='11'],
-.blame-reader-code-row[data-commit-color='11'] {
-  --reader-commit-accent: var(
-    --vscode-gitDecoration-untrackedResourceForeground,
-    var(--vscode-charts-yellow)
-  );
-  --reader-commit-tint: color-mix(
-    in srgb,
-    var(--vscode-gitDecoration-untrackedResourceForeground, var(--vscode-charts-yellow))
-      12%,
-    transparent
-  );
+  --reader-commit-accent: var(--reader-color-7);
 }
 .blame-reader-blame-row[data-commit-color='working-tree'],
 .blame-reader-code-row[data-commit-color='working-tree'] {
   --reader-commit-accent: var(--vscode-editorWarning-foreground);
+}
+.blame-reader-blame-row[data-commit-color],
+.blame-reader-code-row[data-commit-color] {
   --reader-commit-tint: color-mix(
     in srgb,
-    var(--vscode-editorWarning-foreground) 12%,
-    transparent
+    var(--reader-commit-accent) 16%,
+    var(--vscode-editor-background)
   );
+}
+.blame-reader-dialog-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: color-mix(in srgb, #000 55%, transparent);
+}
+.blame-reader-dialog {
+  width: min(560px, 100%);
+  max-height: min(680px, calc(100vh - 40px));
+  overflow: auto;
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 4px;
+  color: var(--vscode-editor-foreground);
+  background: var(--vscode-editor-background);
+  box-shadow: 0 10px 30px var(--vscode-widget-shadow);
+}
+.blame-reader-dialog-header {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-editor-background);
+}
+.blame-reader-dialog-header h2 {
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.blame-reader-dialog-details {
+  display: grid;
+  grid-template-columns: minmax(92px, auto) minmax(0, 1fr);
+  gap: 8px 14px;
+  margin: 0;
+  padding: 14px 16px;
+}
+.blame-reader-dialog-details dt {
+  color: var(--vscode-descriptionForeground);
+  font-weight: 600;
+}
+.blame-reader-dialog-details dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.blame-reader-dialog-sha {
+  font-family: var(--vscode-editor-font-family);
+}
+.blame-reader-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--vscode-panel-border);
+}
+.blame-reader-dialog-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 @media (max-width: 760px) {
   .blame-reader-toolbar > div {
@@ -399,5 +434,12 @@ h1 {
     flex: 1 1 auto;
     width: auto;
     min-width: 80px;
+  }
+  .blame-reader-dialog-details {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .blame-reader-dialog-details dd + dt {
+    margin-top: 8px;
   }
 }

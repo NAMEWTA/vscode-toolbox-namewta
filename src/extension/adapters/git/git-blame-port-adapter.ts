@@ -3,9 +3,11 @@ import type {
   GitBlameDataRequest,
   GitBlameDataResult,
 } from '../../../core/domains/git-blame/git-blame-annotation-model';
-import type {
-  GitCancellationSignal,
-  GitCommandPort,
+import {
+  isFullCommitHash,
+  type GitCancellationSignal,
+  type GitCommandPort,
+  type GitBlameLine,
 } from '../../../core/domains/git-blame/public-api';
 import { ApplicationError } from '../../../core/kernel/application-error';
 import { parseGitBlamePorcelain } from './git-blame-parser';
@@ -25,9 +27,7 @@ export class GitBlamePortAdapter implements GitBlameDataPort {
         code: 'permission-denied',
       });
     }
-    if (request.ref !== undefined) {
-      await this.assertHistoricalPath(request, request.ref, signal);
-    } else if (!(await this.isTracked(request, signal))) {
+    if (!(await this.isBlameable(request, signal))) {
       return { status: 'unavailable', reason: 'untracked' };
     }
 
@@ -39,7 +39,10 @@ export class GitBlamePortAdapter implements GitBlameDataPort {
         ...(request.contents === undefined ? {} : { stdinText: request.contents }),
         signal,
       });
-      const lines = parseGitBlamePorcelain(result.stdout);
+      const parsedLines = parseGitBlamePorcelain(result.stdout);
+      const lines = request.includeRevisionNumbers
+        ? await this.addRevisionNumbers(parsedLines, request, signal)
+        : parsedLines;
       if (lines.length === 0) {
         return { status: 'unavailable', reason: 'empty' };
       }
@@ -58,6 +61,51 @@ export class GitBlamePortAdapter implements GitBlameDataPort {
       }
       throw error;
     }
+  }
+
+  private async isBlameable(
+    request: GitBlameDataRequest,
+    signal: GitCancellationSignal,
+  ): Promise<boolean> {
+    if (request.ref === undefined) return this.isTracked(request, signal);
+    await this.assertHistoricalPath(request, request.ref, signal);
+    return true;
+  }
+
+  private async addRevisionNumbers(
+    lines: readonly GitBlameLine[],
+    request: GitBlameDataRequest,
+    signal: GitCancellationSignal,
+  ): Promise<readonly GitBlameLine[]> {
+    const result = await this.git.run({
+      operation: 'file-revisions',
+      cwd: request.resource.repositoryRoot,
+      args: [
+        'log',
+        '--follow',
+        '--format=%H',
+        ...(request.ref === undefined ? [] : [request.ref]),
+        '--',
+        request.resource.relativePath,
+      ],
+      signal,
+    });
+    const newestFirst = result.stdout
+      .split(/\r?\n/gu)
+      .map((commit) => commit.trim())
+      .filter((commit) => commit.length > 0);
+    if (!newestFirst.every(isFullCommitHash)) {
+      throw new ApplicationError('Git file history returned an invalid object ID.', {
+        code: 'internal-error',
+      });
+    }
+    const revisions = new Map(
+      [...newestFirst].reverse().map((commit, index) => [commit, index + 1] as const),
+    );
+    return lines.map((line) => {
+      const revisionNumber = revisions.get(line.commit);
+      return revisionNumber === undefined ? line : { ...line, revisionNumber };
+    });
   }
 
   private async readRemoteUrl(

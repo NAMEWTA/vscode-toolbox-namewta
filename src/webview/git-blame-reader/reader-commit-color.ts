@@ -1,6 +1,6 @@
 import type { GitBlameReaderBlock } from '../../core/domains/git-blame/public-api';
 
-const READER_COMMIT_COLOR_COUNT = 12;
+const READER_COMMIT_COLOR_ORDER = [0, 4, 2, 6, 1, 5, 3, 7] as const;
 
 export type ReaderCommitColor = number | 'working-tree';
 
@@ -9,28 +9,17 @@ export function createReaderCommitColorMap(
   blocks: readonly GitBlameReaderBlock[],
 ): ReadonlyMap<string, ReaderCommitColor> {
   const colors = new Map<string, ReaderCommitColor>();
-  let previous: ReaderCommitColor | undefined;
+  let nextColor = 0;
   for (const block of blocks) {
     const key = block.kind === 'uncommitted' ? 'working-tree' : block.commit;
     if (!colors.has(key)) {
-      let color: ReaderCommitColor =
+      const color: ReaderCommitColor =
         key === 'working-tree'
           ? 'working-tree'
-          : hashCommit(key) % READER_COMMIT_COLOR_COUNT;
-      if (color === previous && typeof color === 'number') {
-        color = (color + 1) % READER_COMMIT_COLOR_COUNT;
-      }
+          : READER_COMMIT_COLOR_ORDER[nextColor % READER_COMMIT_COLOR_ORDER.length]!;
       colors.set(key, color);
+      if (key !== 'working-tree') nextColor += 1;
     }
-    previous = colors.get(key);
   }
   return colors;
-}
-
-function hashCommit(commit: string): number {
-  let hash = 0;
-  for (const character of commit) {
-    hash = (hash * 31 + character.codePointAt(0)!) >>> 0;
-  }
-  return hash;
 }

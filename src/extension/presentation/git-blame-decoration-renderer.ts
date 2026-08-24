@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
-import type { GitBlameLine } from '../../core/domains/git-blame/public-api';
+import {
+  formatGitBlameAnnotations,
+  measureDisplayWidth,
+  type GitBlameLine,
+} from '../../core/domains/git-blame/public-api';
 import type {
   GitBlameAnnotationRenderer,
   GitBlameConfiguration,
@@ -8,6 +12,7 @@ import type {
 
 type DocumentDecorationResources = {
   readonly highlight: vscode.TextEditorDecorationType;
+  readonly annotation: vscode.TextEditorDecorationType;
   editors: Set<vscode.TextEditor>;
 };
 
@@ -27,9 +32,11 @@ export class GitBlameDecorationRenderer implements GitBlameAnnotationRenderer {
     this.clearRemovedEditors(resources, editors);
     resources.editors = new Set(editors);
     this.#resources.set(document.key, resources);
+    const annotations = createAnnotationDecorations(document, lines, config);
     const highlight = createHighlightRanges(lines, highlightedLine, config);
     for (const editor of editors) {
       editor.setDecorations(resources.highlight, highlight);
+      editor.setDecorations(resources.annotation, annotations);
     }
   }
 
@@ -40,8 +47,10 @@ export class GitBlameDecorationRenderer implements GitBlameAnnotationRenderer {
     }
     for (const editor of resources.editors) {
       editor.setDecorations(resources.highlight, []);
+      editor.setDecorations(resources.annotation, []);
     }
     resources.highlight.dispose();
+    resources.annotation.dispose();
     this.#resources.delete(documentKey);
   }
 
@@ -59,6 +68,7 @@ export class GitBlameDecorationRenderer implements GitBlameAnnotationRenderer {
     for (const editor of resources.editors) {
       if (!current.has(editor)) {
         editor.setDecorations(resources.highlight, []);
+        editor.setDecorations(resources.annotation, []);
       }
     }
   }
@@ -70,8 +80,52 @@ function createResources(): DocumentDecorationResources {
       isWholeLine: true,
       backgroundColor: new vscode.ThemeColor('editor.wordHighlightBackground'),
     }),
+    annotation: vscode.window.createTextEditorDecorationType({
+      before: {
+        color: new vscode.ThemeColor('list.deemphasizedForeground'),
+        height: '100%',
+        margin: '0',
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+      },
+      rangeBehavior: vscode.DecorationRangeBehavior.OpenOpen,
+    }),
     editors: new Set(),
   };
+}
+
+function createAnnotationDecorations(
+  document: GitBlameDocumentSnapshot,
+  lines: readonly GitBlameLine[],
+  config: GitBlameConfiguration,
+): readonly vscode.DecorationOptions[] {
+  const formatted = formatGitBlameAnnotations(lines, {
+    ...config,
+    nowEpochSeconds: Math.floor(Date.now() / 1_000),
+    maxAuthorWidth: 18,
+  });
+  const width =
+    Math.max(0, ...formatted.map(({ text }) => measureDisplayWidth(text))) + 4;
+  const byLine = new Map(formatted.map((item) => [item.line, item]));
+  return Array.from({ length: document.lineCount }, (_, index) => {
+    const item = byLine.get(index + 1);
+    return {
+      range: lineStartRange(index + 1),
+      renderOptions: {
+        before: {
+          contentText:
+            item?.heatColor === undefined
+              ? `\u2007${item?.text ?? ''}\u2007\u2007\u2007`
+              : `\u2007${item.text}\u2007\u258c\u2007`,
+          width: `${width}ch`,
+          ...(item?.heatColor === undefined ? {} : { color: item.heatColor }),
+          ...(item?.heatBackgroundColor === undefined
+            ? {}
+            : { backgroundColor: item.heatBackgroundColor }),
+        },
+      },
+    };
+  });
 }
 
 function createHighlightRanges(
@@ -89,4 +143,8 @@ function createHighlightRanges(
   return lines
     .filter((line) => line.commit === commit)
     .map((line) => new vscode.Range(line.line - 1, 0, line.line - 1, 0));
+}
+
+function lineStartRange(line: number): vscode.Range {
+  return new vscode.Range(line - 1, 0, line - 1, 0);
 }

@@ -31,7 +31,15 @@ export class GitBlameHandler implements ToolHandler<typeof GET_ANNOTATIONS_COMMA
       return { status: 'unavailable', reason: 'max-lines' };
     }
 
-    const result = await this.port.getAnnotations(input, context.signal);
+    const result = await this.port.getAnnotations(
+      {
+        resource: input.resource,
+        ...(input.ref === undefined ? {} : { ref: input.ref }),
+        ignoreWhitespace: input.ignoreWhitespace,
+        includeRevisionNumbers: input.showCommitNumber,
+      },
+      context.signal,
+    );
     if (result.status === 'unavailable') {
       return result;
     }

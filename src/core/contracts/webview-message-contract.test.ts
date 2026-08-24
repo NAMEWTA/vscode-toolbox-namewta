@@ -82,7 +82,9 @@ describe('Webview message contract', () => {
       }),
     ).toBe(false);
   });
+});
 
+describe('Git Blame Reader Webview message contract', () => {
   it('validates Reader actions and rejects free-form copy payloads', () => {
     expect(
       isWebviewToExtensionMessage({
@@ -104,6 +106,29 @@ describe('Webview message contract', () => {
         type: 'gitBlameReader.openSource',
         generation: 0,
         line: 1,
+      }),
+    ).toBe(false);
+    expect(
+      isWebviewToExtensionMessage({
+        type: 'gitBlameReader.commitAction',
+        generation: 4,
+        blockId: 'block-1-aaaaaaaaaaaa',
+        action: 'open-remote',
+      }),
+    ).toBe(true);
+    expect(
+      isWebviewToExtensionMessage({
+        type: 'gitBlameReader.commitAction',
+        generation: 4,
+        blockId: 'block-1-aaaaaaaaaaaa',
+        action: 'show-notification',
+      }),
+    ).toBe(false);
+    expect(
+      isWebviewToExtensionMessage({
+        type: 'gitBlameReader.commitDetail',
+        generation: 4,
+        blockId: 'block-1-aaaaaaaaaaaa',
       }),
     ).toBe(false);
   });

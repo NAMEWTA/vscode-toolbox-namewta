@@ -34,7 +34,7 @@ export class GitBlameHoverProvider implements vscode.HoverProvider {
     position: vscode.Position,
     token: vscode.CancellationToken,
   ): vscode.Hover | undefined {
-    if (token.isCancellationRequested) {
+    if (token.isCancellationRequested || position.character !== 0) {
       return undefined;
     }
     const identity = this.controller.getLineIdentity(

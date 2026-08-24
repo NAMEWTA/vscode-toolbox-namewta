@@ -9,8 +9,12 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import type { GitBlameReaderModel } from '../../core/domains/git-blame/public-api';
+import {
+  createGitRemoteCommitUrl,
+  type GitBlameReaderModel,
+} from '../../core/domains/git-blame/public-api';
 import type { GitBlameReaderWebviewAction } from '../../core/contracts';
+import { CommitDetailDialog } from './CommitDetailDialog';
 import { ReaderColumns } from './reader-columns';
 
 export type GitBlameReaderWebviewStrings = {
@@ -22,6 +26,17 @@ export type GitBlameReaderWebviewStrings = {
   readonly codeColumn: string;
   readonly openSource: string;
   readonly commitDetails: string;
+  readonly commitDetailTitle: string;
+  readonly closeCommitDetails: string;
+  readonly commitSha: string;
+  readonly author: string;
+  readonly authoredAt: string;
+  readonly summary: string;
+  readonly affectedLines: string;
+  readonly copyCommitSha: string;
+  readonly copyCommitInfo: string;
+  readonly openRemoteCommit: string;
+  readonly openPreviousRevision: string;
   readonly resizeBlameColumn: string;
   readonly lines: string;
   readonly matches: string;
@@ -50,6 +65,7 @@ export function GitBlameReaderApp({
   const [query, setQuery] = useState('');
   const [currentLine, setCurrentLine] = useState(model.sourceLine);
   const [blameWidth, setBlameWidth] = useState(DEFAULT_BLAME_WIDTH);
+  const [activeBlockId, setActiveBlockId] = useState<string>();
   const searchRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const matches = useMemo(
@@ -63,9 +79,14 @@ export function GitBlameReaderApp({
             .map((line) => line.line),
     [model.lines, query],
   );
+  const activeBlock = useMemo(
+    () => model.blocks.find((block) => block.blockId === activeBlockId),
+    [activeBlockId, model.blocks],
+  );
 
   useEffect(() => {
     setCurrentLine(model.sourceLine);
+    setActiveBlockId(undefined);
   }, [model.generation, model.sourceLine]);
 
   useEffect(() => {
@@ -91,11 +112,7 @@ export function GitBlameReaderApp({
     post({ type: 'gitBlameReader.openSource', generation: model.generation, line });
   };
   const commitDetail = (blockId: string): void => {
-    post({
-      type: 'gitBlameReader.commitDetail',
-      generation: model.generation,
-      blockId,
-    });
+    setActiveBlockId(blockId);
   };
   const updateBlameWidth = (next: number): void => {
     const contentWidth = contentRef.current?.clientWidth ?? 0;
@@ -209,6 +226,33 @@ export function GitBlameReaderApp({
           />
         </div>
       </div>
+      {activeBlock !== undefined && activeBlock.kind === 'committed' ? (
+        <CommitDetailDialog
+          block={activeBlock}
+          canOpenRemote={
+            model.remoteUrl !== undefined &&
+            createGitRemoteCommitUrl(model.remoteUrl, activeBlock.commit) !== undefined
+          }
+          strings={strings}
+          onClose={() => setActiveBlockId(undefined)}
+          onCopy={(format) =>
+            post({
+              type: 'gitBlameReader.copy',
+              generation: model.generation,
+              format,
+              blockId: activeBlock.blockId,
+            })
+          }
+          onAction={(action) =>
+            post({
+              type: 'gitBlameReader.commitAction',
+              generation: model.generation,
+              blockId: activeBlock.blockId,
+              action,
+            })
+          }
+        />
+      ) : null}
     </main>
   );
 }

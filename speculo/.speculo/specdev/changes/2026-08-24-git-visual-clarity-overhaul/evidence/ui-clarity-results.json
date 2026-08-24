@@ -1,0 +1,663 @@
+{
+  "baseCommit": "c93caa3d5b13f4fb69bd9e665c63394fee389b96",
+  "targetCommit": "d66dd354a641d10b3a45c410853abda8e1367b5c",
+  "workspace": "/tmp/git-visual-clarity-da359w/workspace",
+  "results": [
+    {
+      "zoom": "100",
+      "annotations": {
+        "visibleAnnotationCount": 9,
+        "fixedWidth": "166.164px",
+        "hasAuthorAndDate": true,
+        "hasHeatStripe": true,
+        "statusContainsAuthor": true
+      },
+      "compare": {
+        "labels": [
+          "compare-old-name.md/",
+          "compare-renamed-note.md/",
+          "visual-fixture.ts/"
+        ],
+        "excludesRevisionPlaceholder": true
+      },
+      "combinations": [
+        {
+          "theme": "light",
+          "zoom": "100",
+          "lineCount": 8,
+          "hashCounts": [
+            {
+              "hash": "c93caa3d5b13",
+              "expected": 4,
+              "count": 4
+            },
+            {
+              "hash": "fba9d020ea81",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "a21c89fecdc0",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "d66dd354a641",
+              "expected": 1,
+              "count": 1
+            }
+          ],
+          "blockColors": [
+            {
+              "color": "0",
+              "accent": "#0969da"
+            },
+            {
+              "color": "4",
+              "accent": "#8250df"
+            },
+            {
+              "color": "0",
+              "accent": "#0969da"
+            },
+            {
+              "color": "2",
+              "accent": "#bc4c00"
+            },
+            {
+              "color": "0",
+              "accent": "#0969da"
+            },
+            {
+              "color": "6",
+              "accent": "#0a7b83"
+            },
+            {
+              "color": "0",
+              "accent": "#0969da"
+            }
+          ],
+          "columnsShareTint": true,
+          "pairedBlockBoundaries": true,
+          "noOverlap": true,
+          "dialog": {
+            "text": "Commit detailsCommit SHAc93caa3d5b13f4fb69bd9e665c63394fee389b96AuthorMatrix Author <matrix@example.invalid>Authored at2026-08-24T03:10:51.000ZAffected lines1-2Summary建立可视化基准Copy commit SHACopy commit infoOpen previous revision",
+            "inViewport": true,
+            "focusedInside": true,
+            "buttonCount": 4,
+            "noVscodeNotification": true,
+            "escapeClosed": true
+          }
+        },
+        {
+          "theme": "dark",
+          "zoom": "100",
+          "lineCount": 8,
+          "hashCounts": [
+            {
+              "hash": "c93caa3d5b13",
+              "expected": 4,
+              "count": 4
+            },
+            {
+              "hash": "fba9d020ea81",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "a21c89fecdc0",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "d66dd354a641",
+              "expected": 1,
+              "count": 1
+            }
+          ],
+          "blockColors": [
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            },
+            {
+              "color": "4",
+              "accent": "#d2a8ff"
+            },
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            },
+            {
+              "color": "2",
+              "accent": "#ffa657"
+            },
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            },
+            {
+              "color": "6",
+              "accent": "#39c5cf"
+            },
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            }
+          ],
+          "columnsShareTint": true,
+          "pairedBlockBoundaries": true,
+          "noOverlap": true,
+          "dialog": {
+            "text": "Commit detailsCommit SHAc93caa3d5b13f4fb69bd9e665c63394fee389b96AuthorMatrix Author <matrix@example.invalid>Authored at2026-08-24T03:10:51.000ZAffected lines1-2Summary建立可视化基准Copy commit SHACopy commit infoOpen previous revision",
+            "inViewport": true,
+            "focusedInside": true,
+            "buttonCount": 4,
+            "noVscodeNotification": true,
+            "escapeClosed": true
+          }
+        },
+        {
+          "theme": "high-contrast",
+          "zoom": "100",
+          "lineCount": 8,
+          "hashCounts": [
+            {
+              "hash": "c93caa3d5b13",
+              "expected": 4,
+              "count": 4
+            },
+            {
+              "hash": "fba9d020ea81",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "a21c89fecdc0",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "d66dd354a641",
+              "expected": 1,
+              "count": 1
+            }
+          ],
+          "blockColors": [
+            {
+              "color": "0",
+              "accent": "#75beff"
+            },
+            {
+              "color": "4",
+              "accent": "#b180d7"
+            },
+            {
+              "color": "0",
+              "accent": "#75beff"
+            },
+            {
+              "color": "2",
+              "accent": "#cca700"
+            },
+            {
+              "color": "0",
+              "accent": "#75beff"
+            },
+            {
+              "color": "6",
+              "accent": "#4ec9b0"
+            },
+            {
+              "color": "0",
+              "accent": "#75beff"
+            }
+          ],
+          "columnsShareTint": true,
+          "pairedBlockBoundaries": true,
+          "noOverlap": true,
+          "dialog": {
+            "text": "Commit detailsCommit SHAc93caa3d5b13f4fb69bd9e665c63394fee389b96AuthorMatrix Author <matrix@example.invalid>Authored at2026-08-24T03:10:51.000ZAffected lines1-2Summary建立可视化基准Copy commit SHACopy commit infoOpen previous revision",
+            "inViewport": true,
+            "focusedInside": true,
+            "buttonCount": 4,
+            "noVscodeNotification": true,
+            "escapeClosed": true
+          }
+        }
+      ]
+    },
+    {
+      "zoom": "125",
+      "annotations": {
+        "visibleAnnotationCount": 9,
+        "fixedWidth": "166.163px",
+        "hasAuthorAndDate": true,
+        "hasHeatStripe": true,
+        "statusContainsAuthor": true
+      },
+      "combinations": [
+        {
+          "theme": "light",
+          "zoom": "125",
+          "lineCount": 8,
+          "hashCounts": [
+            {
+              "hash": "c93caa3d5b13",
+              "expected": 4,
+              "count": 4
+            },
+            {
+              "hash": "fba9d020ea81",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "a21c89fecdc0",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "d66dd354a641",
+              "expected": 1,
+              "count": 1
+            }
+          ],
+          "blockColors": [
+            {
+              "color": "0",
+              "accent": "#0969da"
+            },
+            {
+              "color": "4",
+              "accent": "#8250df"
+            },
+            {
+              "color": "0",
+              "accent": "#0969da"
+            },
+            {
+              "color": "2",
+              "accent": "#bc4c00"
+            },
+            {
+              "color": "0",
+              "accent": "#0969da"
+            },
+            {
+              "color": "6",
+              "accent": "#0a7b83"
+            },
+            {
+              "color": "0",
+              "accent": "#0969da"
+            }
+          ],
+          "columnsShareTint": true,
+          "pairedBlockBoundaries": true,
+          "noOverlap": true,
+          "dialog": {
+            "text": "Commit detailsCommit SHAc93caa3d5b13f4fb69bd9e665c63394fee389b96AuthorMatrix Author <matrix@example.invalid>Authored at2026-08-24T03:10:51.000ZAffected lines1-2Summary建立可视化基准Copy commit SHACopy commit infoOpen previous revision",
+            "inViewport": true,
+            "focusedInside": true,
+            "buttonCount": 4,
+            "noVscodeNotification": true,
+            "escapeClosed": true
+          }
+        },
+        {
+          "theme": "dark",
+          "zoom": "125",
+          "lineCount": 8,
+          "hashCounts": [
+            {
+              "hash": "c93caa3d5b13",
+              "expected": 4,
+              "count": 4
+            },
+            {
+              "hash": "fba9d020ea81",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "a21c89fecdc0",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "d66dd354a641",
+              "expected": 1,
+              "count": 1
+            }
+          ],
+          "blockColors": [
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            },
+            {
+              "color": "4",
+              "accent": "#d2a8ff"
+            },
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            },
+            {
+              "color": "2",
+              "accent": "#ffa657"
+            },
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            },
+            {
+              "color": "6",
+              "accent": "#39c5cf"
+            },
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            }
+          ],
+          "columnsShareTint": true,
+          "pairedBlockBoundaries": true,
+          "noOverlap": true,
+          "dialog": {
+            "text": "Commit detailsCommit SHAc93caa3d5b13f4fb69bd9e665c63394fee389b96AuthorMatrix Author <matrix@example.invalid>Authored at2026-08-24T03:10:51.000ZAffected lines1-2Summary建立可视化基准Copy commit SHACopy commit infoOpen previous revision",
+            "inViewport": true,
+            "focusedInside": true,
+            "buttonCount": 4,
+            "noVscodeNotification": true,
+            "escapeClosed": true
+          }
+        },
+        {
+          "theme": "high-contrast",
+          "zoom": "125",
+          "lineCount": 8,
+          "hashCounts": [
+            {
+              "hash": "c93caa3d5b13",
+              "expected": 4,
+              "count": 4
+            },
+            {
+              "hash": "fba9d020ea81",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "a21c89fecdc0",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "d66dd354a641",
+              "expected": 1,
+              "count": 1
+            }
+          ],
+          "blockColors": [
+            {
+              "color": "0",
+              "accent": "#75beff"
+            },
+            {
+              "color": "4",
+              "accent": "#b180d7"
+            },
+            {
+              "color": "0",
+              "accent": "#75beff"
+            },
+            {
+              "color": "2",
+              "accent": "#cca700"
+            },
+            {
+              "color": "0",
+              "accent": "#75beff"
+            },
+            {
+              "color": "6",
+              "accent": "#4ec9b0"
+            },
+            {
+              "color": "0",
+              "accent": "#75beff"
+            }
+          ],
+          "columnsShareTint": true,
+          "pairedBlockBoundaries": true,
+          "noOverlap": true,
+          "dialog": {
+            "text": "Commit detailsCommit SHAc93caa3d5b13f4fb69bd9e665c63394fee389b96AuthorMatrix Author <matrix@example.invalid>Authored at2026-08-24T03:10:51.000ZAffected lines1-2Summary建立可视化基准Copy commit SHACopy commit infoOpen previous revision",
+            "inViewport": true,
+            "focusedInside": true,
+            "buttonCount": 4,
+            "noVscodeNotification": true,
+            "escapeClosed": true
+          }
+        }
+      ]
+    },
+    {
+      "zoom": "150",
+      "annotations": {
+        "visibleAnnotationCount": 9,
+        "fixedWidth": "166.161px",
+        "hasAuthorAndDate": true,
+        "hasHeatStripe": true,
+        "statusContainsAuthor": true
+      },
+      "combinations": [
+        {
+          "theme": "light",
+          "zoom": "150",
+          "lineCount": 8,
+          "hashCounts": [
+            {
+              "hash": "c93caa3d5b13",
+              "expected": 4,
+              "count": 4
+            },
+            {
+              "hash": "fba9d020ea81",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "a21c89fecdc0",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "d66dd354a641",
+              "expected": 1,
+              "count": 1
+            }
+          ],
+          "blockColors": [
+            {
+              "color": "0",
+              "accent": "#0969da"
+            },
+            {
+              "color": "4",
+              "accent": "#8250df"
+            },
+            {
+              "color": "0",
+              "accent": "#0969da"
+            },
+            {
+              "color": "2",
+              "accent": "#bc4c00"
+            },
+            {
+              "color": "0",
+              "accent": "#0969da"
+            },
+            {
+              "color": "6",
+              "accent": "#0a7b83"
+            },
+            {
+              "color": "0",
+              "accent": "#0969da"
+            }
+          ],
+          "columnsShareTint": true,
+          "pairedBlockBoundaries": true,
+          "noOverlap": true,
+          "dialog": {
+            "text": "Commit detailsCommit SHAc93caa3d5b13f4fb69bd9e665c63394fee389b96AuthorMatrix Author <matrix@example.invalid>Authored at2026-08-24T03:10:51.000ZAffected lines1-2Summary建立可视化基准Copy commit SHACopy commit infoOpen previous revision",
+            "inViewport": true,
+            "focusedInside": true,
+            "buttonCount": 4,
+            "noVscodeNotification": true,
+            "escapeClosed": true
+          }
+        },
+        {
+          "theme": "dark",
+          "zoom": "150",
+          "lineCount": 8,
+          "hashCounts": [
+            {
+              "hash": "c93caa3d5b13",
+              "expected": 4,
+              "count": 4
+            },
+            {
+              "hash": "fba9d020ea81",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "a21c89fecdc0",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "d66dd354a641",
+              "expected": 1,
+              "count": 1
+            }
+          ],
+          "blockColors": [
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            },
+            {
+              "color": "4",
+              "accent": "#d2a8ff"
+            },
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            },
+            {
+              "color": "2",
+              "accent": "#ffa657"
+            },
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            },
+            {
+              "color": "6",
+              "accent": "#39c5cf"
+            },
+            {
+              "color": "0",
+              "accent": "#58a6ff"
+            }
+          ],
+          "columnsShareTint": true,
+          "pairedBlockBoundaries": true,
+          "noOverlap": true,
+          "dialog": {
+            "text": "Commit detailsCommit SHAc93caa3d5b13f4fb69bd9e665c63394fee389b96AuthorMatrix Author <matrix@example.invalid>Authored at2026-08-24T03:10:51.000ZAffected lines1-2Summary建立可视化基准Copy commit SHACopy commit infoOpen previous revision",
+            "inViewport": true,
+            "focusedInside": true,
+            "buttonCount": 4,
+            "noVscodeNotification": true,
+            "escapeClosed": true
+          }
+        },
+        {
+          "theme": "high-contrast",
+          "zoom": "150",
+          "lineCount": 8,
+          "hashCounts": [
+            {
+              "hash": "c93caa3d5b13",
+              "expected": 4,
+              "count": 4
+            },
+            {
+              "hash": "fba9d020ea81",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "a21c89fecdc0",
+              "expected": 1,
+              "count": 1
+            },
+            {
+              "hash": "d66dd354a641",
+              "expected": 1,
+              "count": 1
+            }
+          ],
+          "blockColors": [
+            {
+              "color": "0",
+              "accent": "#75beff"
+            },
+            {
+              "color": "4",
+              "accent": "#b180d7"
+            },
+            {
+              "color": "0",
+              "accent": "#75beff"
+            },
+            {
+              "color": "2",
+              "accent": "#cca700"
+            },
+            {
+              "color": "0",
+              "accent": "#75beff"
+            },
+            {
+              "color": "6",
+              "accent": "#4ec9b0"
+            },
+            {
+              "color": "0",
+              "accent": "#75beff"
+            }
+          ],
+          "columnsShareTint": true,
+          "pairedBlockBoundaries": true,
+          "noOverlap": true,
+          "dialog": {
+            "text": "Commit detailsCommit SHAc93caa3d5b13f4fb69bd9e665c63394fee389b96AuthorMatrix Author <matrix@example.invalid>Authored at2026-08-24T03:10:51.000ZAffected lines1-2Summary建立可视化基准Copy commit SHACopy commit infoOpen previous revision",
+            "inViewport": true,
+            "focusedInside": true,
+            "buttonCount": 4,
+            "noVscodeNotification": true,
+            "escapeClosed": true
+          }
+        }
+      ]
+    }
+  ]
+}

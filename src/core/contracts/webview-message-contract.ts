@@ -35,9 +35,10 @@ export type GitBlameReaderWebviewAction =
       readonly blockId?: string;
     }
   | {
-      readonly type: 'gitBlameReader.commitDetail';
+      readonly type: 'gitBlameReader.commitAction';
       readonly generation: number;
       readonly blockId: string;
+      readonly action: 'open-remote' | 'open-previous';
     };
 
 export type WebviewToExtensionMessage =
@@ -108,7 +109,7 @@ export function isWebviewToExtensionMessage(
     value.type === 'gitBlameReader.openSource' ||
     value.type === 'gitBlameReader.refresh' ||
     value.type === 'gitBlameReader.copy' ||
-    value.type === 'gitBlameReader.commitDetail'
+    value.type === 'gitBlameReader.commitAction'
   ) {
     return isGitBlameReaderAction(value);
   }
@@ -192,15 +193,20 @@ function isGitBlameReaderAction(value: Record<string, unknown>): boolean {
     );
   }
   if (value.type === 'gitBlameReader.refresh') return Object.keys(value).length === 2;
-  if (value.type === 'gitBlameReader.commitDetail') {
+  if (value.type === 'gitBlameReader.commitAction') {
     return (
       Object.keys(value).every(
-        (key) => key === 'type' || key === 'generation' || key === 'blockId',
+        (key) =>
+          key === 'type' ||
+          key === 'generation' ||
+          key === 'blockId' ||
+          key === 'action',
       ) &&
       typeof value.blockId === 'string' &&
       value.blockId.length > 0 &&
       value.blockId.length <= 256 &&
-      !value.blockId.includes('\0')
+      !value.blockId.includes('\0') &&
+      (value.action === 'open-remote' || value.action === 'open-previous')
     );
   }
   return (

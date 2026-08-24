@@ -6,6 +6,8 @@ const vscodeState = vi.hoisted(() => ({
   receive: undefined as ((message: unknown) => void) | undefined,
   postMessage: vi.fn(() => Promise.resolve(true)),
   showErrorMessage: vi.fn(),
+  showInformationMessage: vi.fn(),
+  openExternal: vi.fn(() => Promise.resolve(true)),
   document: undefined as unknown,
 }));
 
@@ -31,15 +33,17 @@ vi.mock('vscode', () => ({
     },
     createWebviewPanel: () => panel(),
     showErrorMessage: vscodeState.showErrorMessage,
-    showInformationMessage: vi.fn(),
+    showInformationMessage: vscodeState.showInformationMessage,
   },
-  env: { language: 'en', clipboard: {}, openExternal: vi.fn() },
+  env: { language: 'en', clipboard: {}, openExternal: vscodeState.openExternal },
 }));
 
 beforeEach(() => {
   vscodeState.receive = undefined;
   vscodeState.postMessage.mockClear();
   vscodeState.showErrorMessage.mockClear();
+  vscodeState.showInformationMessage.mockClear();
+  vscodeState.openExternal.mockClear();
   vscodeState.document = document();
 });
 
@@ -61,7 +65,7 @@ describe('GitBlameReaderController', () => {
     const controller = new GitBlameReaderController(
       uri('file:///extension') as never,
       gateway as never,
-      { error: vi.fn() } as never,
+      { error: vi.fn(), warn: vi.fn() } as never,
       { set: vi.fn(), get: vi.fn(), clear: vi.fn() } as never,
       {} as never,
       {
@@ -90,6 +94,44 @@ describe('GitBlameReaderController', () => {
       generation: 1,
       message: 'Loading Git Blame Reader…',
     });
+    controller.dispose();
+  });
+
+  it('executes modal commit actions without opening a VS Code information message', async () => {
+    const gateway = {
+      execute: vi.fn().mockResolvedValue({ ok: true, data: model() }),
+    };
+    const historicalProvider = { openDiff: vi.fn().mockResolvedValue(undefined) };
+    const controller = new GitBlameReaderController(
+      uri('file:///extension') as never,
+      gateway as never,
+      { error: vi.fn(), warn: vi.fn() } as never,
+      { set: vi.fn(), get: vi.fn(), clear: vi.fn() } as never,
+      historicalProvider as never,
+      {
+        resolve: vi.fn().mockResolvedValue({
+          repositoryRoot: '/repo',
+          relativePath: 'main.ts',
+        }),
+      } as never,
+    );
+
+    await controller.open();
+    vscodeState.receive?.({
+      type: 'gitBlameReader.commitAction',
+      generation: 1,
+      blockId: 'block-1-aaaaaaaaaaaa',
+      action: 'open-remote',
+    });
+    await vi.waitFor(() => expect(vscodeState.openExternal).toHaveBeenCalledOnce());
+    vscodeState.receive?.({
+      type: 'gitBlameReader.commitAction',
+      generation: 1,
+      blockId: 'block-1-aaaaaaaaaaaa',
+      action: 'open-previous',
+    });
+    await vi.waitFor(() => expect(historicalProvider.openDiff).toHaveBeenCalledOnce());
+    expect(vscodeState.showInformationMessage).not.toHaveBeenCalled();
     controller.dispose();
   });
 });
@@ -149,6 +191,7 @@ function model(): GitBlameReaderModel {
     email: 'alice@example.com',
     authoredAt: 1_700_000_000,
     summary: 'Initial',
+    parentCommit: 'f'.repeat(40),
   };
   const line = {
     line: 1,
@@ -160,6 +203,7 @@ function model(): GitBlameReaderModel {
     version: 1,
     generation: 1,
     sourceUri: 'file:///repo/main.ts',
+    remoteUrl: 'git@github.com:owner/repo.git',
     resource: { repositoryRoot: '/repo', relativePath: 'main.ts' },
     revision: 'HEAD',
     documentVersion: 1,

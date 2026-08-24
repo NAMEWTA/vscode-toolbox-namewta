@@ -34,8 +34,9 @@ SOFTWARE.
 
 ## Git Blame Annotations
 
-- 源码：`https://github.com/lkqm/vscode-gitblame-annotations`
-- 采用范围：左侧 Blame 表现、未保存行、Hover、历史内容与行历史交互的设计参考。
+- 固定源码：`https://github.com/lkqm/vscode-gitblame-annotations/tree/cc2c600a75f98a6af39c33a6082cac8c1657c0b3`
+- 采用范围：固定宽度日期/作者列、作者与日期格式、连续提交合并、提交时间色条、行首 Hover 和版本编号的设计参考。
+- 未采用范围：上游激活结构、Shell 进程、私有 VS Code 命令、未验证输入和可信 Markdown；这些能力继续由本仓库的类型化 Gateway、参数数组 Git adapter、Workspace Trust 与公开 API 边界实现。
 - 许可证：MIT
 
 ```text

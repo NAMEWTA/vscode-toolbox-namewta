@@ -10,6 +10,7 @@ export type GitBlameDataRequest = Pick<
   'resource' | 'ref' | 'ignoreWhitespace'
 > & {
   readonly contents?: string;
+  readonly includeRevisionNumbers: boolean;
 };
 
 export type GitBlameDataResult =

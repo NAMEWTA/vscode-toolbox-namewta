@@ -18,7 +18,6 @@ import {
 } from './git-blame-reader-panel-html';
 import type { GitBlameReaderSessionModelStore } from './git-blame-reader-session-model-store';
 import type { GitHistoricalDocumentProvider } from './git-historical-document-provider';
-import { formatGitBlameReaderCommitDetail } from './git-blame-reader-commit-detail';
 
 const VIEW_TYPE = 'vscodeToolboxNamewta.gitBlameReader';
 
@@ -209,7 +208,7 @@ export class GitBlameReaderController implements vscode.Disposable {
     });
   }
 
-  // eslint-disable-next-line complexity, max-lines-per-function
+  // eslint-disable-next-line complexity
   private async handleAction(message: GitBlameReaderWebviewAction): Promise<void> {
     const model = this.#model;
     if (model === undefined || message.generation !== model.generation) return;
@@ -232,52 +231,35 @@ export class GitBlameReaderController implements vscode.Disposable {
           message.blockId,
         );
         return;
-      case 'gitBlameReader.commitDetail': {
+      case 'gitBlameReader.commitAction': {
         const block = model.blocks.find(
           (candidate) => candidate.blockId === message.blockId,
         );
-        if (block !== undefined && block.kind === 'committed') {
-          const action = await vscode.window.showInformationMessage(
-            formatGitBlameReaderCommitDetail(block),
-            vscode.l10n.t('Copy Commit SHA'),
-            vscode.l10n.t('Copy Commit Info'),
-            vscode.l10n.t('Open Commit'),
-            vscode.l10n.t('Open Previous Revision'),
-          );
-          if (action === vscode.l10n.t('Copy Commit SHA')) {
-            await this.copy(model, 'commit-sha', undefined, block.blockId);
-          }
-          if (action === vscode.l10n.t('Copy Commit Info')) {
-            await this.copy(model, 'commit-info', undefined, block.blockId);
-          }
-          if (action === vscode.l10n.t('Open Commit')) {
-            const remoteUrl = model.remoteUrl;
-            const url =
-              remoteUrl === undefined
-                ? undefined
-                : createGitRemoteCommitUrl(remoteUrl, block.commit);
-            if (url !== undefined)
-              await vscode.env.openExternal(vscode.Uri.parse(url, true));
-          }
-          if (action === vscode.l10n.t('Open Previous Revision')) {
-            const first = block.lines[0]?.blame;
-            if (first !== undefined) {
-              await this.historicalProvider.openDiff(
-                {
-                  resource: model.resource,
-                  ref: first.parentCommit ?? GIT_EMPTY_TREE_HASH,
-                  path: first.originalPath ?? model.resource.relativePath,
-                },
-                {
-                  resource: model.resource,
-                  ref: first.commit,
-                  path: first.originalPath ?? model.resource.relativePath,
-                },
-                `${first.commit.slice(0, 12)} · ${model.resource.relativePath}`,
-              );
-            }
-          }
+        if (block === undefined || block.kind !== 'committed') return;
+        if (message.action === 'open-remote') {
+          const url =
+            model.remoteUrl === undefined
+              ? undefined
+              : createGitRemoteCommitUrl(model.remoteUrl, block.commit);
+          if (url !== undefined)
+            await vscode.env.openExternal(vscode.Uri.parse(url, true));
+          return;
         }
+        const first = block.lines[0]?.blame;
+        if (first === undefined) return;
+        await this.historicalProvider.openDiff(
+          {
+            resource: model.resource,
+            ref: first.parentCommit ?? GIT_EMPTY_TREE_HASH,
+            path: first.originalPath ?? model.resource.relativePath,
+          },
+          {
+            resource: model.resource,
+            ref: first.commit,
+            path: first.originalPath ?? model.resource.relativePath,
+          },
+          `${first.commit.slice(0, 12)} · ${model.resource.relativePath}`,
+        );
         return;
       }
     }
@@ -384,6 +366,17 @@ function createReaderStrings(title: string): GitBlameReaderWebviewStrings {
     codeColumn: vscode.l10n.t('Code'),
     openSource: vscode.l10n.t('Open source line {0}'),
     commitDetails: vscode.l10n.t('Show commit details'),
+    commitDetailTitle: vscode.l10n.t('Commit details'),
+    closeCommitDetails: vscode.l10n.t('Close commit details'),
+    commitSha: vscode.l10n.t('Commit SHA'),
+    author: vscode.l10n.t('Author'),
+    authoredAt: vscode.l10n.t('Authored at'),
+    summary: vscode.l10n.t('Summary'),
+    affectedLines: vscode.l10n.t('Affected lines'),
+    copyCommitSha: vscode.l10n.t('Copy commit SHA'),
+    copyCommitInfo: vscode.l10n.t('Copy commit info'),
+    openRemoteCommit: vscode.l10n.t('Open commit'),
+    openPreviousRevision: vscode.l10n.t('Open previous revision'),
     resizeBlameColumn: vscode.l10n.t('Resize Blame column'),
     lines: vscode.l10n.t('{0} lines'),
     matches: vscode.l10n.t('{0} match(es)'),

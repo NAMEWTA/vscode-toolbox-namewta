@@ -27,6 +27,7 @@ suite('Git blame Hover integration', () => {
         documentVersion: 1,
         lineCount: 2,
         ignoreWhitespace: false,
+        showCommitNumber: false,
         maxLines: 20_000,
       });
       assert.equal(annotations.ok, true);

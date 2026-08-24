@@ -28,6 +28,7 @@ vi.mock('vscode', () => {
 
 import {
   GIT_BLAME_HOVER_COMMAND_IDS,
+  GitBlameHoverProvider,
   buildGitBlameHoverMarkdown,
 } from './git-blame-hover-provider';
 
@@ -61,6 +62,31 @@ describe('buildGitBlameHoverMarkdown', () => {
     expect(markdown.value).not.toContain('Open Remote Commit');
     expect(markdown.value).toContain('Copy Commit Hash');
     expect(markdown.supportHtml).toBe(false);
+  });
+
+  it('只在行首注解位置提供 hover', () => {
+    const controller = { getLineIdentity: vi.fn(() => identity()) };
+    const provider = new GitBlameHoverProvider(controller as never, () => now);
+    const document = {
+      uri: { toString: (): string => 'file:///repo/main.ts' },
+    };
+    const token = { isCancellationRequested: false };
+
+    expect(
+      provider.provideHover(
+        document as never,
+        { line: 1, character: 8 } as never,
+        token as never,
+      ),
+    ).toBeUndefined();
+    expect(controller.getLineIdentity).not.toHaveBeenCalled();
+    expect(
+      provider.provideHover(
+        document as never,
+        { line: 1, character: 0 } as never,
+        token as never,
+      ),
+    ).toBeDefined();
   });
 });
 

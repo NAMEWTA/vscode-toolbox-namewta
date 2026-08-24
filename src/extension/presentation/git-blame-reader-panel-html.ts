@@ -20,6 +20,17 @@ export type GitBlameReaderWebviewStrings = {
   readonly codeColumn: string;
   readonly openSource: string;
   readonly commitDetails: string;
+  readonly commitDetailTitle: string;
+  readonly closeCommitDetails: string;
+  readonly commitSha: string;
+  readonly author: string;
+  readonly authoredAt: string;
+  readonly summary: string;
+  readonly affectedLines: string;
+  readonly copyCommitSha: string;
+  readonly copyCommitInfo: string;
+  readonly openRemoteCommit: string;
+  readonly openPreviousRevision: string;
   readonly resizeBlameColumn: string;
   readonly lines: string;
   readonly matches: string;

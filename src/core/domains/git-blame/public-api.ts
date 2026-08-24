@@ -49,7 +49,15 @@ export {
   type GitCommitHashClipboardPort,
 } from './git-copy-commit-hash-handler';
 export { createGitRemoteCommitUrl } from './git-remote-commit-url';
-export { formatGitBlameLocalDateTime } from './git-blame-local-date-time';
+export {
+  formatGitBlameAnnotations,
+  formatGitBlameLocalDateTime,
+  measureDisplayWidth,
+  type FormattedGitBlameAnnotation,
+  type GitBlameAuthorNameStyle,
+  type GitBlameDateFormatStyle,
+  type GitBlameFormatConfiguration,
+} from './git-blame-annotation-format';
 export {
   buildGitBlameReaderModel,
   formatGitBlameReaderCopy,

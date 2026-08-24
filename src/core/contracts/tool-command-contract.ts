@@ -371,6 +371,7 @@ function isGitBlameReaderModelInput(value: unknown): value is GitBlameReaderMode
       documentVersion: value.documentVersion,
       lineCount: value.lineCount,
       ignoreWhitespace: value.ignoreWhitespace,
+      showCommitNumber: false,
       maxLines: value.maxLines,
     }) &&
     isBoundedText(value.sourceUri, 8_192) &&
