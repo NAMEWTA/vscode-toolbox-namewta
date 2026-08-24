@@ -4,6 +4,7 @@ import {
   isFullCommitHash,
   isGitCommitObjectIdPrefix,
   isGitCompareCursor,
+  isGitCompareSearchQuery,
   type GitCompareCancellationSignal,
   type GitCompareContentKind,
   type GitCompareCommit,
@@ -15,6 +16,9 @@ import {
   type GitCompareResolveRevisionInput,
   type GitCompareRevisionInput,
   type GitCompareRevisionResult,
+  type GitCompareSearchInput,
+  type GitCompareSearchMatch,
+  type GitCompareSearchResult,
 } from '../../../core/domains/git-compare/public-api';
 import type {
   GitCommandPort,
@@ -24,6 +28,7 @@ import { ApplicationError } from '../../../core/kernel/application-error';
 
 const MAX_REVISION_BYTES = 8 * 1_024 * 1_024;
 const LOG_LIMIT = 200;
+const REF_FORMAT = '%(objectname)%00%(*objectname)%00%(refname:short)%00';
 
 type RawChange = {
   readonly status: GitCompareFileChange['status'];
@@ -102,6 +107,104 @@ export class GitComparePortAdapter implements GitComparePort {
       complete,
       ...(complete ? {} : { nextCursor: `${headSha}.${offset + commits.length}` }),
     };
+  }
+
+  public async searchCommits(
+    input: GitCompareSearchInput,
+    signal: GitCompareCancellationSignal,
+  ): Promise<GitCompareSearchResult> {
+    this.assertTrusted();
+    if (!isGitCompareSearchQuery(input.query)) throw invalidInputError();
+    const limit = Math.min(input.limit, LOG_LIMIT);
+    const { matchingRefs, messageCommits } = await this.loadSearchSources(
+      input,
+      limit,
+      signal,
+    );
+    const messageBySha = toCommitMap(messageCommits);
+    const refCommitBySha = await this.loadMissingRefCommits(
+      input.repositoryRoot,
+      matchingRefs,
+      messageBySha,
+      limit,
+      signal,
+    );
+    return {
+      matches: mergeSearchMatches(
+        matchingRefs,
+        messageCommits,
+        messageBySha,
+        refCommitBySha,
+        limit,
+      ),
+    };
+  }
+
+  private async loadSearchSources(
+    input: GitCompareSearchInput,
+    limit: number,
+    signal: GitCompareCancellationSignal,
+  ): Promise<{
+    readonly messageCommits: readonly GitCompareCommit[];
+    readonly matchingRefs: ReadonlyMap<string, readonly string[]>;
+  }> {
+    const [messageResult, refResult] = await Promise.all([
+      this.runNotFound(
+        input.repositoryRoot,
+        'compare-search-messages',
+        [
+          '--no-pager',
+          'log',
+          '--all',
+          '--topo-order',
+          '--no-decorate',
+          '--regexp-ignore-case',
+          '--fixed-strings',
+          `--grep=${input.query}`,
+          `--max-count=${limit}`,
+          '--format=%H%x00%P%x00%an%x00%aI%x00%s%x00',
+        ],
+        signal,
+      ),
+      this.runNotFound(
+        input.repositoryRoot,
+        'compare-search-refs',
+        ['for-each-ref', `--format=${REF_FORMAT}`],
+        signal,
+      ),
+    ]);
+    return {
+      messageCommits: parseCommitLog(messageResult.stdout),
+      matchingRefs: parseMatchingRefs(refResult.stdout, input.query),
+    };
+  }
+
+  private async loadMissingRefCommits(
+    repositoryRoot: string,
+    matchingRefs: ReadonlyMap<string, readonly string[]>,
+    messageBySha: ReadonlyMap<string, GitCompareCommit>,
+    limit: number,
+    signal: GitCompareCancellationSignal,
+  ): Promise<ReadonlyMap<string, GitCompareCommit>> {
+    const missingRefShas = [...matchingRefs.keys()].filter(
+      (sha) => !messageBySha.has(sha),
+    );
+    if (missingRefShas.length === 0) return new Map();
+    const result = await this.runNotFound(
+      repositoryRoot,
+      'compare-search-ref-metadata',
+      [
+        '--no-pager',
+        'show',
+        '-s',
+        '--no-decorate',
+        '--format=%H%x00%P%x00%an%x00%aI%x00%s%x00',
+        '--end-of-options',
+        ...missingRefShas.slice(0, limit),
+      ],
+      signal,
+    );
+    return toCommitMap(parseCommitLog(result.stdout));
   }
 
   public async resolveRevision(
@@ -335,6 +438,80 @@ export function parseCommitLog(stdout: string): readonly {
     });
   }
   return commits;
+}
+
+function toCommitMap(
+  commits: readonly GitCompareCommit[],
+): ReadonlyMap<string, GitCompareCommit> {
+  return new Map(commits.map((commit) => [commit.sha.toLowerCase(), commit] as const));
+}
+
+function mergeSearchMatches(
+  matchingRefs: ReadonlyMap<string, readonly string[]>,
+  messageCommits: readonly GitCompareCommit[],
+  messageBySha: ReadonlyMap<string, GitCompareCommit>,
+  refCommitBySha: ReadonlyMap<string, GitCompareCommit>,
+  limit: number,
+): readonly GitCompareSearchMatch[] {
+  const matches: GitCompareSearchMatch[] = [];
+  const seen = new Set<string>();
+  for (const [sha, refs] of matchingRefs) {
+    const commit = messageBySha.get(sha) ?? refCommitBySha.get(sha);
+    if (commit !== undefined) {
+      matches.push({ commit, refs });
+      seen.add(sha);
+    }
+    if (matches.length >= limit) return matches;
+  }
+  for (const commit of messageCommits) {
+    const sha = commit.sha.toLowerCase();
+    if (!seen.has(sha)) matches.push({ commit, refs: matchingRefs.get(sha) ?? [] });
+    if (matches.length >= limit) break;
+  }
+  return matches;
+}
+
+export function parseMatchingRefs(
+  stdout: string,
+  query: string,
+): ReadonlyMap<string, readonly string[]> {
+  const fields = stdout.split('\0');
+  const normalizedQuery = query.toLocaleLowerCase('en-US');
+  const refsBySha = new Map<string, string[]>();
+  for (let index = 0; index + 2 < fields.length; index += 3) {
+    const candidate = parseRefCandidate(fields, index);
+    if (candidate === undefined || !matchesRef(candidate.ref, normalizedQuery)) {
+      continue;
+    }
+    appendRef(refsBySha, candidate.sha, candidate.ref);
+  }
+  return refsBySha;
+}
+
+function parseRefCandidate(
+  fields: readonly string[],
+  index: number,
+): { readonly sha: string; readonly ref: string } | undefined {
+  const objectSha = fields[index]?.trim();
+  const peeledSha = fields[index + 1]?.trim();
+  const ref = fields[index + 2]?.trim();
+  const sha = isFullCommitHash(peeledSha) ? peeledSha : objectSha;
+  return isFullCommitHash(sha) && ref !== undefined ? { sha, ref } : undefined;
+}
+
+function matchesRef(ref: string, normalizedQuery: string): boolean {
+  return (
+    ref.length > 0 &&
+    ref.length <= 1_024 &&
+    ref.toLocaleLowerCase('en-US').includes(normalizedQuery)
+  );
+}
+
+function appendRef(refsBySha: Map<string, string[]>, sha: string, ref: string): void {
+  const key = sha.toLowerCase();
+  const refs = refsBySha.get(key) ?? [];
+  if (!refs.includes(ref)) refs.push(ref);
+  refsBySha.set(key, refs);
 }
 
 // Git 的 raw 输出必须按 NUL token 消费，避免特殊路径和 rename 双路径错位。

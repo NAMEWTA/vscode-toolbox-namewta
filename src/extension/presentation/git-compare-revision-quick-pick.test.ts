@@ -5,6 +5,7 @@ import type {
 } from '../../core/domains/git-compare/public-api';
 import {
   GitCompareRevisionQuickPick,
+  type GitCompareCommitSearcher,
   type GitCompareHistoryPageLoader,
   type GitCompareRevisionQuickPickItem,
   type GitCompareRevisionQuickPickView,
@@ -112,16 +113,63 @@ describe('GitCompareRevisionQuickPick', () => {
   });
 });
 
+describe('GitCompareRevisionQuickPick 全 refs 搜索', () => {
+  it('取消旧代请求且拒绝迟到结果覆盖', async () => {
+    const view = new FakeQuickPickView();
+    const first = deferred<{ matches: readonly [] }>();
+    let firstSignal: AbortSignal | undefined;
+    const branch = commit('d', 'Branch head');
+    const searcher = vi
+      .fn<GitCompareCommitSearcher>()
+      .mockImplementationOnce((_, signal) => {
+        firstSignal = signal;
+        return first.promise;
+      })
+      .mockResolvedValueOnce({
+        matches: [{ commit: branch, refs: ['origin/feature/search-node'] }],
+      });
+    const quickPick = createQuickPick(
+      view,
+      vi.fn<GitCompareHistoryPageLoader>().mockResolvedValue(page([head])),
+      vi.fn(),
+      vi.fn(),
+      searcher,
+    );
+
+    const selection = quickPick.show('/repo');
+    await vi.waitFor(() => expect(view.items).toHaveLength(1));
+    view.changeValue('first query');
+    await vi.waitFor(() => expect(searcher).toHaveBeenCalledTimes(1));
+    view.changeValue('search-node');
+    await vi.waitFor(() => expect(searcher).toHaveBeenCalledTimes(2));
+    expect(firstSignal?.aborted).toBe(true);
+    await vi.waitFor(() => expect(view.items[0]?.commit).toBe(branch));
+    expect(view.items[0]?.itemType).toBe('commit');
+    expect(view.items[0]?.alwaysShow).toBe(true);
+    expect(view.items[0]?.description).toContain('origin/feature/search-node');
+
+    first.resolve({ matches: [] });
+    await Promise.resolve();
+    expect(view.items[0]?.commit).toBe(branch);
+    view.hide();
+    await expect(selection).resolves.toBeUndefined();
+  });
+});
+
 function createQuickPick(
   view: FakeQuickPickView,
   loader: GitCompareHistoryPageLoader,
   resolver: GitCompareRevisionResolver = vi.fn(),
   reportError: (message: unknown) => void = vi.fn(),
+  searcher: GitCompareCommitSearcher = vi
+    .fn<GitCompareCommitSearcher>()
+    .mockResolvedValue({ matches: [] }),
 ): GitCompareRevisionQuickPick {
   return new GitCompareRevisionQuickPick(
     () => view,
     loader,
     resolver,
+    searcher,
     {
       baseTitle: 'base',
       targetTitle: (base) => `target ${base.sha.slice(0, 8)}`,
@@ -134,6 +182,7 @@ function createQuickPick(
     },
     reportError,
     1,
+    0,
   );
 }
 
@@ -161,6 +210,19 @@ function requiredItem(
 ): GitCompareRevisionQuickPickItem {
   if (item === undefined) throw new Error('测试预期 QuickPick item 存在。');
   return item;
+}
+
+function deferred<T>(): {
+  readonly promise: Promise<T>;
+  resolve(value: T): void;
+} {
+  let resolve = (value: T): void => {
+    void value;
+  };
+  const promise = new Promise<T>((settle) => {
+    resolve = settle;
+  });
+  return { promise, resolve };
 }
 
 class FakeQuickPickView implements GitCompareRevisionQuickPickView {

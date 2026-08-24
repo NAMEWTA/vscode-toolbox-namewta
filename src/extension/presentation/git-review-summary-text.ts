@@ -52,7 +52,7 @@ function summaryReason(reason: SummaryReason): string {
         'This item contains merge conflicts. Open the file to resolve them.',
       );
     case 'too-large':
-      return vscode.l10n.t('This diff is too large for the aggregate review view.');
+      return vscode.l10n.t('This item is too large to display as text.');
     case 'unavailable':
       return vscode.l10n.t(
         'This item is unavailable as a text diff. Retry or skip it.',

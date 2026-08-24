@@ -9,7 +9,7 @@ import { getGitReviewSession } from './git-review-session-snapshot';
 
 const GIT_REVIEW_QUEUE_VIEW_ID = 'vscodeToolboxNamewta.gitReview.queue';
 
-type GitReviewQueueEntry = {
+export type GitReviewQueueEntry = {
   readonly item: GitReviewItem;
   readonly isCurrent: boolean;
 };
@@ -57,7 +57,7 @@ export class VscodeGitReviewQueueTree
       : state;
     treeItem.tooltip = createTooltip(item, entry.isCurrent, state);
     treeItem.iconPath = new vscode.ThemeIcon(iconName(item, entry.isCurrent));
-    treeItem.contextValue = createContextValue(item, entry.isCurrent);
+    treeItem.contextValue = createContextValue(item);
     treeItem.accessibilityInformation = {
       label: createAccessibilityLabel(item, entry.isCurrent, state),
     };
@@ -120,8 +120,8 @@ function iconName(item: GitReviewItem, isCurrent: boolean): string {
   }
 }
 
-function createContextValue(item: GitReviewItem, isCurrent: boolean): string {
-  return `gitReview.${isCurrent ? 'current' : item.reviewState}`;
+function createContextValue(item: GitReviewItem): string {
+  return `gitReview.${item.layer}`;
 }
 
 function createTooltip(item: GitReviewItem, isCurrent: boolean, state: string): string {

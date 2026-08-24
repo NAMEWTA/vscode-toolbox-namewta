@@ -5,12 +5,6 @@ export function isGitReviewAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError';
 }
 
-export function unavailableGitReviewCurrentItemError(): ApplicationError {
-  return new ApplicationError('The Git Review current item is unavailable.', {
-    code: 'internal-error',
-  });
-}
-
 export function toGitReviewToolError(error: unknown): ToolError {
   if (error instanceof ApplicationError) {
     return {

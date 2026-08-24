@@ -11,7 +11,6 @@ import type { Disposable } from '../../core/kernel/disposable';
 import {
   isGitReviewAbortError,
   toGitReviewToolError,
-  unavailableGitReviewCurrentItemError,
 } from './git-review-controller-error';
 import {
   GitReviewOperationTracker,
@@ -23,6 +22,7 @@ import {
   getGitReviewSession,
 } from './git-review-session-snapshot';
 import { startGitReviewSession } from './git-review-session-start';
+import { resolveGitReviewQueueCommandItem } from './git-review-queue-command-item';
 import type { GitReviewSessionControllerDependencies } from './git-review-session-controller-contract';
 
 type GitReviewGatewayCommand = Extract<ToolCommandId, `gitReview.${string}`>;
@@ -105,6 +105,18 @@ export class GitReviewSessionController implements Disposable {
     return this.runSnapshotCommand('gitReview.end', false);
   }
 
+  public stageItem(...args: readonly unknown[]): Promise<void> {
+    return this.runItemCommand('gitReview.stageItem', args);
+  }
+
+  public unstageItem(...args: readonly unknown[]): Promise<void> {
+    return this.runItemCommand('gitReview.unstageItem', args);
+  }
+
+  public discardItem(...args: readonly unknown[]): Promise<void> {
+    return this.runItemCommand('gitReview.discardItem', args);
+  }
+
   public async select(item: GitReviewItem): Promise<void> {
     if (this.#snapshot.state !== 'active') {
       return;
@@ -169,20 +181,6 @@ export class GitReviewSessionController implements Disposable {
     }
   }
 
-  public synchronize(snapshot: GitReviewSessionSnapshot): void {
-    if (this.#isDisposed) {
-      return;
-    }
-    this.#snapshot = snapshot;
-    this.dependencies.presentation.render(snapshot);
-    const session = getGitReviewSession(snapshot);
-    if (session === undefined) {
-      this.releaseWatcher();
-      return;
-    }
-    this.ensureWatcher(session.repositoryRoot);
-  }
-
   public dispose(): void {
     if (this.#isDisposed) {
       return;
@@ -212,6 +210,33 @@ export class GitReviewSessionController implements Disposable {
       const snapshot = await this.execute(operation, command, EMPTY_INPUT);
       if (snapshot !== undefined && this.isCurrent(operation)) {
         await this.applySnapshot(snapshot, operation, openCurrentItem);
+      }
+    } catch (error: unknown) {
+      await this.reportException(operation, error);
+    } finally {
+      this.#operations.finish(operation);
+    }
+  }
+
+  private async runItemCommand(
+    command: 'gitReview.stageItem' | 'gitReview.unstageItem' | 'gitReview.discardItem',
+    args: readonly unknown[],
+  ): Promise<void> {
+    const operation = this.#operations.begin();
+    try {
+      const item = resolveGitReviewQueueCommandItem(args, this.#snapshot);
+      if (
+        command === 'gitReview.discardItem' &&
+        !(await this.dependencies.host.confirmDiscard(item.path))
+      ) {
+        return;
+      }
+      const snapshot = await this.execute(operation, command, {
+        itemId: item.itemId,
+        contentIdentity: item.contentIdentity,
+      });
+      if (snapshot !== undefined && this.isCurrent(operation)) {
+        await this.applySnapshot(snapshot, operation, false);
       }
     } catch (error: unknown) {
       await this.reportException(operation, error);
@@ -268,31 +293,17 @@ export class GitReviewSessionController implements Disposable {
     }
     this.ensureWatcher(session.repositoryRoot);
     if (openCurrentItem) {
-      await this.openCurrentItem(operation);
+      this.focusCurrentItem();
     }
   }
 
-  private async openCurrentItem(operation: GitReviewOperation): Promise<void> {
+  private focusCurrentItem(): void {
     const session = getActiveGitReviewSession(this.#snapshot);
-    if (session === undefined) {
-      return;
-    }
+    if (session === undefined) return;
     const item = session.items.find(
       (candidate) => candidate.itemId === session.currentItemId,
     );
-    if (item === undefined) {
-      throw unavailableGitReviewCurrentItemError();
-    }
-    if (this.dependencies.presentation.focusItem?.(item) === true) {
-      return;
-    }
-    const content = await this.execute(operation, 'gitReview.getItemContent', {
-      path: item.path,
-      contentIdentity: item.contentIdentity,
-    });
-    if (content !== undefined && this.isCurrent(operation)) {
-      await this.dependencies.presentation.openItem(item, content);
-    }
+    if (item !== undefined) this.dependencies.presentation.focusItem?.(item);
   }
 
   private ensureWatcher(repositoryRoot: string): void {

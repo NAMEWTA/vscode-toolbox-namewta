@@ -4,6 +4,20 @@
 
 ## [未发布]
 
+## [0.1.11] - 2026-08-24
+
+### 新增
+
+- Relative / Absolute Reference 分别增加 `Ctrl/Cmd+Alt+C` 与 `Ctrl/Cmd+Alt+V` 快捷键。
+
+### 变更
+
+- Git Review 删除独立 React 聚合 Webview，改为与 Git Commit Compare 共享 VS Code 原生 Changes 多文件呈现；队列条目保留 Stage、Unstage 与确认后的 Discard。
+
+### 修复
+
+- Git Commit Compare 保留 SCM 启动仓库上下文，并支持搜索全部本地分支、远端分支和标签可达的提交消息、SHA 前缀与 ref 名；快速输入会取消旧搜索且拒绝迟到结果覆盖。
+
 ## [0.1.10] - 2026-08-24
 
 ### 变更

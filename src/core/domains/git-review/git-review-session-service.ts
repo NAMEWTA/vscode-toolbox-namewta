@@ -7,10 +7,7 @@ import type {
   GitReviewSessionSnapshot,
   GitReviewStartInput,
 } from './git-review-model';
-import type {
-  GitReviewItemActionInput,
-  GitReviewItemPatch,
-} from './git-review-patch-model';
+import type { GitReviewItemActionInput } from './git-review-item-action';
 import type { GitReviewCancellationSignal, GitReviewPort } from './git-review-port';
 import type { GitReviewCancellableRequest } from './git-review-cancellable-request';
 import { findGitReviewActionItem, GitReviewItemReader } from './git-review-item-reader';
@@ -137,13 +134,6 @@ export class GitReviewSessionService implements Disposable {
       input,
       signal,
     );
-  }
-
-  public async getItemPatch(
-    input: GitReviewItemActionInput,
-    signal: GitReviewCancellationSignal,
-  ): Promise<GitReviewItemPatch> {
-    return this.#itemReader.readPatch(this.requireRefreshableSession(), input, signal);
   }
 
   public stageItem(

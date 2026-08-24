@@ -3,7 +3,6 @@ import {
   type GitReviewChangeDescriptor,
   type GitReviewContentRequest,
   type GitReviewItemContent,
-  type GitReviewItemPatch,
   type GitReviewMutationRequest,
   type GitReviewPort,
 } from '../../../core/domains/git-review/public-api';
@@ -12,23 +11,14 @@ import type {
   GitCommandResult,
 } from '../../../core/domains/git-blame/public-api';
 import { ApplicationError } from '../../../core/kernel/application-error';
-import {
-  decodeGitReviewText,
-  isGitReviewContentUnavailable,
-  readGitReviewWorkingContent,
-} from './git-review-content-reader';
+import { isGitReviewContentUnavailable } from './git-review-content-reader';
 import { createGitReviewDescriptors } from './git-review-descriptor-factory';
 import { parseGitReviewBinaryNumstat } from './git-review-numstat-parser';
 import { parseGitReviewStatus } from './git-review-status-parser';
 import {
-  createUntrackedGitReviewPatch,
-  parseGitReviewPatch,
-} from './git-review-patch-parser';
-import {
   assertGitReviewMutationAllowed,
   createGitReviewMutationArgs,
   createGitReviewNumstatArgs,
-  createGitReviewPatchArgs,
   findCurrentGitReviewItem,
   gitReviewItemSummary,
   validateGitReviewContentRequest,
@@ -59,7 +49,6 @@ const GIT_REVIEW_STATUS_ARGS = [
   '-z',
   '--untracked-files=all',
 ] as const;
-const MAX_AGGREGATE_PATCH_BYTES = 8 * 1_024 * 1_024;
 
 type GitReviewInventory = {
   readonly repositoryRoot: string;
@@ -118,54 +107,6 @@ export class GitReviewPortAdapter implements GitReviewPort {
     } catch (error: unknown) {
       if (isGitReviewContentUnavailable(error)) {
         return { kind: 'summary', reason: 'unavailable' };
-      }
-      throw error;
-    }
-  }
-
-  public async readItemPatch(
-    request: GitReviewContentRequest,
-    signal: GitReviewCancellationSignal,
-  ): Promise<GitReviewItemPatch> {
-    validateGitReviewContentRequest(request);
-    const inventory = await this.loadInventory(request.repositoryRoot, signal);
-    const item = findCurrentGitReviewItem(inventory.changes, request.item);
-    if (item === undefined) {
-      throw gitReviewStaleItem();
-    }
-    const summary = gitReviewItemSummary(item);
-    if (summary !== undefined) {
-      return summary;
-    }
-    if (item.change === 'untracked') {
-      const content = await readGitReviewWorkingContent(
-        inventory.repositoryRoot,
-        item.path,
-      );
-      if (content.byteLength > MAX_AGGREGATE_PATCH_BYTES) {
-        return { kind: 'summary', reason: 'too-large' };
-      }
-      const text = decodeGitReviewText(content);
-      return text === undefined
-        ? { kind: 'summary', reason: 'binary' }
-        : createUntrackedGitReviewPatch(text);
-    }
-
-    try {
-      const result = await this.run(
-        inventory.repositoryRoot,
-        'git-review-patch',
-        createGitReviewPatchArgs(item),
-        signal,
-        MAX_AGGREGATE_PATCH_BYTES,
-      );
-      return parseGitReviewPatch(result.stdout);
-    } catch (error: unknown) {
-      if (
-        error instanceof ApplicationError &&
-        error.code === 'capability-unavailable'
-      ) {
-        return { kind: 'summary', reason: 'too-large' };
       }
       throw error;
     }

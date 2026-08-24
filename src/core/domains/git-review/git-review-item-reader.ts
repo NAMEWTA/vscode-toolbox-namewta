@@ -4,11 +4,7 @@ import {
   type GitReviewItemContent,
   type GitReviewItemContentInput,
 } from './git-review-model';
-import {
-  isGitReviewItemPatch,
-  type GitReviewItemActionInput,
-  type GitReviewItemPatch,
-} from './git-review-patch-model';
+import type { GitReviewItemActionInput } from './git-review-item-action';
 import type { GitReviewCancellationSignal, GitReviewPort } from './git-review-port';
 import type { GitReviewRequestTracker } from './git-review-request-tracker';
 import {
@@ -48,34 +44,9 @@ export class GitReviewItemReader {
       );
       this.requests.assertRead(request);
       if (!isGitReviewItemContent(content)) {
-        throw invalidPortResult('content');
+        throw invalidPortResult();
       }
       return content;
-    } finally {
-      this.requests.finishRead(request);
-    }
-  }
-
-  public async readPatch(
-    session: ActiveGitReviewSession,
-    input: GitReviewItemActionInput,
-    signal: GitReviewCancellationSignal,
-  ): Promise<GitReviewItemPatch> {
-    const item = findGitReviewActionItem(session, input);
-    const request = this.requests.startRead(signal);
-    try {
-      const patch = await this.port.readItemPatch(
-        {
-          repositoryRoot: session.repositoryRoot,
-          item: toGitReviewChangeDescriptor(item),
-        },
-        request.signal,
-      );
-      this.requests.assertRead(request);
-      if (!isGitReviewItemPatch(patch)) {
-        throw invalidPortResult('patch');
-      }
-      return patch;
     } finally {
       this.requests.finishRead(request);
     }
@@ -101,8 +72,8 @@ export function findGitReviewActionItem(
   return item;
 }
 
-function invalidPortResult(kind: 'content' | 'patch'): ApplicationError {
-  return new ApplicationError(`Git Review ${kind} is invalid.`, {
+function invalidPortResult(): ApplicationError {
+  return new ApplicationError('Git Review content is invalid.', {
     code: 'internal-error',
   });
 }

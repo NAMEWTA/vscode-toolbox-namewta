@@ -6,10 +6,7 @@ import type {
   GitReviewSessionSnapshot,
   GitReviewStartInput,
 } from './git-review-model';
-import type {
-  GitReviewItemActionInput,
-  GitReviewItemPatch,
-} from './git-review-patch-model';
+import type { GitReviewItemActionInput } from './git-review-item-action';
 import type { GitReviewSessionService } from './git-review-session-service';
 
 const START_COMMAND = 'gitReview.start' as const;
@@ -22,7 +19,6 @@ const REFRESH_COMMAND = 'gitReview.refresh' as const;
 const END_COMMAND = 'gitReview.end' as const;
 const MARK_STALE_COMMAND = 'gitReview.markStale' as const;
 const GET_ITEM_CONTENT_COMMAND = 'gitReview.getItemContent' as const;
-const GET_ITEM_PATCH_COMMAND = 'gitReview.getItemPatch' as const;
 const STAGE_ITEM_COMMAND = 'gitReview.stageItem' as const;
 const UNSTAGE_ITEM_COMMAND = 'gitReview.unstageItem' as const;
 const DISCARD_ITEM_COMMAND = 'gitReview.discardItem' as const;
@@ -163,23 +159,6 @@ export class GitReviewGetItemContentHandler
   ): Promise<GitReviewItemContent> {
     return executeAction(context, () =>
       this.sessionService.getItemContent(input, context.signal),
-    );
-  }
-}
-
-export class GitReviewGetItemPatchHandler
-  implements ToolHandler<typeof GET_ITEM_PATCH_COMMAND>
-{
-  public readonly command = GET_ITEM_PATCH_COMMAND;
-
-  public constructor(private readonly sessionService: GitReviewSessionService) {}
-
-  public execute(
-    input: GitReviewItemActionInput,
-    context: ToolExecutionContext,
-  ): Promise<GitReviewItemPatch> {
-    return executeAction(context, () =>
-      this.sessionService.getItemPatch(input, context.signal),
     );
   }
 }

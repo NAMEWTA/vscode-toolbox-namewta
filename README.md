@@ -14,16 +14,16 @@
 
 | 能力               | 解决的问题                                               | 入口                                                 |
 | ------------------ | -------------------------------------------------------- | ---------------------------------------------------- |
-| Copy Reference     | 把当前文件、选区或 Explorer 资源转成可粘贴的代码位置引用 | 编辑器、行号、Explorer 右键菜单                      |
+| Copy Reference     | 把当前文件、选区或 Explorer 资源转成可粘贴的代码位置引用 | 右键菜单、`Ctrl/Cmd+Alt+C` / `Ctrl/Cmd+Alt+V`        |
 | Git Blame          | 查看当前行来源，并在独立 Reader 中阅读完整文件历史       | 编辑器行号右键、命令面板、`Ctrl+Alt+B` / `Cmd+Alt+B` |
-| Git Review         | 在一个聚合视图中按冲突、暂存和未暂存分层审核变更         | Source Control 标题栏                                |
+| Git Review         | 在原生多文件 Changes 中分层审核当前工作树变更            | Source Control 标题栏                                |
 | Git Commit Compare | 选择或输入两个 commit，查看有明确方向的完整快照差异      | Source Control 标题栏                                |
 
 扩展不替换 Git，不修改提交历史，也不要求安装其他 Git 扩展。
 
 ## 安装
 
-当前开发版本为 `0.1.10`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
+当前开发版本为 `0.1.11`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
 
 在 VS Code 中打开命令面板，执行 **Extensions: Install from VSIX...**，选择下载的 VSIX。安装完成后重新加载窗口；命令面板中应能看到以 `toolbox-` 开头的命令。
 
@@ -35,7 +35,7 @@
 4. 在 Source Control 标题栏点击 Git 比较图标，先选择基准提交，再选择目标提交。
 5. 需要审核工作树变更时，在 Source Control 标题栏执行 `toolbox-开始审核 Git 变更`。
 
-成功标志：Copy Reference 写入剪贴板；Git Blame 只添加可关闭的行首注解，不修改源码内容，完整历史在独立 Reader 中呈现；Git Compare 在原生多文件比较中显示明确的两个端点；Git Review 在单个编辑器标签页中显示变更队列。
+成功标志：Copy Reference 写入剪贴板；Git Blame 只添加可关闭的行首注解，不修改源码内容，完整历史在独立 Reader 中呈现；Git Compare 在原生多文件比较中显示明确的两个端点；Git Review 在原生多文件 Changes 中显示当前工作树变更，并在 Review Queue 中提供审核与变更操作。
 
 ## 核心能力
 
@@ -47,6 +47,7 @@
 - Explorer 支持单个或多个资源，多个资源保持用户选择顺序。
 - 相对引用以工作区根为基准；绝对引用保留平台路径，但会移除 URI 的 query 和 fragment。
 - 支持可稳定表示的虚拟资源；Untitled 文档和不具备稳定路径的资源不会生成引用。
+- `Ctrl/Cmd+Alt+C` 复制相对引用，`Ctrl/Cmd+Alt+V` 复制绝对引用；快捷键只在可稳定表示的活动编辑器资源中生效。
 
 ### Git Blame
 
@@ -61,17 +62,16 @@
 
 ### Git Review
 
-- 从 Source Control 标题栏进入，在一个聚合编辑器中从上到下审核全部变更。
-- 冲突、已暂存、未暂存和未跟踪内容分层展示；同一路径的 staged/unstaged 变更保持独立。
-- 每个条目支持打开文件、打开原生 Diff、复制引用、标记已审核和跳过。
-- 适用时提供 Stage、Unstage、确认后的 Discard 和 Merge Changes；Discard 始终逐文件二次确认。
-- 聚合 patch 单项限制为 8 MiB，最多同时加载两个文件；面板关闭或状态变化时会取消旧请求。
+- 从 Source Control 标题栏进入，直接复用与 Git Commit Compare 相同的 VS Code 原生 Changes 多文件界面。
+- 冲突、已暂存、未暂存和未跟踪内容按 `layer/path` 标题区分；同一路径的 staged/unstaged 变更保持独立。
+- HEAD、index 与 worktree 内容在原生 Diff 打开时延迟读取；刷新库存会取消旧请求并使旧文档 token 失效。
+- Review Queue 保留上一项、下一项、标记已审核和跳过；条目上下文提供 Stage、Unstage 与确认后的 Discard。
 
 ### Git Commit Compare
 
-- 从 Source Control 标题栏的 Git 比较图标进入；扩展优先使用活动编辑器文件所属仓库，无法唯一确定时再选择仓库。
+- 从 Source Control 标题栏的 Git 比较图标进入；SCM 命令上下文仓库优先于活动编辑器，无法唯一确定时再选择仓库。
 - 第一步选择基准端，第二步选择目标端；目标端默认激活当前 `HEAD`，标题始终显示 `base → target` 方向。
-- 两端都可以从分页提交历史中选择。已知提交编号时，输入 4 到 64 位十六进制 SHA 前缀，再选择对应的“使用提交编号”项。
+- 两端都可以从分页提交历史中选择；输入至少两个字符会搜索当前仓库全部本地/远端分支和标签可达提交的消息与 ref 名。已知提交编号时，输入 4 到 64 位十六进制 SHA 前缀，再选择对应项。
 - 加载更多只扩展当前列表；第二步可返回重新选择基准端，取消会终止未完成的 Git 请求。
 - 完成选择后使用 VS Code 原生多文件更改视图一次显示全部文件，并在标题中显示两个短 SHA、文件数和增删统计；从列表可继续打开单文件原生 Diff。
 - 新增、删除和重命名保留正确的前后路径；二进制、子模块和过大文件使用包含端点的只读摘要。
@@ -99,7 +99,7 @@
 - Git Blame、Git Compare 和 Git Review 只在受信任工作区运行，并要求 Extension Host 能映射到可执行 Git 的仓库。
 - 远程工作区由远程 Extension Host 的实际路径和 Git 环境决定。
 - 扩展不会记录秘密、令牌、Cookie、私钥或源码全文；日志只记录诊断所需的最小信息。
-- Git Blame、Git Compare 和 Git Review 不修改 Git index、工作树、分支或远程状态。
+- Git Blame 与 Git Compare 不修改 Git index、工作树、分支或远程状态；Git Review 只会在用户显式执行 Stage、Unstage 或确认后的 Discard 时修改 index 或工作树，不修改分支历史与远程状态。
 
 ## 开发
 

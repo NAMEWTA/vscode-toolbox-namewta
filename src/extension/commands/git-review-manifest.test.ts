@@ -11,10 +11,13 @@ const COMMAND_IDS = [
   'vscodeToolboxNamewta.gitReview.skip',
   'vscodeToolboxNamewta.gitReview.refresh',
   'vscodeToolboxNamewta.gitReview.end',
+  'vscodeToolboxNamewta.gitReview.stageItem',
+  'vscodeToolboxNamewta.gitReview.unstageItem',
+  'vscodeToolboxNamewta.gitReview.discardItem',
 ] as const;
 
 describe('Git Review Manifest', () => {
-  it('贡献八个命令、Source Control 入口和队列视图，且不贡献默认快捷键', () => {
+  it('贡献会话和条目命令、Source Control 入口和队列视图，且不贡献 Review 快捷键', () => {
     const manifest = readJson('package.json');
     const contributes = record(manifest.contributes);
     const commands = records(contributes.commands);
@@ -27,6 +30,13 @@ describe('Git Review Manifest', () => {
     );
     expect(records(views.scm).map(viewId)).toContain(
       'vscodeToolboxNamewta.gitReview.queue',
+    );
+    expect(records(menus['view/item/context']).map(commandId)).toEqual(
+      expect.arrayContaining([
+        'vscodeToolboxNamewta.gitReview.stageItem',
+        'vscodeToolboxNamewta.gitReview.unstageItem',
+        'vscodeToolboxNamewta.gitReview.discardItem',
+      ]),
     );
     expect(
       records(contributes.keybindings)

@@ -1,7 +1,6 @@
 import type { ToolError } from '../../core/contracts/tool-error-contract';
 import type {
   GitReviewItem,
-  GitReviewItemContent,
   GitReviewSessionSnapshot,
   GitReviewSummary,
 } from '../../core/domains/git-review/public-api';
@@ -15,12 +14,12 @@ export type GitReviewRepositoryResolver = {
 export type GitReviewPresentation = Disposable & {
   render(snapshot: GitReviewSessionSnapshot): void;
   focusItem?(item: GitReviewItem): boolean;
-  openItem(item: GitReviewItem, content: GitReviewItemContent): Promise<void>;
 };
 
 export type GitReviewControllerHost = {
   confirmReplace(): Promise<boolean>;
   confirmEnd(): Promise<boolean>;
+  confirmDiscard(path: string): Promise<boolean>;
   reportFailure(error: ToolError): Promise<void>;
   showStale(): Promise<void>;
   showSummary(summary: GitReviewSummary): Promise<void>;

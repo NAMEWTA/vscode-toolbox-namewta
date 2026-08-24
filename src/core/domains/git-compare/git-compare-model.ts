@@ -22,6 +22,21 @@ export type GitCompareHistoryPage = {
   readonly nextCursor?: string;
 };
 
+export type GitCompareSearchInput = {
+  readonly repositoryRoot: string;
+  readonly query: string;
+  readonly limit: number;
+};
+
+export type GitCompareSearchMatch = {
+  readonly commit: GitCompareCommit;
+  readonly refs: readonly string[];
+};
+
+export type GitCompareSearchResult = {
+  readonly matches: readonly GitCompareSearchMatch[];
+};
+
 export type GitCompareResolveRevisionInput = {
   readonly repositoryRoot: string;
   readonly revision: string;
@@ -96,6 +111,31 @@ export function isGitCompareHistoryInput(
     Number(value.limit) > 0 &&
     Number(value.limit) <= 200 &&
     (value.cursor === undefined || isGitCompareCursor(value.cursor))
+  );
+}
+
+export function isGitCompareSearchInput(
+  value: unknown,
+): value is GitCompareSearchInput {
+  return (
+    isRecordWithKeys(value, ['repositoryRoot', 'query', 'limit']) &&
+    isAbsolutePath(value.repositoryRoot) &&
+    isGitCompareSearchQuery(value.query) &&
+    Number.isInteger(value.limit) &&
+    Number(value.limit) > 0 &&
+    Number(value.limit) <= 200
+  );
+}
+
+export function isGitCompareSearchQuery(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length >= 2 &&
+    value.length <= 256 &&
+    value === value.trim() &&
+    !value.includes('\0') &&
+    !value.includes('\n') &&
+    !value.includes('\r')
   );
 }
 

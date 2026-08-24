@@ -1,17 +1,26 @@
-import {
-  isGitCommitObjectIdPrefix,
-  type GitCompareCommit,
+import type {
+  GitCompareCommit,
+  GitCompareSearchMatch,
 } from '../../core/domains/git-compare/public-api';
 import type {
   GitCompareHistoryPageLoader,
-  GitCompareRevisionQuickPickItem,
+  GitCompareCommitSearcher,
   GitCompareRevisionQuickPickLabels,
   GitCompareRevisionQuickPickView,
   GitCompareRevisionResolver,
   GitCompareRevisionSelection,
 } from './git-compare-revision-quick-pick-contract';
+import {
+  activateGitCompareTypedRevision,
+  createGitCompareRevisionItems,
+} from './git-compare-revision-quick-pick-items';
+import {
+  cancelGitCompareRevisionSearch,
+  scheduleGitCompareRevisionSearch,
+} from './git-compare-revision-search';
 
 export type {
+  GitCompareCommitSearcher,
   GitCompareHistoryPageLoader,
   GitCompareRevisionQuickPickItem,
   GitCompareRevisionQuickPickLabels,
@@ -25,13 +34,19 @@ type QuickPickSession = {
   readonly repositoryRoot: string;
   readonly controller: AbortController;
   readonly commits: GitCompareCommit[];
+  searchMatches: readonly GitCompareSearchMatch[];
   readonly subscriptions: { dispose(): void }[];
   readonly resolve: (selection: GitCompareRevisionSelection | undefined) => void;
   step: 'base' | 'target';
   base: GitCompareCommit | undefined;
   cursor: string | undefined;
   complete: boolean;
-  isLoading: boolean;
+  isPageLoading: boolean;
+  isResolveLoading: boolean;
+  isSearching: boolean;
+  searchGeneration: number;
+  searchController: AbortController | undefined;
+  searchTimer: ReturnType<typeof setTimeout> | undefined;
   isDisposed: boolean;
   isSettled: boolean;
 };
@@ -43,9 +58,11 @@ export class GitCompareRevisionQuickPick {
     private readonly createView: () => GitCompareRevisionQuickPickView,
     private readonly loadPage: GitCompareHistoryPageLoader,
     private readonly resolveRevision: GitCompareRevisionResolver,
+    private readonly searchCommits: GitCompareCommitSearcher,
     private readonly labels: GitCompareRevisionQuickPickLabels,
     private readonly reportError: (error: unknown) => void,
     private readonly pageSize = 50,
+    private readonly searchDelayMs = 180,
   ) {}
 
   public show(
@@ -65,13 +82,19 @@ export class GitCompareRevisionQuickPick {
       repositoryRoot,
       controller: new AbortController(),
       commits: [],
+      searchMatches: [],
       subscriptions: [],
       resolve: settle,
       step: 'base',
       base: undefined,
       cursor: undefined,
       complete: false,
-      isLoading: false,
+      isPageLoading: false,
+      isResolveLoading: false,
+      isSearching: false,
+      searchGeneration: 0,
+      searchController: undefined,
+      searchTimer: undefined,
       isDisposed: false,
       isSettled: false,
     };
@@ -79,7 +102,16 @@ export class GitCompareRevisionQuickPick {
     session.subscriptions.push(
       view.onDidAccept(() => this.handleAccept(session)),
       view.onDidHide(() => this.release(session)),
-      view.onDidChangeValue(() => this.render(session)),
+      view.onDidChangeValue((value) =>
+        scheduleGitCompareRevisionSearch(
+          session,
+          value,
+          this.searchCommits,
+          this.pageSize,
+          this.searchDelayMs,
+          this.createSearchCallbacks(session),
+        ),
+      ),
     );
     view.matchOnDescription = true;
     view.matchOnDetail = true;
@@ -119,6 +151,8 @@ export class GitCompareRevisionQuickPick {
 
   private selectCommit(session: QuickPickSession, commit: GitCompareCommit): void {
     if (session.step === 'base') {
+      this.cancelSearch(session);
+      session.searchMatches = [];
       session.base = commit;
       session.step = 'target';
       session.view.value = '';
@@ -138,6 +172,11 @@ export class GitCompareRevisionQuickPick {
     }
     if (base.sha.toLowerCase() === commit.sha.toLowerCase()) {
       this.reportError(this.labels.sameRevision);
+      this.cancelSearch(session);
+      session.searchMatches = [];
+      session.view.value = '';
+      session.view.selectedItems = [];
+      this.render(session);
       return;
     }
     this.finish(session, { base, target: commit });
@@ -147,9 +186,9 @@ export class GitCompareRevisionQuickPick {
     session: QuickPickSession,
     revision: string,
   ): Promise<void> {
-    if (session.isLoading || !this.isActive(session)) return;
-    session.isLoading = true;
-    session.view.busy = true;
+    if (session.isResolveLoading || !this.isActive(session)) return;
+    session.isResolveLoading = true;
+    this.updateBusy(session);
     try {
       const commit = await this.resolveRevision(
         { repositoryRoot: session.repositoryRoot, revision },
@@ -159,15 +198,15 @@ export class GitCompareRevisionQuickPick {
     } catch (error: unknown) {
       if (shouldReportError(session, this.isActive(session))) this.reportError(error);
     } finally {
-      session.isLoading = false;
-      if (this.isActive(session)) session.view.busy = false;
+      session.isResolveLoading = false;
+      this.updateBusy(session);
     }
   }
 
   private async loadNextPage(session: QuickPickSession): Promise<void> {
     if (!canLoad(session)) return;
-    session.isLoading = true;
-    session.view.busy = true;
+    session.isPageLoading = true;
+    this.updateBusy(session);
     try {
       const page = await this.loadPage(
         {
@@ -185,8 +224,8 @@ export class GitCompareRevisionQuickPick {
     } catch (error: unknown) {
       if (shouldReportError(session, this.isActive(session))) this.reportError(error);
     } finally {
-      session.isLoading = false;
-      if (this.isActive(session)) session.view.busy = false;
+      session.isPageLoading = false;
+      this.updateBusy(session);
     }
   }
 
@@ -195,9 +234,16 @@ export class GitCompareRevisionQuickPick {
     const view = session.view;
     this.configureStep(session);
     const revision = view.value.trim();
-    const items = this.createItems(session, revision);
+    const items = createGitCompareRevisionItems({
+      step: session.step,
+      revision,
+      commits: session.commits,
+      searchMatches: session.searchMatches,
+      complete: session.complete,
+      labels: this.labels,
+    });
     view.items = items;
-    if (revision.length > 0) this.activateTypedRevision(view, items);
+    if (revision.length > 0) activateGitCompareTypedRevision(view, items);
   }
 
   private configureStep(session: QuickPickSession): void {
@@ -212,47 +258,9 @@ export class GitCompareRevisionQuickPick {
       step === 'base' ? this.labels.basePlaceholder : this.labels.targetPlaceholder;
   }
 
-  private createItems(
-    session: QuickPickSession,
-    revision: string,
-  ): readonly GitCompareRevisionQuickPickItem[] {
-    const items: GitCompareRevisionQuickPickItem[] = [];
-    if (session.step === 'target') {
-      items.push({
-        itemType: 'back',
-        label: `$(arrow-left) ${this.labels.back}`,
-        alwaysShow: true,
-      });
-    }
-    if (isGitCommitObjectIdPrefix(revision)) {
-      items.push({
-        itemType: 'resolve',
-        label: `$(search) ${this.labels.useRevision(revision)}`,
-        alwaysShow: true,
-        revision,
-      });
-    }
-    items.push(...session.commits.map(createCommitItem));
-    if (!session.complete) {
-      items.push({
-        itemType: 'load-more',
-        label: `$(sync) ${this.labels.loadMore}`,
-        alwaysShow: true,
-      });
-    }
-    return items;
-  }
-
-  private activateTypedRevision(
-    view: GitCompareRevisionQuickPickView,
-    items: readonly GitCompareRevisionQuickPickItem[],
-  ): void {
-    const resolveItem = items.find((item) => item.itemType === 'resolve');
-    view.selectedItems = [];
-    view.activeItems = resolveItem === undefined ? [] : [resolveItem];
-  }
-
   private returnToBase(session: QuickPickSession): void {
+    this.cancelSearch(session);
+    session.searchMatches = [];
     session.step = 'base';
     session.base = undefined;
     session.view.value = '';
@@ -287,6 +295,7 @@ export class GitCompareRevisionQuickPick {
     if (session.isDisposed) return;
     session.isDisposed = true;
     session.controller.abort();
+    this.cancelSearch(session);
     for (const subscription of session.subscriptions.splice(0)) {
       subscription.dispose();
     }
@@ -297,20 +306,34 @@ export class GitCompareRevisionQuickPick {
     }
     if (this.#active === session) this.#active = undefined;
   }
-}
 
-function createCommitItem(commit: GitCompareCommit): GitCompareRevisionQuickPickItem {
-  return {
-    itemType: 'commit',
-    label: `$(git-commit) ${commit.subject || commit.sha.slice(0, 8)}`,
-    description: `${commit.sha.slice(0, 8)}  ${commit.author}`,
-    detail: new Date(commit.authoredAt).toLocaleString(),
-    commit,
-  };
+  private cancelSearch(session: QuickPickSession): void {
+    cancelGitCompareRevisionSearch(session, () => this.updateBusy(session));
+  }
+
+  private createSearchCallbacks(session: QuickPickSession): {
+    readonly isActive: () => boolean;
+    readonly render: () => void;
+    readonly updateBusy: () => void;
+    readonly reportError: (error: unknown) => void;
+  } {
+    return {
+      isActive: () => this.isActive(session),
+      render: () => this.render(session),
+      updateBusy: () => this.updateBusy(session),
+      reportError: (error) => this.reportError(error),
+    };
+  }
+
+  private updateBusy(session: QuickPickSession): void {
+    if (!this.isActive(session)) return;
+    session.view.busy =
+      session.isPageLoading || session.isResolveLoading || session.isSearching;
+  }
 }
 
 function canLoad(session: QuickPickSession): boolean {
-  return !session.isDisposed && !session.isLoading && !session.complete;
+  return !session.isDisposed && !session.isPageLoading && !session.complete;
 }
 
 function shouldReportError(session: QuickPickSession, isActive: boolean): boolean {

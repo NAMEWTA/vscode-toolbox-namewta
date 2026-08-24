@@ -18,7 +18,7 @@ describe('Toolbox 命令清单', () => {
     const english = readJson('package.nls.json');
     const chinese = readJson('package.nls.zh-cn.json');
 
-    expect(commands).toHaveLength(22);
+    expect(commands).toHaveLength(25);
     for (const command of commands) {
       expect(command.command).toEqual(
         expect.stringMatching(/^vscodeToolboxNamewta\./u),
@@ -82,6 +82,26 @@ describe('Toolbox 命令清单', () => {
         }),
       ]),
     );
+    expect(records(contributes.keybindings)).toEqual([
+      {
+        command: 'vscodeToolboxNamewta.copyReference.relative',
+        key: 'ctrl+alt+c',
+        mac: 'cmd+alt+c',
+        when: 'editorTextFocus && resourceScheme != untitled',
+      },
+      {
+        command: 'vscodeToolboxNamewta.copyReference.absolute',
+        key: 'ctrl+alt+v',
+        mac: 'cmd+alt+v',
+        when: 'editorTextFocus && resourceScheme != untitled',
+      },
+      {
+        command: 'vscodeToolboxNamewta.gitBlame.toggle',
+        key: 'ctrl+alt+b',
+        mac: 'cmd+alt+b',
+        when: 'editorTextFocus && resourceScheme == file',
+      },
+    ]);
   });
 });
 

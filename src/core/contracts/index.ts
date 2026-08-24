@@ -42,19 +42,10 @@ export type {
 export { isToolCommandId, isToolCommandInput } from './tool-command-contract';
 export type { ToolError, ToolErrorCode } from './tool-error-contract';
 export type { ToolResult } from './tool-result-contract';
-export type {
-  GitReviewWebviewBootstrap,
-  GitReviewWebviewStrings,
-  WebviewBootstrap,
-  WebviewStrings,
-} from './webview-bootstrap-contract';
-export {
-  isGitReviewWebviewBootstrap,
-  isWebviewBootstrap,
-} from './webview-bootstrap-contract';
+export type { WebviewBootstrap, WebviewStrings } from './webview-bootstrap-contract';
+export { isWebviewBootstrap } from './webview-bootstrap-contract';
 export type {
   ExtensionToWebviewMessage,
-  GitReviewWebviewAction,
   GitBlameReaderWebviewAction,
   ToolEvent,
   WebviewToExtensionMessage,

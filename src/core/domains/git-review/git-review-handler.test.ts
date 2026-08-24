@@ -82,7 +82,6 @@ function createPort(): GitReviewPort & {
   return {
     listChanges: vi.fn(),
     readItemContent: vi.fn(),
-    readItemPatch: vi.fn(),
     mutateItem: vi.fn(),
   };
 }

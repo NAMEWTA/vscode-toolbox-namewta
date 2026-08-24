@@ -49,7 +49,7 @@ const vscodeState = vi.hoisted(() => {
     createStatusBarItem: vi.fn(),
     registerProvider: vi.fn(),
     executeCommand: vi.fn(),
-    showTextDocument: vi.fn(),
+    showErrorMessage: vi.fn(),
   };
 });
 
@@ -58,7 +58,6 @@ vi.mock('vscode', () => {
   vscodeState.createStatusBarItem.mockReturnValue(vscodeState.statusBarItem);
   vscodeState.registerProvider.mockReturnValue(vscodeState.providerDisposable);
   vscodeState.executeCommand.mockResolvedValue(undefined);
-  vscodeState.showTextDocument.mockResolvedValue(undefined);
   return {
     EventEmitter: vscodeState.EventEmitter,
     ThemeIcon: vscodeState.ThemeIcon,
@@ -66,7 +65,12 @@ vi.mock('vscode', () => {
     TreeItemCollapsibleState: { None: 0 },
     StatusBarAlignment: { Left: 1 },
     Uri: {
-      parse: (value: string) => ({ toString: (): string => value }),
+      parse: (value: string) => ({ value, toString: (): string => value }),
+      file: (value: string) => ({ value, toString: (): string => `file://${value}` }),
+      joinPath: (base: { readonly value: string }, ...parts: readonly string[]) => ({
+        value: [base.value, ...parts].join('/'),
+        toString: (): string => `file://${[base.value, ...parts].join('/')}`,
+      }),
     },
     commands: { executeCommand: vscodeState.executeCommand },
     l10n: {
@@ -79,7 +83,7 @@ vi.mock('vscode', () => {
     window: {
       createStatusBarItem: vscodeState.createStatusBarItem,
       createTreeView: vscodeState.createTreeView,
-      showTextDocument: vscodeState.showTextDocument,
+      showErrorMessage: vscodeState.showErrorMessage,
     },
     workspace: {
       registerTextDocumentContentProvider: vscodeState.registerProvider,
@@ -92,22 +96,16 @@ beforeEach(() => {
   vscodeState.createStatusBarItem.mockReturnValue(vscodeState.statusBarItem);
   vscodeState.registerProvider.mockReturnValue(vscodeState.providerDisposable);
   vscodeState.executeCommand.mockResolvedValue(undefined);
-  vscodeState.showTextDocument.mockResolvedValue(undefined);
 });
 
 describe('VS Code Git Review 投影', () => {
-  it('仅在活动会话后创建投影，并通过公开 diff 命令打开文本项', async () => {
+  it('仅在活动会话后创建投影，并通过公共 Changes 命令打开全部条目', () => {
     const presentation = new VscodeGitReviewPresentation(
       vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     );
     const reviewItem = item('src/main.ts');
 
     presentation.render(activeSnapshot(reviewItem));
-    await presentation.openItem(reviewItem, {
-      kind: 'text',
-      before: 'before',
-      after: 'after',
-    });
 
     expect(vscodeState.registerProvider).toHaveBeenCalledWith(
       'vscode-toolbox-namewta-git-review',
@@ -116,19 +114,27 @@ describe('VS Code Git Review 投影', () => {
     expect(vscodeState.createTreeView).toHaveBeenCalledTimes(1);
     expect(vscodeState.createStatusBarItem).toHaveBeenCalledTimes(1);
     expect(vscodeState.executeCommand).toHaveBeenCalledTimes(1);
+    expect(vscodeState.executeCommand).toHaveBeenNthCalledWith(
+      1,
+      'vscode.changes',
+      expect.stringContaining('Git Review'),
+      expect.arrayContaining([
+        expect.arrayContaining([
+          expect.objectContaining({
+            value: '/private/repository/unstaged/src/main.ts',
+          }),
+        ]),
+      ]),
+    );
   });
 
-  it('为特殊项打开只读摘要，并在 inactive 时清理全部 UI 资源', async () => {
+  it('inactive 时清理全部原生 Review UI 资源', () => {
     const presentation = new VscodeGitReviewPresentation(
       vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     );
-    const reviewItem = item('binary.dat');
-
-    presentation.render(activeSnapshot(reviewItem));
-    await presentation.openItem(reviewItem, { kind: 'summary', reason: 'binary' });
+    presentation.render(activeSnapshot(item('binary.dat')));
     presentation.render({ state: 'inactive' });
 
-    expect(vscodeState.showTextDocument).toHaveBeenCalledTimes(1);
     expect(vscodeState.providerDisposable.dispose).toHaveBeenCalledTimes(1);
     expect(vscodeState.treeView.dispose).toHaveBeenCalledTimes(1);
     expect(vscodeState.statusBarItem.dispose).toHaveBeenCalledTimes(1);

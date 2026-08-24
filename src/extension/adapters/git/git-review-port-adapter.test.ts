@@ -215,11 +215,8 @@ describe('GitReviewPortAdapter 无 HEAD 与错误边界', () => {
         ),
       ).resolves.toEqual({ kind: 'text', before: '', after: 'first\n' });
       await expect(
-        adapter.readItemPatch(
-          {
-            repositoryRoot: repository,
-            item: requiredChange(binary),
-          },
+        adapter.readItemContent(
+          { repositoryRoot: repository, item: requiredChange(binary) },
           { aborted: false },
         ),
       ).resolves.toEqual({ kind: 'summary', reason: 'binary' });

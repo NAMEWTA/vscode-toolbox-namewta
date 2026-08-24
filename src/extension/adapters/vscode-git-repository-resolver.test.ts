@@ -3,10 +3,10 @@ import * as vscode from 'vscode';
 import type { GitCommandPort } from '../../core/domains/git-blame/public-api';
 import { ApplicationError } from '../../core/kernel/application-error';
 import {
-  VscodeGitReviewRepositoryAdapter,
-  type GitReviewRepositoryContext,
-  type GitReviewRepositoryHost,
-} from './vscode-git-review-repository-adapter';
+  VscodeGitRepositoryResolver,
+  type GitRepositoryContext,
+  type GitRepositoryHost,
+} from './vscode-git-repository-resolver';
 
 vi.mock('vscode', () => {
   class Uri {
@@ -28,7 +28,7 @@ vi.mock('vscode', () => {
   };
 });
 
-describe('VS Code Git Review 仓库适配器', () => {
+describe('VS Code Git 仓库解析器', () => {
   it('优先使用活动文件所在的唯一仓库，不显示选择器', async () => {
     const git = createGit();
     git.run.mockResolvedValue(gitResult('/workspace/repository\n'));
@@ -37,7 +37,7 @@ describe('VS Code Git Review 仓库适配器', () => {
       activeFilePath: '/workspace/repository/src/main.ts',
       workspaceFolderPaths: ['/workspace/other'],
     });
-    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+    const adapter = createResolver(git, host);
 
     await expect(adapter.resolve([], new AbortController().signal)).resolves.toBe(
       '/workspace/repository',
@@ -45,7 +45,7 @@ describe('VS Code Git Review 仓库适配器', () => {
 
     expect(git.run).toHaveBeenCalledWith(
       expect.objectContaining({
-        operation: 'git-review-repository-discovery',
+        operation: 'git-repository-discovery',
         cwd: '/workspace/repository/src',
         args: ['--no-optional-locks', 'rev-parse', '--show-toplevel'],
       }),
@@ -64,16 +64,19 @@ describe('VS Code Git Review 仓库适配器', () => {
       workspaceFolderPaths: ['/workspace/first', '/workspace/second'],
     });
     host.pickRepository.mockResolvedValue(undefined);
-    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+    const adapter = createResolver(git, host);
 
     await expect(
       adapter.resolve([], new AbortController().signal),
     ).resolves.toBeUndefined();
 
-    expect(host.pickRepository).toHaveBeenCalledWith([
-      expect.objectContaining({ repositoryRoot: '/workspace/first' }),
-      expect.objectContaining({ repositoryRoot: '/workspace/second' }),
-    ]);
+    expect(host.pickRepository).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({ repositoryRoot: '/workspace/first' }),
+        expect.objectContaining({ repositoryRoot: '/workspace/second' }),
+      ],
+      'Select repository',
+    );
   });
 
   it('优先解析 Source Control 标题菜单提供的仓库根目录', async () => {
@@ -84,7 +87,7 @@ describe('VS Code Git Review 仓库适配器', () => {
       activeFilePath: '/workspace/other/src/main.ts',
       workspaceFolderPaths: ['/workspace/other'],
     });
-    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+    const adapter = createResolver(git, host);
 
     await expect(
       adapter.resolve(
@@ -112,7 +115,7 @@ describe('VS Code Git Review 仓库适配器', () => {
       activeFilePath: undefined,
       workspaceFolderPaths: ['/workspace/repository'],
     });
-    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+    const adapter = createResolver(git, host);
 
     await expect(
       adapter.resolve([], new AbortController().signal),
@@ -138,7 +141,7 @@ describe('VS Code Git Review 仓库适配器', () => {
       activeFilePath: undefined,
       workspaceFolderPaths: ['/workspace/repository'],
     });
-    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+    const adapter = createResolver(git, host);
 
     await expect(
       adapter.resolve([], new AbortController().signal),
@@ -156,7 +159,7 @@ describe('SCM 标题上下文边界', () => {
       activeFilePath: '/workspace/other/src/main.ts',
       workspaceFolderPaths: ['/workspace/other'],
     });
-    const adapter = new VscodeGitReviewRepositoryAdapter(git, host);
+    const adapter = createResolver(git, host);
 
     await expect(
       adapter.resolve([{ id: 'git', label: 'Git' }], new AbortController().signal),
@@ -174,14 +177,21 @@ function createGit(): GitCommandPort & {
   };
 }
 
-function createHost(context: GitReviewRepositoryContext): GitReviewRepositoryHost & {
+function createHost(context: GitRepositoryContext): GitRepositoryHost & {
   readonly getContext: ReturnType<typeof vi.fn>;
   readonly pickRepository: ReturnType<typeof vi.fn>;
 } {
   return {
-    getContext: vi.fn<() => GitReviewRepositoryContext>().mockReturnValue(context),
-    pickRepository: vi.fn<GitReviewRepositoryHost['pickRepository']>(),
+    getContext: vi.fn<() => GitRepositoryContext>().mockReturnValue(context),
+    pickRepository: vi.fn<GitRepositoryHost['pickRepository']>(),
   };
+}
+
+function createResolver(
+  git: GitCommandPort,
+  host: GitRepositoryHost,
+): VscodeGitRepositoryResolver {
+  return new VscodeGitRepositoryResolver(git, 'Select repository', host);
 }
 
 function gitResult(stdout: string): {

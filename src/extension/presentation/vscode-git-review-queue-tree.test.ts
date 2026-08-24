@@ -88,6 +88,7 @@ describe('VS Code Git Review 队列树', () => {
     );
     expect(treeItem.label).toBe('src/\\u000acurrent.ts');
     expect(treeItem.description).toBe('Current - Unreviewed');
+    expect(treeItem.contextValue).toBe('gitReview.unstaged');
     expect(treeItem.accessibilityInformation).toEqual({
       label: 'Current, src/\\u000acurrent.ts, Unreviewed',
     });

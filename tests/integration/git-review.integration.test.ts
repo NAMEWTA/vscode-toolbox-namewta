@@ -12,7 +12,8 @@ import type {
 import type { VscodeToolboxNamewtaExtensionApi } from '../../src/core/contracts';
 
 const executeFile = promisify(execFile);
-const REVIEW_WEBVIEW_TYPE = 'vscodeToolboxNamewta.gitReview.aggregate';
+const REVIEW_CHANGES_TITLE =
+  'Git Review · 2 items · staged 0 · unstaged 2 · conflicts 0';
 
 suite('Git Review Extension Host 集成', () => {
   test('通过公开 API 审核真实 staged、unstaged、untracked 与删除变更，且不写入 Git', async () => {
@@ -187,7 +188,7 @@ suite('Git Review Extension Host 命令集成', () => {
         'vscodeToolboxNamewta.gitReview.start',
         sourceControl,
       );
-      await waitForReviewPanel();
+      await waitForNativeReviewChanges();
       const refreshed = await api.execute('gitReview.refresh', {});
 
       assert.equal(refreshed.ok, true);
@@ -207,7 +208,7 @@ suite('Git Review Extension Host 命令集成', () => {
     }
   });
 
-  test('通过公开命令打开单一聚合页并执行普通导航', async () => {
+  test('通过公开命令打开单一原生 Changes 页并执行普通导航', async () => {
     const fixture = await createUiReviewRepository();
     try {
       const api = await extensionApi();
@@ -218,10 +219,10 @@ suite('Git Review Extension Host 命令集成', () => {
       const statusBeforeReview = await gitStatus(fixture.repository);
 
       await vscode.commands.executeCommand('vscodeToolboxNamewta.gitReview.start');
-      await waitForReviewPanel();
-      assert.equal(reviewPanelCount(), 1);
+      await waitForNativeReviewChanges();
+      assert.equal(reviewChangesCount(), 1);
       await vscode.commands.executeCommand('vscodeToolboxNamewta.gitReview.next');
-      assert.equal(reviewPanelCount(), 1);
+      assert.equal(reviewChangesCount(), 1);
 
       const stale = await api.execute('gitReview.markStale', {});
       assert.equal(stale.ok, true);
@@ -275,15 +276,15 @@ function requireSession(snapshot: GitReviewSessionSnapshot): GitReviewSession {
   return snapshot.session;
 }
 
-async function waitForReviewPanel(): Promise<void> {
+async function waitForNativeReviewChanges(): Promise<void> {
   for (let attempt = 0; attempt < 50; attempt += 1) {
-    if (reviewPanelCount() === 1) {
+    if (reviewChangesCount() === 1) {
       return;
     }
     await new Promise<void>((resolve) => setTimeout(resolve, 100));
   }
   throw new Error(
-    `没有在预期时间内打开单一 Git 审核聚合页。当前标签：${JSON.stringify(tabSnapshot())}`,
+    `没有在预期时间内打开单一 Git 审核原生 Changes 页。当前标签：${JSON.stringify(tabSnapshot())}`,
   );
 }
 
@@ -313,13 +314,13 @@ async function removeFixtureRepository(repository: string): Promise<void> {
   });
 }
 
-function reviewPanelCount(): number {
+function reviewChangesCount(): number {
   return vscode.window.tabGroups.all
     .flatMap((group) => group.tabs)
     .filter(
       (tab) =>
-        tab.input instanceof vscode.TabInputWebview &&
-        tab.input.viewType.endsWith(REVIEW_WEBVIEW_TYPE),
+        tab.label.startsWith(REVIEW_CHANGES_TITLE) &&
+        !(tab.input instanceof vscode.TabInputWebview),
     ).length;
 }
 

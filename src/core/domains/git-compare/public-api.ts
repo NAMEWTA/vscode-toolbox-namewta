@@ -11,6 +11,9 @@ export type {
   GitCompareResult,
   GitCompareRevisionInput,
   GitCompareRevisionResult,
+  GitCompareSearchInput,
+  GitCompareSearchMatch,
+  GitCompareSearchResult,
 } from './git-compare-model';
 export {
   GIT_COMPARE_EMPTY_TREE_HASH,
@@ -22,6 +25,8 @@ export {
   isGitCompareRepository,
   isGitCompareResolveRevisionInput,
   isGitCompareRevisionInput,
+  isGitCompareSearchInput,
+  isGitCompareSearchQuery,
   isRepositoryRelativePath,
 } from './git-compare-model';
 export type { GitCompareCancellationSignal, GitComparePort } from './git-compare-port';
@@ -30,4 +35,5 @@ export {
   GitCompareListCommitsHandler,
   GitCompareResolveRevisionHandler,
   GitCompareRevisionContentHandler,
+  GitCompareSearchCommitsHandler,
 } from './git-compare-handler';

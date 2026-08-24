@@ -2,7 +2,6 @@ import path from 'node:path';
 import * as vscode from 'vscode';
 import type { GitCommandPort } from '../../core/domains/git-blame/public-api';
 import { ApplicationError } from '../../core/kernel/application-error';
-import type { GitReviewRepositoryResolver } from '../presentation/git-review-session-controller-contract';
 
 const GIT_REPOSITORY_ROOT_ARGS = [
   '--no-optional-locks',
@@ -10,33 +9,35 @@ const GIT_REPOSITORY_ROOT_ARGS = [
   '--show-toplevel',
 ] as const;
 
-export type GitReviewRepositoryCandidate = {
+export type GitRepositoryCandidate = {
   readonly repositoryRoot: string;
   readonly label: string;
   readonly description: string;
 };
 
-export type GitReviewRepositoryContext = {
+export type GitRepositoryContext = {
   readonly isWorkspaceTrusted: boolean;
   readonly activeFilePath: string | undefined;
   readonly workspaceFolderPaths: readonly string[];
 };
 
-export type GitReviewRepositoryHost = {
-  getContext(): GitReviewRepositoryContext;
+export type GitRepositoryHost = {
+  getContext(): GitRepositoryContext;
   pickRepository(
-    candidates: readonly GitReviewRepositoryCandidate[],
+    candidates: readonly GitRepositoryCandidate[],
+    placeholder: string,
   ): Promise<string | undefined>;
 };
 
-type GitReviewCommandContext =
+type GitCommandContext =
   | { readonly kind: 'discovery' }
   | { readonly kind: 'source-control'; readonly rootPath?: string };
 
-export class VscodeGitReviewRepositoryAdapter implements GitReviewRepositoryResolver {
+export class VscodeGitRepositoryResolver {
   public constructor(
     private readonly git: GitCommandPort,
-    private readonly host: GitReviewRepositoryHost = new VscodeGitReviewRepositoryHost(),
+    private readonly selectionPlaceholder: string,
+    private readonly host: GitRepositoryHost = new VscodeGitRepositoryHost(),
   ) {}
 
   public async resolve(
@@ -51,38 +52,30 @@ export class VscodeGitReviewRepositoryAdapter implements GitReviewRepositoryReso
       });
     }
     if (commandContext.kind === 'source-control') {
-      if (commandContext.rootPath === undefined) {
-        throw unavailableRepositoryError();
-      }
+      if (commandContext.rootPath === undefined) throw unavailableRepositoryError();
       const repositoryRoot = await this.findRepositoryRoot(
         commandContext.rootPath,
         signal,
       );
-      if (repositoryRoot === undefined) {
-        throw unavailableRepositoryError();
-      }
+      if (repositoryRoot === undefined) throw unavailableRepositoryError();
       return repositoryRoot;
     }
     const activeRepository = await this.resolveActiveRepository(context, signal);
-    if (activeRepository !== undefined) {
-      return activeRepository;
-    }
+    if (activeRepository !== undefined) return activeRepository;
     const candidates = await this.resolveWorkspaceCandidates(context, signal);
-    if (candidates.length === 0) {
-      throw unavailableRepositoryError();
-    }
-    if (candidates.length === 1) {
-      const [candidate] = candidates;
-      if (candidate === undefined) {
-        throw unavailableRepositoryError();
-      }
-      return candidate.repositoryRoot;
-    }
-    return this.pickCandidate(candidates);
+    if (candidates.length === 0) throw unavailableRepositoryError();
+    if (candidates.length === 1) return candidates[0]?.repositoryRoot;
+    const selectedRoot = await this.host.pickRepository(
+      candidates,
+      this.selectionPlaceholder,
+    );
+    return candidates.some((candidate) => candidate.repositoryRoot === selectedRoot)
+      ? selectedRoot
+      : undefined;
   }
 
   private async resolveActiveRepository(
-    context: GitReviewRepositoryContext,
+    context: GitRepositoryContext,
     signal: AbortSignal,
   ): Promise<string | undefined> {
     if (
@@ -95,18 +88,14 @@ export class VscodeGitReviewRepositoryAdapter implements GitReviewRepositoryReso
   }
 
   private async resolveWorkspaceCandidates(
-    context: GitReviewRepositoryContext,
+    context: GitRepositoryContext,
     signal: AbortSignal,
-  ): Promise<readonly GitReviewRepositoryCandidate[]> {
+  ): Promise<readonly GitRepositoryCandidate[]> {
     const roots = new Set<string>();
     for (const workspaceFolderPath of context.workspaceFolderPaths) {
-      if (!isSafeAbsolutePath(workspaceFolderPath)) {
-        continue;
-      }
+      if (!isSafeAbsolutePath(workspaceFolderPath)) continue;
       const repositoryRoot = await this.findRepositoryRoot(workspaceFolderPath, signal);
-      if (repositoryRoot !== undefined) {
-        roots.add(repositoryRoot);
-      }
+      if (repositoryRoot !== undefined) roots.add(repositoryRoot);
     }
     return [...roots].map(toRepositoryCandidate);
   }
@@ -117,7 +106,7 @@ export class VscodeGitReviewRepositoryAdapter implements GitReviewRepositoryReso
   ): Promise<string | undefined> {
     try {
       const result = await this.git.run({
-        operation: 'git-review-repository-discovery',
+        operation: 'git-repository-discovery',
         cwd,
         args: GIT_REPOSITORY_ROOT_ARGS,
         signal,
@@ -135,34 +124,25 @@ export class VscodeGitReviewRepositoryAdapter implements GitReviewRepositoryReso
       return undefined;
     }
   }
-
-  private async pickCandidate(
-    candidates: readonly GitReviewRepositoryCandidate[],
-  ): Promise<string | undefined> {
-    const selectedRoot = await this.host.pickRepository(candidates);
-    return candidates.some((candidate) => candidate.repositoryRoot === selectedRoot)
-      ? selectedRoot
-      : undefined;
-  }
 }
 
-function parseCommandContext(args: readonly unknown[]): GitReviewCommandContext {
-  if (args.length === 0) {
-    return { kind: 'discovery' };
-  }
+function parseCommandContext(args: readonly unknown[]): GitCommandContext {
+  if (args.length === 0) return { kind: 'discovery' };
   if (args.length !== 1 || !isSourceControlContext(args[0])) {
-    throw invalidInputError();
+    throw new ApplicationError('Git command input is invalid.', {
+      code: 'invalid-input',
+    });
   }
   const rootUri = args[0].rootUri;
-  if (rootUri === undefined) {
-    return { kind: 'source-control' };
-  }
+  if (rootUri === undefined) return { kind: 'source-control' };
   if (
     !(rootUri instanceof vscode.Uri) ||
     rootUri.scheme !== 'file' ||
     !isSafeAbsolutePath(rootUri.fsPath)
   ) {
-    throw invalidInputError();
+    throw new ApplicationError('Git command input is invalid.', {
+      code: 'invalid-input',
+    });
   }
   return { kind: 'source-control', rootPath: rootUri.fsPath };
 }
@@ -188,8 +168,8 @@ function isBoundedText(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= 1_024;
 }
 
-class VscodeGitReviewRepositoryHost implements GitReviewRepositoryHost {
-  public getContext(): GitReviewRepositoryContext {
+class VscodeGitRepositoryHost implements GitRepositoryHost {
+  public getContext(): GitRepositoryContext {
     const activeUri = vscode.window.activeTextEditor?.document.uri;
     return {
       isWorkspaceTrusted: vscode.workspace.isTrusted,
@@ -201,10 +181,11 @@ class VscodeGitReviewRepositoryHost implements GitReviewRepositoryHost {
   }
 
   public async pickRepository(
-    candidates: readonly GitReviewRepositoryCandidate[],
+    candidates: readonly GitRepositoryCandidate[],
+    placeholder: string,
   ): Promise<string | undefined> {
     const selected = await vscode.window.showQuickPick([...candidates], {
-      placeHolder: vscode.l10n.t('Select a Git repository to review'),
+      placeHolder: placeholder,
       matchOnDescription: true,
     });
     return selected?.repositoryRoot;
@@ -216,7 +197,7 @@ function toRepositoryRoot(output: string): string | undefined {
   return isSafeAbsolutePath(value) ? path.resolve(value) : undefined;
 }
 
-function toRepositoryCandidate(repositoryRoot: string): GitReviewRepositoryCandidate {
+function toRepositoryCandidate(repositoryRoot: string): GitRepositoryCandidate {
   return {
     repositoryRoot,
     label: path.basename(repositoryRoot) || repositoryRoot,
@@ -234,14 +215,8 @@ function isSafeAbsolutePath(value: unknown): value is string {
   );
 }
 
-function invalidInputError(): ApplicationError {
-  return new ApplicationError('Git Review command input is invalid.', {
-    code: 'invalid-input',
-  });
-}
-
 function unavailableRepositoryError(): ApplicationError {
-  return new ApplicationError('No executable Git repository is available for review.', {
+  return new ApplicationError('No executable Git repository is available.', {
     code: 'capability-unavailable',
   });
 }

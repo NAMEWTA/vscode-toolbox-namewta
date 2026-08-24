@@ -12,6 +12,7 @@ import {
   createGitCompareNativeChanges,
   type GitCompareNativeDocument,
 } from './git-compare-native-changes';
+import { VscodeNativeChangesPresenter } from './vscode-native-changes-presenter';
 
 export class VscodeGitCompareDocumentProvider
   implements vscode.TextDocumentContentProvider, vscode.Disposable
@@ -20,7 +21,10 @@ export class VscodeGitCompareDocumentProvider
   readonly #activeRequests = new Set<AbortController>();
   #isDisposed = false;
 
-  public constructor(private readonly gateway: ToolboxGateway) {}
+  public constructor(
+    private readonly gateway: ToolboxGateway,
+    private readonly nativeChanges = new VscodeNativeChangesPresenter(),
+  ) {}
 
   public createRevisionUri(input: GitCompareRevisionInput): vscode.Uri {
     this.assertAvailable();
@@ -96,8 +100,7 @@ export class VscodeGitCompareDocumentProvider
             : this.createNativeDocumentUri(change.modified),
         ] as const,
     );
-    await vscode.commands.executeCommand(
-      'vscode.changes',
+    await this.nativeChanges.open(
       vscode.l10n.t(
         'Git comparison {0} → {1} · {2} files · +{3} -{4}',
         result.base.slice(0, 8),

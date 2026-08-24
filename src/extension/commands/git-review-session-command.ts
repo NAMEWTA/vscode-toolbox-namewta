@@ -8,7 +8,10 @@ export type GitReviewSessionCommandAction =
   | 'retry'
   | 'skip'
   | 'refresh'
-  | 'end';
+  | 'end'
+  | 'stageItem'
+  | 'unstageItem'
+  | 'discardItem';
 
 export type GitReviewSessionCommandTarget = {
   start(...args: readonly unknown[]): Promise<void>;
@@ -19,6 +22,9 @@ export type GitReviewSessionCommandTarget = {
   skip(): Promise<void>;
   refresh(): Promise<void>;
   end(): Promise<void>;
+  stageItem(...args: readonly unknown[]): Promise<void>;
+  unstageItem(...args: readonly unknown[]): Promise<void>;
+  discardItem(...args: readonly unknown[]): Promise<void>;
 };
 
 const COMMAND_IDS: Readonly<Record<GitReviewSessionCommandAction, string>> = {
@@ -30,6 +36,9 @@ const COMMAND_IDS: Readonly<Record<GitReviewSessionCommandAction, string>> = {
   skip: 'vscodeToolboxNamewta.gitReview.skip',
   refresh: 'vscodeToolboxNamewta.gitReview.refresh',
   end: 'vscodeToolboxNamewta.gitReview.end',
+  stageItem: 'vscodeToolboxNamewta.gitReview.stageItem',
+  unstageItem: 'vscodeToolboxNamewta.gitReview.unstageItem',
+  discardItem: 'vscodeToolboxNamewta.gitReview.discardItem',
 };
 
 export class GitReviewSessionCommand {
@@ -47,6 +56,7 @@ export class GitReviewSessionCommand {
     if (action === 'start') {
       return this.target.start(...args);
     }
+    if (isItemAction(action)) return this.target[action](...args);
     if (args.length !== 0) {
       throw invalidInputError();
     }
@@ -67,8 +77,17 @@ export function createGitReviewSessionCommands(
       'skip',
       'refresh',
       'end',
+      'stageItem',
+      'unstageItem',
+      'discardItem',
     ] as const
   ).map((action) => new GitReviewSessionCommand(action, target));
+}
+
+function isItemAction(
+  action: GitReviewSessionCommandAction,
+): action is 'stageItem' | 'unstageItem' | 'discardItem' {
+  return action === 'stageItem' || action === 'unstageItem' || action === 'discardItem';
 }
 
 function invalidInputError(): ApplicationError {

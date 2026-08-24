@@ -37,6 +37,18 @@ describe('VS Code Git Review 反馈宿主', () => {
     await expect(host.confirmEnd()).resolves.toBe(false);
   });
 
+  it('只有明确确认后才允许放弃指定文件的工作树变更', async () => {
+    const host = new VscodeGitReviewControllerHost(createLogger(), vi.fn());
+    vscodeState.showWarningMessage.mockResolvedValueOnce('Discard Changes');
+
+    await expect(host.confirmDiscard('src/main.ts')).resolves.toBe(true);
+    expect(vscodeState.showWarningMessage).toHaveBeenCalledWith(
+      'Discard all working tree changes in src/main.ts? This cannot be undone.',
+      { modal: true },
+      'Discard Changes',
+    );
+  });
+
   it('用结构化错误记录失败且允许打开日志', async () => {
     const logger = createLogger();
     const showLog = vi.fn();

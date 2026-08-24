@@ -1,81 +1,75 @@
 import { randomUUID } from 'node:crypto';
+import {
+  isGitReviewItemContentInput,
+  type GitReviewItem,
+} from '../../core/domains/git-review/public-api';
 import { ApplicationError } from '../../core/kernel/application-error';
 
 export const GIT_REVIEW_DOCUMENT_SCHEME = 'vscode-toolbox-namewta-git-review';
 
-type GitReviewDocumentSide = 'before' | 'after' | 'summary';
-
-type GitReviewDocument = {
-  readonly before?: string;
-  readonly after?: string;
-  readonly summary?: string;
+export type GitReviewDocumentEntry = {
+  readonly kind: 'item';
+  readonly item: GitReviewItem;
+  readonly side: 'before' | 'after';
 };
 
-const MAX_DOCUMENT_BYTES = 64 * 1_024 * 1_024;
+type StoredEntry = GitReviewDocumentEntry & { readonly displayPath: string };
 
 export class GitReviewDocumentStore {
-  readonly #documents = new Map<string, GitReviewDocument>();
+  readonly #entries = new Map<string, StoredEntry>();
 
   public constructor(private readonly createToken: () => string = randomUUID) {}
 
-  public createTextUris(
-    before: string,
-    after: string,
-  ): {
-    readonly before: string;
-    readonly after: string;
-  } {
-    validateDocumentContent(before);
-    validateDocumentContent(after);
-    const token = this.register({ before, after });
-    return {
-      before: encodeGitReviewDocumentUri(token, 'before'),
-      after: encodeGitReviewDocumentUri(token, 'after'),
-    };
-  }
-
-  public createSummaryUri(summary: string): string {
-    validateDocumentContent(summary);
-    return encodeGitReviewDocumentUri(this.register({ summary }), 'summary');
-  }
-
-  public resolve(uri: string): string {
-    const { token, side } = decodeGitReviewDocumentUri(uri);
-    const document = this.#documents.get(token);
-    const content = document?.[side];
-    if (content === undefined) {
+  public createItemUri(
+    item: GitReviewItem,
+    side: 'before' | 'after',
+    displayPath: string,
+  ): string {
+    if (
+      !isGitReviewItemContentInput({
+        path: item.path,
+        contentIdentity: item.contentIdentity,
+      }) ||
+      !isDisplayPath(displayPath)
+    ) {
       throw unavailableDocumentError();
     }
-    return content;
+    return this.createEntry({ kind: 'item', item, side }, displayPath);
+  }
+
+  public resolve(uri: string): GitReviewDocumentEntry {
+    const parsed = parseUri(uri);
+    const entry = this.#entries.get(parsed.token);
+    if (entry === undefined || entry.displayPath !== parsed.displayPath) {
+      throw unavailableDocumentError();
+    }
+    return { kind: 'item', item: entry.item, side: entry.side };
   }
 
   public clear(): void {
-    this.#documents.clear();
+    this.#entries.clear();
   }
 
-  private register(document: GitReviewDocument): string {
+  private createEntry(entry: GitReviewDocumentEntry, displayPath: string): string {
     const token = this.createToken();
-    if (!isToken(token)) {
+    if (!/^[a-z\d][a-z\d-]{0,63}$/u.test(token) || !isDisplayPath(displayPath)) {
       throw unavailableDocumentError();
     }
-    this.#documents.set(token, document);
-    return token;
+    this.#entries.set(token, { ...entry, displayPath });
+    return `${GIT_REVIEW_DOCUMENT_SCHEME}://${token}/${encodePath(displayPath)}`;
   }
-}
-
-function encodeGitReviewDocumentUri(
-  token: string,
-  side: GitReviewDocumentSide,
-): string {
-  if (!isToken(token)) {
-    throw unavailableDocumentError();
-  }
-  return `${GIT_REVIEW_DOCUMENT_SCHEME}://${token}/${side}`;
 }
 
 export function decodeGitReviewDocumentUri(uri: string): {
   readonly token: string;
-  readonly side: GitReviewDocumentSide;
+  readonly displayPath: string;
+} {
+  return parseUri(uri);
+}
+
+function parseUri(uri: string): {
+  readonly token: string;
+  readonly displayPath: string;
 } {
   let parsed: URL;
   try {
@@ -83,36 +77,50 @@ export function decodeGitReviewDocumentUri(uri: string): {
   } catch (error: unknown) {
     throw unavailableDocumentError(error);
   }
-  if (
-    parsed.protocol !== `${GIT_REVIEW_DOCUMENT_SCHEME}:` ||
-    parsed.username !== '' ||
-    parsed.password !== '' ||
-    parsed.port !== '' ||
-    parsed.search !== '' ||
-    parsed.hash !== '' ||
-    !isToken(parsed.hostname)
-  ) {
-    throw unavailableDocumentError();
+  if (!isReviewDocumentUrl(parsed)) throw unavailableDocumentError();
+  let displayPath: string;
+  try {
+    displayPath = parsed.pathname
+      .slice(1)
+      .split('/')
+      .map((segment) => decodeURIComponent(segment))
+      .join('/');
+  } catch (error: unknown) {
+    throw unavailableDocumentError(error);
   }
-  const side = parsed.pathname.slice(1);
-  if (!isDocumentSide(side)) {
-    throw unavailableDocumentError();
-  }
-  return { token: parsed.hostname, side };
+  if (!isDisplayPath(displayPath)) throw unavailableDocumentError();
+  return { token: parsed.hostname, displayPath };
 }
 
-function validateDocumentContent(content: string): void {
-  if (Buffer.byteLength(content, 'utf8') > MAX_DOCUMENT_BYTES) {
-    throw unavailableDocumentError();
-  }
+function isReviewDocumentUrl(parsed: URL): boolean {
+  return (
+    parsed.protocol === `${GIT_REVIEW_DOCUMENT_SCHEME}:` &&
+    parsed.username === '' &&
+    parsed.password === '' &&
+    parsed.port === '' &&
+    parsed.search === '' &&
+    parsed.hash === '' &&
+    /^[a-z\d][a-z\d-]{0,63}$/u.test(parsed.hostname)
+  );
 }
 
-function isToken(value: string): boolean {
-  return /^[A-Za-z\d-]{1,64}$/u.test(value);
+function isDisplayPath(value: string): boolean {
+  return (
+    value.length > 0 &&
+    value.length <= 4_096 &&
+    !value.includes('\0') &&
+    !value.startsWith('/') &&
+    value
+      .split('/')
+      .every((segment) => segment !== '' && segment !== '.' && segment !== '..')
+  );
 }
 
-function isDocumentSide(value: string): value is GitReviewDocumentSide {
-  return value === 'before' || value === 'after' || value === 'summary';
+function encodePath(value: string): string {
+  return value
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
 }
 
 function unavailableDocumentError(cause?: unknown): ApplicationError {

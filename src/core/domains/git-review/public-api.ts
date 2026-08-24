@@ -1,7 +1,6 @@
 export {
   GitReviewEndHandler,
   GitReviewGetItemContentHandler,
-  GitReviewGetItemPatchHandler,
   GitReviewStageItemHandler,
   GitReviewUnstageItemHandler,
   GitReviewDiscardItemHandler,
@@ -35,16 +34,8 @@ export {
   isGitReviewItemContentInput,
   isGitReviewStartInput,
 } from './git-review-model';
-export type {
-  GitReviewDiffHunk,
-  GitReviewDiffLine,
-  GitReviewItemActionInput,
-  GitReviewItemPatch,
-} from './git-review-patch-model';
-export {
-  isGitReviewItemActionInput,
-  isGitReviewItemPatch,
-} from './git-review-patch-model';
+export type { GitReviewItemActionInput } from './git-review-item-action';
+export { isGitReviewItemActionInput } from './git-review-item-action';
 export { isGitReviewSessionSnapshot } from './git-review-session-snapshot-contract';
 export type {
   GitReviewCancellationSignal,

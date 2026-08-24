@@ -4,9 +4,10 @@ import { ApplicationError } from '../../core/kernel/application-error';
 import { DisposableStore } from '../../core/kernel/disposable';
 import type { ToolboxGateway } from '../../core/orchestration/public-api';
 import { GitCommandRunner } from '../adapters/git/git-command-runner';
-import { VscodeGitCompareRepositoryAdapter } from '../adapters/vscode-git-compare-repository-adapter';
+import { VscodeGitRepositoryResolver } from '../adapters/vscode-git-repository-resolver';
 import {
   GitCompareRevisionQuickPick,
+  type GitCompareCommitSearcher,
   type GitCompareHistoryPageLoader,
   type GitCompareRevisionQuickPickItem,
   type GitCompareRevisionResolver,
@@ -17,8 +18,9 @@ const PAGE_SIZE = 50;
 
 export class GitCompareController implements vscode.Disposable {
   readonly #disposables = new DisposableStore();
-  readonly #repositoryResolver = new VscodeGitCompareRepositoryAdapter(
+  readonly #repositoryResolver = new VscodeGitRepositoryResolver(
     new GitCommandRunner(),
+    vscode.l10n.t('Select a Git repository to compare'),
   );
   readonly #documentProvider: VscodeGitCompareDocumentProvider;
   readonly #revisionPicker: GitCompareRevisionQuickPick;
@@ -38,6 +40,7 @@ export class GitCompareController implements vscode.Disposable {
         () => vscode.window.createQuickPick<GitCompareRevisionQuickPickItem>(),
         createHistoryPageLoader(gateway),
         createRevisionResolver(gateway),
+        createCommitSearcher(gateway),
         {
           baseTitle: vscode.l10n.t('Select comparison base'),
           targetTitle: (base) =>
@@ -61,15 +64,18 @@ export class GitCompareController implements vscode.Disposable {
     );
   }
 
-  public async start(): Promise<void> {
+  public async start(...args: readonly unknown[]): Promise<void> {
     this.assertAvailable();
     this.#revisionPicker.cancel();
     this.cancelRequest();
     const controller = new AbortController();
     this.#request = controller;
     try {
-      const repositoryRoot = await this.#repositoryResolver.resolve(controller.signal);
-      if (!this.isCurrent(controller)) return;
+      const repositoryRoot = await this.#repositoryResolver.resolve(
+        args,
+        controller.signal,
+      );
+      if (!isResolvedRepository(repositoryRoot, this.isCurrent(controller))) return;
       const selection = await this.#revisionPicker.show(repositoryRoot);
       if (selection === undefined || !this.isCurrent(controller)) return;
       const result = await this.gateway.execute(
@@ -94,8 +100,8 @@ export class GitCompareController implements vscode.Disposable {
     }
   }
 
-  public openHistory(): Promise<void> {
-    return this.start();
+  public openHistory(...args: readonly unknown[]): Promise<void> {
+    return this.start(...args);
   }
 
   public dispose(): void {
@@ -165,11 +171,29 @@ function createRevisionResolver(gateway: ToolboxGateway): GitCompareRevisionReso
   };
 }
 
+function createCommitSearcher(gateway: ToolboxGateway): GitCompareCommitSearcher {
+  return async (input, signal) => {
+    const result = await gateway.execute('gitCompare.searchCommits', input, {
+      signal,
+      source: 'extension-command',
+    });
+    if (!result.ok) throw toApplicationError(result.error);
+    return result.data;
+  };
+}
+
 function isCancellation(error: unknown): boolean {
   return (
     (error instanceof Error && error.name === 'AbortError') ||
     (error instanceof ApplicationError && error.code === 'cancelled')
   );
+}
+
+function isResolvedRepository(
+  repositoryRoot: string | undefined,
+  isCurrent: boolean,
+): repositoryRoot is string {
+  return repositoryRoot !== undefined && isCurrent;
 }
 
 function toApplicationError(error: {

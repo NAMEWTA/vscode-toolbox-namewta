@@ -109,7 +109,6 @@ export function createExtensionRuntime(
     new GitReviewSessionExperience({
       gateway,
       logger,
-      extensionUri: context.extensionUri,
     }),
   );
   const openToolboxCommand = new OpenToolboxCommand(panelController);
@@ -136,11 +135,12 @@ export function createExtensionRuntime(
     },
     {
       id: 'vscodeToolboxNamewta.gitCompare.start',
-      execute: () => gitCompareController.start(),
+      execute: (...args: readonly unknown[]) => gitCompareController.start(...args),
     },
     {
       id: 'vscodeToolboxNamewta.gitCompare.openHistory',
-      execute: () => gitCompareController.openHistory(),
+      execute: (...args: readonly unknown[]) =>
+        gitCompareController.openHistory(...args),
     },
   ]);
 

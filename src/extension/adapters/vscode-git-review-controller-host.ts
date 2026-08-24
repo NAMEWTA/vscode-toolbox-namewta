@@ -32,6 +32,19 @@ export class VscodeGitReviewControllerHost implements GitReviewControllerHost {
     return selected === end;
   }
 
+  public async confirmDiscard(path: string): Promise<boolean> {
+    const discard = vscode.l10n.t('Discard Changes');
+    const selected = await vscode.window.showWarningMessage(
+      vscode.l10n.t(
+        'Discard all working tree changes in {0}? This cannot be undone.',
+        path,
+      ),
+      { modal: true },
+      discard,
+    );
+    return selected === discard;
+  }
+
   public async reportFailure(error: ToolError): Promise<void> {
     this.logger.error('Git Review action failed.', undefined, {
       code: error.code,

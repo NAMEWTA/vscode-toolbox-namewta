@@ -1,15 +1,16 @@
 import * as vscode from 'vscode';
-import type { GitReviewWebviewAction } from '../../core/contracts';
 import type {
   GitReviewItem,
-  GitReviewItemContent,
+  GitReviewSession,
   GitReviewSessionSnapshot,
 } from '../../core/domains/git-review/public-api';
-import type { ToolboxGateway, ToolLogger } from '../../core/orchestration/public-api';
 import { DisposableStore } from '../../core/kernel/disposable';
+import type { ToolboxGateway, ToolLogger } from '../../core/orchestration/public-api';
 import type { GitReviewPresentation } from './git-review-session-controller-contract';
-import { displayGitReviewText } from './git-review-display-text';
-import { createGitReviewSummaryText } from './git-review-summary-text';
+import {
+  createGitReviewNativeChanges,
+  gitReviewInventoryIdentity,
+} from './git-review-native-changes';
 import { getGitReviewSession } from './git-review-session-snapshot';
 import {
   GIT_REVIEW_DOCUMENT_SCHEME,
@@ -20,105 +21,117 @@ import {
   type GitReviewQueueSelectionHandler,
 } from './vscode-git-review-queue-tree';
 import { VscodeGitReviewStatusBar } from './vscode-git-review-status-bar';
-import { GitReviewPanelController } from './git-review-panel-controller';
+import {
+  VscodeNativeChangesPresenter,
+  type VscodeNativeChangeResource,
+} from './vscode-native-changes-presenter';
 
 type GitReviewPresentationResources = {
   readonly disposables: DisposableStore;
   readonly documentProvider: VscodeGitReviewDocumentProvider;
   readonly queueTree: VscodeGitReviewQueueTree;
   readonly statusBar: VscodeGitReviewStatusBar;
-  readonly panel: GitReviewPanelController | undefined;
 };
 
 export type VscodeGitReviewPresentationDependencies = {
-  readonly extensionUri: vscode.Uri;
   readonly gateway: ToolboxGateway;
   readonly logger: ToolLogger;
-  readonly onSnapshot: (snapshot: GitReviewSessionSnapshot) => void;
 };
 
 export class VscodeGitReviewPresentation implements GitReviewPresentation {
   #resources: GitReviewPresentationResources | undefined;
   #snapshot: GitReviewSessionSnapshot = { state: 'inactive' };
+  #inventoryIdentity: string | undefined;
   #isDisposed = false;
 
   public constructor(
     private readonly onSelect: GitReviewQueueSelectionHandler,
     private readonly dependencies?: VscodeGitReviewPresentationDependencies,
+    private readonly nativeChanges = new VscodeNativeChangesPresenter(),
   ) {}
 
   public render(snapshot: GitReviewSessionSnapshot): void {
     this.#snapshot = snapshot;
-    if (this.#isDisposed) {
-      return;
-    }
-    if (getGitReviewSession(snapshot) === undefined) {
+    if (this.#isDisposed) return;
+    const session = getGitReviewSession(snapshot);
+    if (session === undefined) {
       this.releaseResources();
       return;
     }
     const resources = this.ensureResources();
     resources.queueTree.render(snapshot);
     resources.statusBar.render(snapshot);
-    resources.panel?.render(snapshot);
-  }
-
-  public async openItem(
-    item: GitReviewItem,
-    content: GitReviewItemContent,
-  ): Promise<void> {
-    const resources = this.ensureResources();
-    await this.openNativeDiff(resources.documentProvider, item, content);
+    const identity = gitReviewInventoryIdentity(session);
+    if (identity !== this.#inventoryIdentity) {
+      this.#inventoryIdentity = identity;
+      this.openNativeReview(resources.documentProvider, session);
+    }
   }
 
   public focusItem(item: GitReviewItem): boolean {
-    const panel = this.ensureResources().panel;
-    if (panel === undefined) {
-      return false;
-    }
-    panel.focusItem(item.itemId);
-    return true;
-  }
-
-  private async openNativeDiff(
-    documentProvider: VscodeGitReviewDocumentProvider,
-    item: GitReviewItem,
-    content: GitReviewItemContent,
-  ): Promise<void> {
-    if (content.kind === 'text') {
-      const documents = documentProvider.createTextUris(content.before, content.after);
-      await vscode.commands.executeCommand(
-        'vscode.diff',
-        documents.before,
-        documents.after,
-        vscode.l10n.t('Git Review: {0}', displayGitReviewText(item.path)),
-        { preview: true },
-      );
-      return;
-    }
-    const summaryUri = documentProvider.createSummaryUri(
-      createGitReviewSummaryText(item, content.reason),
+    const session = getGitReviewSession(this.#snapshot);
+    return (
+      session?.items.some(
+        (candidate) =>
+          candidate.itemId === item.itemId &&
+          candidate.contentIdentity === item.contentIdentity,
+      ) === true
     );
-    await vscode.window.showTextDocument(summaryUri, { preview: true });
   }
 
   public dispose(): void {
-    if (this.#isDisposed) {
-      return;
-    }
+    if (this.#isDisposed) return;
     this.#isDisposed = true;
     this.releaseResources();
+  }
+
+  private openNativeReview(
+    documentProvider: VscodeGitReviewDocumentProvider,
+    session: GitReviewSession,
+  ): void {
+    documentProvider.clear();
+    const resources: VscodeNativeChangeResource[] = createGitReviewNativeChanges(
+      session,
+    ).map((change) => [
+      vscode.Uri.joinPath(
+        vscode.Uri.file(session.repositoryRoot),
+        ...change.labelPath.split('/'),
+      ),
+      change.original === undefined
+        ? undefined
+        : documentProvider.createItemUri(
+            change.original.item,
+            change.original.side,
+            change.labelPath,
+          ),
+      change.modified === undefined
+        ? undefined
+        : documentProvider.createItemUri(
+            change.modified.item,
+            change.modified.side,
+            change.labelPath,
+          ),
+    ]);
+    void this.nativeChanges
+      .open(createReviewTitle(session), resources)
+      .catch((error: unknown) => {
+        this.dependencies?.logger.error('Git Review native Changes failed.', error);
+        void vscode.window.showErrorMessage(
+          vscode.l10n.t('Git Review could not open the native Changes view.'),
+        );
+      });
   }
 
   private ensureResources(): GitReviewPresentationResources {
     if (this.#isDisposed) {
       throw new Error(vscode.l10n.t('Git Review is no longer active.'));
     }
-    if (this.#resources !== undefined) {
-      return this.#resources;
-    }
+    if (this.#resources !== undefined) return this.#resources;
     const disposables = new DisposableStore();
     try {
-      const documentProvider = disposables.add(new VscodeGitReviewDocumentProvider());
+      const documentProvider = disposables.add(
+        new VscodeGitReviewDocumentProvider(this.dependencies?.gateway),
+      );
       disposables.add(
         vscode.workspace.registerTextDocumentContentProvider(
           GIT_REVIEW_DOCUMENT_SCHEME,
@@ -127,21 +140,8 @@ export class VscodeGitReviewPresentation implements GitReviewPresentation {
       );
       const queueTree = disposables.add(new VscodeGitReviewQueueTree(this.onSelect));
       const statusBar = disposables.add(new VscodeGitReviewStatusBar());
-      const panel =
-        this.dependencies === undefined
-          ? undefined
-          : disposables.add(
-              new GitReviewPanelController(
-                this.dependencies.extensionUri,
-                this.dependencies.gateway,
-                this.dependencies.logger,
-                this.dependencies.onSnapshot,
-                (message) => this.handlePanelAction(documentProvider, message),
-              ),
-            );
-      const resources = { disposables, documentProvider, queueTree, statusBar, panel };
+      const resources = { disposables, documentProvider, queueTree, statusBar };
       this.#resources = resources;
-      panel?.render(this.#snapshot);
       return resources;
     } catch (error: unknown) {
       disposables.dispose();
@@ -149,162 +149,23 @@ export class VscodeGitReviewPresentation implements GitReviewPresentation {
     }
   }
 
-  private async handlePanelAction(
-    documentProvider: VscodeGitReviewDocumentProvider,
-    message: GitReviewWebviewAction,
-  ): Promise<void> {
-    const session = getGitReviewSession(this.#snapshot);
-    const item = session?.items.find(
-      (candidate) =>
-        candidate.itemId === message.itemId &&
-        candidate.contentIdentity === message.contentIdentity,
-    );
-    if (
-      session === undefined ||
-      item === undefined ||
-      this.dependencies === undefined
-    ) {
-      return;
-    }
-    try {
-      await this.performPanelAction(
-        documentProvider,
-        session.repositoryRoot,
-        item,
-        message,
-      );
-    } catch (error: unknown) {
-      this.dependencies.logger.error('Git Review presentation action failed.', error);
-      await vscode.window.showErrorMessage(
-        vscode.l10n.t('Git Review action failed. See the output log for details.'),
-      );
-    }
-  }
-
-  private async performPanelAction(
-    documentProvider: VscodeGitReviewDocumentProvider,
-    repositoryRoot: string,
-    item: GitReviewItem,
-    message: GitReviewWebviewAction,
-  ): Promise<void> {
-    switch (message.action) {
-      case 'open-file':
-      case 'merge-changes':
-        await vscode.commands.executeCommand(
-          'vscode.open',
-          vscode.Uri.joinPath(vscode.Uri.file(repositoryRoot), item.path),
-        );
-        return;
-      case 'copy-reference':
-        await this.copyReference(repositoryRoot, item, message.line);
-        return;
-      case 'mark-reviewed':
-        await this.reviewItem(item, 'gitReview.markReviewedAndNext');
-        return;
-      case 'skip':
-        await this.reviewItem(item, 'gitReview.skip');
-        return;
-      case 'open-diff':
-        await this.openPanelDiff(documentProvider, item);
-        return;
-    }
-  }
-
-  private async reviewItem(
-    item: GitReviewItem,
-    command: 'gitReview.markReviewedAndNext' | 'gitReview.skip',
-  ): Promise<void> {
-    if (this.dependencies === undefined) {
-      return;
-    }
-    await this.onSelect(item);
-    const currentSession = getGitReviewSession(this.#snapshot);
-    const currentItem = currentSession?.items.find(
-      (candidate) => candidate.itemId === currentSession.currentItemId,
-    );
-    if (
-      currentItem === undefined ||
-      currentItem.itemId !== item.itemId ||
-      currentItem.contentIdentity !== item.contentIdentity
-    ) {
-      return;
-    }
-    const result = await this.dependencies.gateway.execute(
-      command,
-      {},
-      { source: 'webview' },
-    );
-    if (result.ok) {
-      this.dependencies.onSnapshot(result.data);
-    }
-  }
-
-  private async openPanelDiff(
-    documentProvider: VscodeGitReviewDocumentProvider,
-    item: GitReviewItem,
-  ): Promise<void> {
-    if (this.dependencies === undefined) {
-      return;
-    }
-    const result = await this.dependencies.gateway.execute(
-      'gitReview.getItemContent',
-      { path: item.path, contentIdentity: item.contentIdentity },
-      { source: 'webview' },
-    );
-    if (result.ok) {
-      await this.openNativeDiff(documentProvider, item, result.data);
-    }
-  }
-
-  private async copyReference(
-    repositoryRoot: string,
-    item: GitReviewItem,
-    line: number | undefined,
-  ): Promise<void> {
-    if (this.dependencies === undefined) {
-      return;
-    }
-    const root = vscode.Uri.file(repositoryRoot);
-    const resource = vscode.Uri.joinPath(root, item.path);
-    const position = { line: Math.max((line ?? 1) - 1, 0), character: 0 };
-    const result = await this.dependencies.gateway.execute(
-      'copyReference.copy',
-      {
-        mode: 'relative',
-        source: {
-          kind: 'editor',
-          resource: toResourceSnapshot(resource),
-          selection: { anchor: position, active: position },
-        },
-        workspaceFolders: [toResourceSnapshot(root)],
-      },
-      { source: 'webview' },
-    );
-    if (result.ok) {
-      vscode.window.setStatusBarMessage(
-        vscode.l10n.t('Copied reference: {0}', result.data),
-        2_000,
-      );
-    }
-  }
-
   private releaseResources(): void {
     const resources = this.#resources;
     this.#resources = undefined;
+    this.#inventoryIdentity = undefined;
     resources?.disposables.dispose();
   }
 }
 
-function toResourceSnapshot(uri: vscode.Uri): {
-  readonly scheme: string;
-  readonly authority: string;
-  readonly path: string;
-  readonly absolute: string;
-} {
-  return {
-    scheme: uri.scheme,
-    authority: uri.authority,
-    path: uri.path,
-    absolute: uri.fsPath,
-  };
+function createReviewTitle(session: GitReviewSession): string {
+  const staged = session.items.filter((item) => item.layer === 'staged').length;
+  const unstaged = session.items.filter((item) => item.layer === 'unstaged').length;
+  const conflicts = session.items.filter((item) => item.layer === 'conflict').length;
+  return vscode.l10n.t(
+    'Git Review · {0} items · staged {1} · unstaged {2} · conflicts {3}',
+    session.items.length,
+    staged,
+    unstaged,
+    conflicts,
+  );
 }

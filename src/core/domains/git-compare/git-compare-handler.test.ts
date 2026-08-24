@@ -5,6 +5,7 @@ import {
   GitCompareListCommitsHandler,
   GitCompareResolveRevisionHandler,
   GitCompareRevisionContentHandler,
+  GitCompareSearchCommitsHandler,
 } from './git-compare-handler';
 import type { GitComparePort } from './git-compare-port';
 
@@ -28,10 +29,17 @@ describe('Git compare handlers', () => {
       authoredAt: 1_700_000_000_000,
       subject: 'Initial',
     });
+    port.searchCommits.mockResolvedValue({ matches: [] });
     const context = createContext();
     await expect(
       new GitCompareListCommitsHandler(port).execute({ ...input, limit: 10 }, context),
     ).resolves.toEqual({ commits: [], complete: true });
+    await expect(
+      new GitCompareSearchCommitsHandler(port).execute(
+        { ...input, query: 'feature', limit: 10 },
+        context,
+      ),
+    ).resolves.toEqual({ matches: [] });
     await expect(
       new GitCompareCommitsHandler(port).execute({ ...input, base, target }, context),
     ).resolves.toMatchObject({ base, target, stats: { files: 0 } });
@@ -48,6 +56,7 @@ describe('Git compare handlers', () => {
       ),
     ).resolves.toEqual({ kind: 'text', content: 'code' });
     expect(port.listCommits).toHaveBeenCalledOnce();
+    expect(port.searchCommits).toHaveBeenCalledOnce();
     expect(port.compareCommits).toHaveBeenCalledOnce();
     expect(port.resolveRevision).toHaveBeenCalledOnce();
     expect(port.getRevisionContent).toHaveBeenCalledOnce();
@@ -58,6 +67,12 @@ describe('Git compare handlers', () => {
     const context = createContext(true);
     await expect(
       new GitCompareListCommitsHandler(port).execute({ ...input, limit: 10 }, context),
+    ).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(
+      new GitCompareSearchCommitsHandler(port).execute(
+        { ...input, query: 'feature', limit: 10 },
+        context,
+      ),
     ).rejects.toMatchObject({ name: 'AbortError' });
     await expect(
       new GitCompareCommitsHandler(port).execute({ ...input, base, target }, context),
@@ -75,6 +90,7 @@ describe('Git compare handlers', () => {
       ),
     ).rejects.toMatchObject({ name: 'AbortError' });
     expect(port.listCommits).not.toHaveBeenCalled();
+    expect(port.searchCommits).not.toHaveBeenCalled();
     expect(port.compareCommits).not.toHaveBeenCalled();
     expect(port.resolveRevision).not.toHaveBeenCalled();
     expect(port.getRevisionContent).not.toHaveBeenCalled();
@@ -83,12 +99,14 @@ describe('Git compare handlers', () => {
 
 function createPort(): GitComparePort & {
   readonly listCommits: ReturnType<typeof vi.fn>;
+  readonly searchCommits: ReturnType<typeof vi.fn>;
   readonly compareCommits: ReturnType<typeof vi.fn>;
   readonly resolveRevision: ReturnType<typeof vi.fn>;
   readonly getRevisionContent: ReturnType<typeof vi.fn>;
 } {
   return {
     listCommits: vi.fn(),
+    searchCommits: vi.fn(),
     compareCommits: vi.fn(),
     resolveRevision: vi.fn(),
     getRevisionContent: vi.fn(),

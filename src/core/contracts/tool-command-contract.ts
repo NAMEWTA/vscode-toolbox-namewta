@@ -6,10 +6,7 @@ import {
   type GitReviewStartInput,
 } from '../domains/git-review/git-review-model';
 /* eslint-disable max-lines */
-import type {
-  GitReviewItemActionInput,
-  GitReviewItemPatch,
-} from '../domains/git-review/git-review-patch-model';
+import type { GitReviewItemActionInput } from '../domains/git-review/git-review-item-action';
 import { isGitReviewToolCommandInput } from './git-review-tool-command-input';
 import {
   isFullCommitHash,
@@ -45,6 +42,9 @@ import {
   type GitCompareResolveRevisionInput,
   type GitCompareRevisionInput,
   type GitCompareRevisionResult,
+  isGitCompareSearchInput,
+  type GitCompareSearchInput,
+  type GitCompareSearchResult,
 } from '../domains/git-compare/public-api';
 
 export type {
@@ -66,6 +66,8 @@ export type {
   GitCompareResolveRevisionInput,
   GitCompareRevisionInput,
   GitCompareRevisionResult,
+  GitCompareSearchInput,
+  GitCompareSearchResult,
 };
 export type GitBlameReaderModelInput = {
   readonly resource: GitBlameAnnotationsInput['resource'];
@@ -90,7 +92,6 @@ export type {
   GitReviewItemContent,
   GitReviewItemContentInput,
   GitReviewItemActionInput,
-  GitReviewItemPatch,
   GitReviewSessionSnapshot,
   GitReviewStartInput,
 };
@@ -168,6 +169,10 @@ export type ToolCommandMap = {
     input: GitCompareHistoryInput;
     output: GitCompareHistoryPage;
   };
+  'gitCompare.searchCommits': {
+    input: GitCompareSearchInput;
+    output: GitCompareSearchResult;
+  };
   'gitCompare.resolveRevision': {
     input: GitCompareResolveRevisionInput;
     output: GitCompareCommit;
@@ -220,10 +225,6 @@ export type ToolCommandMap = {
     input: GitReviewItemContentInput;
     output: GitReviewItemContent;
   };
-  'gitReview.getItemPatch': {
-    input: GitReviewItemActionInput;
-    output: GitReviewItemPatch;
-  };
   'gitReview.stageItem': {
     input: GitReviewItemActionInput;
     output: GitReviewSessionSnapshot;
@@ -266,12 +267,12 @@ const TOOL_COMMAND_IDS = [
   'gitBlame.getHistoricalContent',
   'gitBlame.getLineHistory',
   'gitCompare.listCommits',
+  'gitCompare.searchCommits',
   'gitCompare.resolveRevision',
   'gitCompare.compareCommits',
   'gitCompare.getRevisionContent',
   'gitReview.end',
   'gitReview.getItemContent',
-  'gitReview.getItemPatch',
   'gitReview.stageItem',
   'gitReview.unstageItem',
   'gitReview.discardItem',
@@ -329,6 +330,8 @@ function isNonGitReviewCommandInput(
       return isGitLineHistoryInput(input);
     case 'gitCompare.listCommits':
       return isGitCompareHistoryInput(input);
+    case 'gitCompare.searchCommits':
+      return isGitCompareSearchInput(input);
     case 'gitCompare.resolveRevision':
       return isGitCompareResolveRevisionInput(input);
     case 'gitCompare.compareCommits':

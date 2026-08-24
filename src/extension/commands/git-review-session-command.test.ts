@@ -51,6 +51,21 @@ const COMMANDS: readonly {
     id: 'vscodeToolboxNamewta.gitReview.end',
     method: 'end',
   },
+  {
+    action: 'stageItem',
+    id: 'vscodeToolboxNamewta.gitReview.stageItem',
+    method: 'stageItem',
+  },
+  {
+    action: 'unstageItem',
+    id: 'vscodeToolboxNamewta.gitReview.unstageItem',
+    method: 'unstageItem',
+  },
+  {
+    action: 'discardItem',
+    id: 'vscodeToolboxNamewta.gitReview.discardItem',
+    method: 'discardItem',
+  },
 ];
 
 describe('Git Review 会话命令', () => {
@@ -64,7 +79,7 @@ describe('Git Review 会话命令', () => {
     expect(target[definition.method]).toHaveBeenCalledTimes(1);
   });
 
-  it('创建全部八个用户可绑定命令', () => {
+  it('创建全部会话和条目命令', () => {
     const commands = createGitReviewSessionCommands(createTarget());
 
     expect(commands.map((command) => command.id)).toEqual(
@@ -102,6 +117,9 @@ function createTarget(): GitReviewSessionCommandTarget & {
   readonly skip: ReturnType<typeof vi.fn>;
   readonly refresh: ReturnType<typeof vi.fn>;
   readonly end: ReturnType<typeof vi.fn>;
+  readonly stageItem: ReturnType<typeof vi.fn>;
+  readonly unstageItem: ReturnType<typeof vi.fn>;
+  readonly discardItem: ReturnType<typeof vi.fn>;
 } {
   return {
     start: vi
@@ -114,5 +132,8 @@ function createTarget(): GitReviewSessionCommandTarget & {
     skip: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     refresh: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     end: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    stageItem: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    unstageItem: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    discardItem: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
   };
 }

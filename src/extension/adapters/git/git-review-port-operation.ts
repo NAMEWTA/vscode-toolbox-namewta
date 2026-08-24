@@ -64,25 +64,6 @@ export function gitReviewItemSummary(
     : undefined;
 }
 
-export function createGitReviewPatchArgs(
-  item: GitReviewChangeDescriptor,
-): readonly string[] {
-  const layerArgs = item.layer === 'staged' ? ['--cached'] : [];
-  return [
-    GIT_OPTIONAL_LOCKS,
-    '-c',
-    'core.quotePath=false',
-    'diff',
-    ...layerArgs,
-    '--no-ext-diff',
-    '--no-textconv',
-    '--unified=3',
-    '-M',
-    '--',
-    ...gitReviewItemPaths(item),
-  ];
-}
-
 export function createGitReviewMutationArgs(
   hasHead: boolean,
   item: GitReviewChangeDescriptor,

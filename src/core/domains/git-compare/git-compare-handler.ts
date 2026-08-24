@@ -9,6 +9,8 @@ import type {
   GitCompareResolveRevisionInput,
   GitCompareRevisionInput,
   GitCompareRevisionResult,
+  GitCompareSearchInput,
+  GitCompareSearchResult,
 } from './git-compare-model';
 import type { GitComparePort } from './git-compare-port';
 
@@ -25,6 +27,22 @@ export class GitCompareListCommitsHandler
   ): Promise<GitCompareHistoryPage> {
     assertActive(context);
     return this.port.listCommits(input, context.signal);
+  }
+}
+
+export class GitCompareSearchCommitsHandler
+  implements ToolHandler<'gitCompare.searchCommits'>
+{
+  public readonly command = 'gitCompare.searchCommits' as const;
+
+  public constructor(private readonly port: GitComparePort) {}
+
+  public async execute(
+    input: GitCompareSearchInput,
+    context: ToolExecutionContext,
+  ): Promise<GitCompareSearchResult> {
+    assertActive(context);
+    return this.port.searchCommits(input, context.signal);
   }
 }
 

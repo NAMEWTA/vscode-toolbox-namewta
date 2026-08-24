@@ -1,17 +1,17 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import process from 'node:process';
 import * as esbuild from 'esbuild';
 
 export async function buildWebview(options = {}) {
   const production = options.production ?? process.argv.includes('--production');
   const watch = options.watch ?? process.argv.includes('--watch');
+  await rm('dist/webview', { recursive: true, force: true });
   await mkdir('dist/webview', { recursive: true });
   await mkdir('dist/meta', { recursive: true });
 
   const context = await esbuild.context({
     entryPoints: {
       main: 'src/webview/main.tsx',
-      'git-review': 'src/webview/git-review-main.tsx',
       'git-blame-reader': 'src/webview/git-blame-reader-main.tsx',
     },
     bundle: true,

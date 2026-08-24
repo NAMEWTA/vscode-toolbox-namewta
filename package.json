@@ -2,7 +2,7 @@
   "name": "vscode-toolbox-namewta",
   "displayName": "vscode-toolbox-namewta",
   "description": "%extension.description%",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "publisher": "NAMEWTA",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -130,6 +130,21 @@
         "title": "%commands.gitReview.end%"
       },
       {
+        "command": "vscodeToolboxNamewta.gitReview.stageItem",
+        "title": "%commands.gitReview.stageItem%",
+        "icon": "$(add)"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.unstageItem",
+        "title": "%commands.gitReview.unstageItem%",
+        "icon": "$(remove)"
+      },
+      {
+        "command": "vscodeToolboxNamewta.gitReview.discardItem",
+        "title": "%commands.gitReview.discardItem%",
+        "icon": "$(discard)"
+      },
+      {
         "command": "vscodeToolboxNamewta.gitCompare.start",
         "title": "%commands.gitCompare.start%",
         "icon": "$(git-compare)"
@@ -216,9 +231,43 @@
           "command": "vscodeToolboxNamewta.gitCompare.openHistory",
           "when": "false"
         }
+      ],
+      "view/item/context": [
+        {
+          "command": "vscodeToolboxNamewta.gitReview.stageItem",
+          "when": "view == vscodeToolboxNamewta.gitReview.queue && viewItem == gitReview.unstaged",
+          "group": "inline@1"
+        },
+        {
+          "command": "vscodeToolboxNamewta.gitReview.stageItem",
+          "when": "view == vscodeToolboxNamewta.gitReview.queue && viewItem == gitReview.conflict",
+          "group": "inline@1"
+        },
+        {
+          "command": "vscodeToolboxNamewta.gitReview.unstageItem",
+          "when": "view == vscodeToolboxNamewta.gitReview.queue && viewItem == gitReview.staged",
+          "group": "inline@1"
+        },
+        {
+          "command": "vscodeToolboxNamewta.gitReview.discardItem",
+          "when": "view == vscodeToolboxNamewta.gitReview.queue && viewItem == gitReview.unstaged",
+          "group": "inline@2"
+        }
       ]
     },
     "keybindings": [
+      {
+        "command": "vscodeToolboxNamewta.copyReference.relative",
+        "key": "ctrl+alt+c",
+        "mac": "cmd+alt+c",
+        "when": "editorTextFocus && resourceScheme != untitled"
+      },
+      {
+        "command": "vscodeToolboxNamewta.copyReference.absolute",
+        "key": "ctrl+alt+v",
+        "mac": "cmd+alt+v",
+        "when": "editorTextFocus && resourceScheme != untitled"
+      },
       {
         "command": "vscodeToolboxNamewta.gitBlame.toggle",
         "key": "ctrl+alt+b",
@@ -332,9 +381,7 @@
     "verify:foundation": "node ./scripts/verify-foundation.mjs"
   },
   "dependencies": {
-    "@tanstack/react-virtual": "3.14.9",
     "lucide-react": "1.31.0",
-    "parse-diff": "0.12.0",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },

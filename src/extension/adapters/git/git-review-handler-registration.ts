@@ -1,7 +1,6 @@
 import {
   GitReviewEndHandler,
   GitReviewGetItemContentHandler,
-  GitReviewGetItemPatchHandler,
   GitReviewStageItemHandler,
   GitReviewUnstageItemHandler,
   GitReviewDiscardItemHandler,
@@ -33,7 +32,6 @@ export function registerGitReviewHandlers(
   registry.register(new GitReviewEndHandler(session));
   registry.register(new GitReviewMarkStaleHandler(session));
   registry.register(new GitReviewGetItemContentHandler(session));
-  registry.register(new GitReviewGetItemPatchHandler(session));
   registry.register(new GitReviewStageItemHandler(session));
   registry.register(new GitReviewUnstageItemHandler(session));
   registry.register(new GitReviewDiscardItemHandler(session));

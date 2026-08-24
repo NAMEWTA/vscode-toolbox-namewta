@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  isGitReviewWebviewBootstrap,
-  isWebviewBootstrap,
-  type GitReviewWebviewStrings,
-  type WebviewStrings,
-} from './webview-bootstrap-contract';
+import { isWebviewBootstrap, type WebviewStrings } from './webview-bootstrap-contract';
 
 const strings: WebviewStrings = {
   eyebrow: 'Foundation',
@@ -61,63 +56,3 @@ describe('Webview bootstrap contract', () => {
     ).toBe(false);
   });
 });
-
-describe('Git Review Webview bootstrap contract', () => {
-  it('accepts a validated aggregate review snapshot', () => {
-    expect(
-      isGitReviewWebviewBootstrap({
-        version: 1,
-        view: 'git-review',
-        language: 'en',
-        requestTimeoutMs: 10_000,
-        strings: gitReviewStrings,
-        snapshot: {
-          state: 'active',
-          session: {
-            repositoryRoot: '/repository',
-            currentItemId: 'unstaged:main.ts',
-            currentItemPath: 'main.ts',
-            items: [
-              {
-                itemId: 'unstaged:main.ts',
-                layer: 'unstaged',
-                path: 'main.ts',
-                contentIdentity: 'a'.repeat(64),
-                change: 'modified',
-                presentation: 'text',
-                reviewState: 'unreviewed',
-              },
-            ],
-            progress: { total: 1, reviewed: 0, skipped: 0, remaining: 1 },
-          },
-        },
-      }),
-    ).toBe(true);
-  });
-});
-
-const gitReviewStrings: GitReviewWebviewStrings = {
-  title: 'Git Review',
-  conflict: 'Conflicts',
-  staged: 'Staged',
-  unstaged: 'Changes',
-  stage: 'Stage',
-  unstage: 'Unstage',
-  discard: 'Discard',
-  openFile: 'Open',
-  openDiff: 'Diff',
-  copyReference: 'Copy',
-  markReviewed: 'Reviewed',
-  skip: 'Skip',
-  mergeChanges: 'Merge',
-  loading: 'Loading',
-  retry: 'Retry',
-  binary: 'Binary',
-  submodule: 'Submodule',
-  tooLarge: 'Too large',
-  unavailable: 'Unavailable',
-  noChanges: 'No changes',
-  refreshRequired: 'Refresh',
-  additions: 'additions',
-  deletions: 'deletions',
-};

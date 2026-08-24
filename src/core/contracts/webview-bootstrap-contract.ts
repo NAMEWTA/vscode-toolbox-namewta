@@ -29,41 +29,6 @@ export type WebviewBootstrap = {
   readonly strings: WebviewStrings;
 };
 
-export type GitReviewWebviewStrings = {
-  readonly title: string;
-  readonly conflict: string;
-  readonly staged: string;
-  readonly unstaged: string;
-  readonly stage: string;
-  readonly unstage: string;
-  readonly discard: string;
-  readonly openFile: string;
-  readonly openDiff: string;
-  readonly copyReference: string;
-  readonly markReviewed: string;
-  readonly skip: string;
-  readonly mergeChanges: string;
-  readonly loading: string;
-  readonly retry: string;
-  readonly binary: string;
-  readonly submodule: string;
-  readonly tooLarge: string;
-  readonly unavailable: string;
-  readonly noChanges: string;
-  readonly refreshRequired: string;
-  readonly additions: string;
-  readonly deletions: string;
-};
-
-export type GitReviewWebviewBootstrap = {
-  readonly version: 1;
-  readonly view: 'git-review';
-  readonly language: string;
-  readonly requestTimeoutMs: number;
-  readonly strings: GitReviewWebviewStrings;
-  readonly snapshot: GitReviewSessionSnapshot;
-};
-
 const WEBVIEW_STRING_KEYS = [
   'eyebrow',
   'title',
@@ -101,24 +66,6 @@ export function isWebviewBootstrap(value: unknown): value is WebviewBootstrap {
   );
 }
 
-export function isGitReviewWebviewBootstrap(
-  value: unknown,
-): value is GitReviewWebviewBootstrap {
-  if (
-    !isRecord(value) ||
-    value.version !== 1 ||
-    value.view !== 'git-review' ||
-    typeof value.language !== 'string' ||
-    value.language.length === 0 ||
-    !isWebviewTimeout(value.requestTimeoutMs) ||
-    !hasGitReviewStrings(value.strings) ||
-    !isGitReviewSessionSnapshot(value.snapshot)
-  ) {
-    return false;
-  }
-  return true;
-}
-
 function hasWebviewStrings(value: unknown): value is WebviewStrings {
   if (!isRecord(value)) {
     return false;
@@ -127,38 +74,6 @@ function hasWebviewStrings(value: unknown): value is WebviewStrings {
   return WEBVIEW_STRING_KEYS.every(
     (key) => typeof value[key] === 'string' && value[key].length > 0,
   );
-}
-
-function hasGitReviewStrings(value: unknown): value is GitReviewWebviewStrings {
-  if (!isRecord(value)) {
-    return false;
-  }
-  const keys: readonly (keyof GitReviewWebviewStrings)[] = [
-    'title',
-    'conflict',
-    'staged',
-    'unstaged',
-    'stage',
-    'unstage',
-    'discard',
-    'openFile',
-    'openDiff',
-    'copyReference',
-    'markReviewed',
-    'skip',
-    'mergeChanges',
-    'loading',
-    'retry',
-    'binary',
-    'submodule',
-    'tooLarge',
-    'unavailable',
-    'noChanges',
-    'refreshRequired',
-    'additions',
-    'deletions',
-  ];
-  return keys.every((key) => typeof value[key] === 'string' && value[key].length > 0);
 }
 
 function isWebviewTimeout(value: unknown): value is number {
@@ -173,5 +88,3 @@ function isWebviewTimeout(value: unknown): value is number {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
-import { type GitReviewSessionSnapshot } from '../domains/git-review/git-review-model';
-import { isGitReviewSessionSnapshot } from '../domains/git-review/git-review-session-snapshot-contract';

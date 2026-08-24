@@ -3,6 +3,8 @@ import type {
   GitCompareHistoryInput,
   GitCompareHistoryPage,
   GitCompareResolveRevisionInput,
+  GitCompareSearchInput,
+  GitCompareSearchResult,
 } from '../../core/domains/git-compare/public-api';
 
 export type GitCompareRevisionSelection = {
@@ -49,6 +51,11 @@ export type GitCompareRevisionResolver = (
   input: GitCompareResolveRevisionInput,
   signal: AbortSignal,
 ) => Promise<GitCompareCommit>;
+
+export type GitCompareCommitSearcher = (
+  input: GitCompareSearchInput,
+  signal: AbortSignal,
+) => Promise<GitCompareSearchResult>;
 
 export type GitCompareRevisionQuickPickLabels = {
   readonly baseTitle: string;

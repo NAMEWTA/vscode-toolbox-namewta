@@ -2,7 +2,7 @@ import {
   isGitReviewItemContentInput,
   isGitReviewStartInput,
 } from '../domains/git-review/git-review-model';
-import { isGitReviewItemActionInput } from '../domains/git-review/git-review-patch-model';
+import { isGitReviewItemActionInput } from '../domains/git-review/git-review-item-action';
 
 const EMPTY_INPUT_COMMANDS = new Set([
   'gitReview.previous',
@@ -16,7 +16,6 @@ const EMPTY_INPUT_COMMANDS = new Set([
 ]);
 
 const ITEM_ACTION_COMMANDS = new Set([
-  'gitReview.getItemPatch',
   'gitReview.stageItem',
   'gitReview.unstageItem',
   'gitReview.discardItem',

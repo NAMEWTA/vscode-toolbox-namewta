@@ -1,6 +1,6 @@
 # ADR-0001：使用自有 WebviewPanel 承载聚合 Diff
 
-- **状态：** Accepted
+- **状态：** Superseded by `0006-native-git-search-and-review.md`
 - **日期：** 2026-08-10
 - **来源：** `2026-08-10-copy-ranges-and-aggregate-git-review` 的 `ADR-001`
 
@@ -15,3 +15,7 @@
 ## 后果
 
 Extension Host 负责 Git patch 生成与解析，Core 只持有可序列化模型，Webview 负责渲染和虚拟化。消息验证、内容上限、取消和完整资源清理属于该 Panel 的必备生命周期合同。
+
+## 取代说明
+
+VS Code 目标版本已验证公开 `vscode.changes` 可满足多文件聚合呈现。自 2026-08-24 起，Git Review 直接复用与 Git Commit Compare 相同的原生 Changes presenter，本 ADR 的自有 WebviewPanel、结构化 patch 与虚拟化决定不再适用。

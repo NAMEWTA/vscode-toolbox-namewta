@@ -7,6 +7,8 @@ import type {
   GitCompareResolveRevisionInput,
   GitCompareRevisionInput,
   GitCompareRevisionResult,
+  GitCompareSearchInput,
+  GitCompareSearchResult,
 } from './git-compare-model';
 
 export type GitCompareCancellationSignal = {
@@ -24,6 +26,10 @@ export type GitComparePort = {
     input: GitCompareHistoryInput,
     signal: GitCompareCancellationSignal,
   ): Promise<GitCompareHistoryPage>;
+  searchCommits(
+    input: GitCompareSearchInput,
+    signal: GitCompareCancellationSignal,
+  ): Promise<GitCompareSearchResult>;
   resolveRevision(
     input: GitCompareResolveRevisionInput,
     signal: GitCompareCancellationSignal,

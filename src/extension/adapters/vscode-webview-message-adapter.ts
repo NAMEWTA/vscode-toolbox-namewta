@@ -4,7 +4,6 @@ import {
   isToolCommandInput,
   isWebviewToExtensionMessage,
   type ExtensionToWebviewMessage,
-  type GitReviewWebviewAction,
   type GitBlameReaderWebviewAction,
   type ToolCommandId,
   type ToolResult,
@@ -17,7 +16,6 @@ export type VscodeWebviewMessageAdapterOptions = {
     command: ToolCommandId,
     input: unknown,
   ) => Promise<ToolResult<never> | undefined>;
-  readonly onGitReviewAction?: (message: GitReviewWebviewAction) => Promise<void>;
   readonly onGitBlameReaderAction?: (
     message: Extract<
       WebviewToExtensionMessage,
@@ -56,11 +54,6 @@ export class VscodeWebviewMessageAdapter implements vscode.Disposable {
   private async handleMessage(message: unknown): Promise<void> {
     if (!isWebviewToExtensionMessage(message)) {
       this.logger.warn('Ignored an invalid Webview message.');
-      return;
-    }
-
-    if (message.type === 'gitReview.action') {
-      await this.runAction(() => this.options.onGitReviewAction?.(message));
       return;
     }
 

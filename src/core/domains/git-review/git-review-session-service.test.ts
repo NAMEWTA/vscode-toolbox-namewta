@@ -57,37 +57,7 @@ describe('GitReviewSessionService', () => {
     'does not call the Port when a refresh has already been cancelled',
     avoidsCancelledRefresh,
   );
-  it('allows aggregate patch reads to complete concurrently', readsPatchesConcurrently);
 });
-
-async function readsPatchesConcurrently(): Promise<void> {
-  const port = createPort();
-  port.listChanges.mockResolvedValue([
-    change({ path: 'alpha.ts', contentIdentity: 'a'.repeat(64) }),
-    change({ path: 'beta.ts', contentIdentity: 'b'.repeat(64) }),
-  ]);
-  port.readItemPatch.mockResolvedValue({
-    kind: 'patch',
-    additions: 0,
-    deletions: 0,
-    hunks: [],
-  });
-  const service = new GitReviewSessionService(port);
-  await startSession(service);
-
-  await expect(
-    Promise.all([
-      service.getItemPatch(
-        { itemId: 'unstaged:alpha.ts', contentIdentity: 'a'.repeat(64) },
-        { aborted: false },
-      ),
-      service.getItemPatch(
-        { itemId: 'unstaged:beta.ts', contentIdentity: 'b'.repeat(64) },
-        { aborted: false },
-      ),
-    ]),
-  ).resolves.toHaveLength(2);
-}
 
 async function createsStablePathSortedQueue(): Promise<void> {
   const port = createPort();
@@ -482,13 +452,11 @@ function item(
 function createPort(): GitReviewPort & {
   readonly listChanges: ReturnType<typeof vi.fn>;
   readonly readItemContent: ReturnType<typeof vi.fn>;
-  readonly readItemPatch: ReturnType<typeof vi.fn>;
   readonly mutateItem: ReturnType<typeof vi.fn>;
 } {
   return {
     listChanges: vi.fn(),
     readItemContent: vi.fn(),
-    readItemPatch: vi.fn(),
     mutateItem: vi.fn(),
   };
 }

@@ -3,7 +3,6 @@
   "entry": [
     "src/extension/extension.ts",
     "src/webview/main.tsx",
-    "src/webview/git-review-main.tsx",
     "src/webview/git-blame-reader-main.tsx",
     "src/core/domains/**/public-api.ts",
     "src/**/*.test.{ts,tsx}",

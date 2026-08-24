@@ -73,6 +73,26 @@ describe('tool command contract', () => {
     ).toBe(false);
   });
 
+  it('在 Gateway 边界验证有界 Git revision 搜索', () => {
+    expect(isToolCommandId('gitCompare.searchCommits')).toBe(true);
+    expect(
+      isToolCommandInput('gitCompare.searchCommits', {
+        repositoryRoot: '/workspace/repository',
+        query: 'feature/search',
+        limit: 50,
+      }),
+    ).toBe(true);
+    expect(
+      isToolCommandInput('gitCompare.searchCommits', {
+        repositoryRoot: '/workspace/repository',
+        query: 'bad\nquery',
+        limit: 50,
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('tool command security boundaries', () => {
   it('rejects traversal, abbreviated hashes and invalid Git options at the Gateway boundary', () => {
     const resource = {
       repositoryRoot: '/workspace/repo',

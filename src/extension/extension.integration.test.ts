@@ -26,10 +26,10 @@ suite('vscode-toolbox-namewta extension', () => {
       { command: 'gitCompare.getRevisionContent', available: true },
       { command: 'gitCompare.listCommits', available: true },
       { command: 'gitCompare.resolveRevision', available: true },
+      { command: 'gitCompare.searchCommits', available: true },
       { command: 'gitReview.discardItem', available: true },
       { command: 'gitReview.end', available: true },
       { command: 'gitReview.getItemContent', available: true },
-      { command: 'gitReview.getItemPatch', available: true },
       { command: 'gitReview.markReviewedAndNext', available: true },
       { command: 'gitReview.markStale', available: true },
       { command: 'gitReview.next', available: true },
@@ -66,6 +66,9 @@ suite('vscode-toolbox-namewta extension', () => {
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.skip'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.refresh'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.end'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.stageItem'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.unstageItem'));
+    assert.ok(commands.includes('vscodeToolboxNamewta.gitReview.discardItem'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.start'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitCompare.openHistory'));
     for (const retired of [

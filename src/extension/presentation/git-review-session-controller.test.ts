@@ -13,8 +13,8 @@ import type {
   GitReviewWatcherFactory,
 } from './git-review-session-controller-contract';
 
-describe('Git Review 聚合视图定位', () => {
-  it('聚合视图接管定位时不读取完整原生 Diff 内容', async () => {
+describe('Git Review 原生 Changes 定位', () => {
+  it('原生 Changes 接管文件呈现时，普通导航不主动读取 Diff 内容', async () => {
     const gateway = createGateway();
     const initial = activeSnapshot('alpha.ts', [item('alpha.ts')]);
     gateway.execute.mockResolvedValueOnce(success(initial));
@@ -28,7 +28,6 @@ describe('Git Review 聚合视图定位', () => {
       expect.objectContaining({ itemId: 'unstaged:alpha.ts' }),
     );
     expect(gateway.execute).toHaveBeenCalledTimes(1);
-    expect(dependencies.presentation.openItem).not.toHaveBeenCalled();
   });
 });
 
@@ -39,13 +38,7 @@ describe('Git Review 会话控制器', () => {
     const navigated = activeSnapshot('beta.ts', [item('alpha.ts'), item('beta.ts')]);
     gateway.execute
       .mockResolvedValueOnce(success(initial))
-      .mockResolvedValueOnce(
-        success({ kind: 'text', before: 'before', after: 'after' }),
-      )
-      .mockResolvedValueOnce(success(navigated))
-      .mockResolvedValueOnce(
-        success({ kind: 'text', before: 'before', after: 'after' }),
-      );
+      .mockResolvedValueOnce(success(navigated));
     const dependencies = createDependencies(gateway);
     const controller = new GitReviewSessionController(dependencies);
 
@@ -63,14 +56,13 @@ describe('Git Review 会话控制器', () => {
       expect.objectContaining({ source: 'extension-command' }),
     );
     expect(gateway.execute).toHaveBeenNthCalledWith(
-      3,
+      2,
       'gitReview.next',
       {},
       expect.objectContaining({ source: 'extension-command' }),
     );
-    expect(dependencies.presentation.openItem).toHaveBeenLastCalledWith(
+    expect(dependencies.presentation.focusItem).toHaveBeenLastCalledWith(
       expect.objectContaining({ path: 'beta.ts', reviewState: 'unreviewed' }),
-      { kind: 'text', before: 'before', after: 'after' },
     );
     expect(dependencies.presentation.render).toHaveBeenLastCalledWith(navigated);
   });
@@ -78,9 +70,7 @@ describe('Git Review 会话控制器', () => {
   it('在用户取消替换时保留现有会话且不发出新的 start', async () => {
     const gateway = createGateway();
     const initial = activeSnapshot('alpha.ts', [item('alpha.ts')]);
-    gateway.execute
-      .mockResolvedValueOnce(success(initial))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'after' }));
+    gateway.execute.mockResolvedValueOnce(success(initial));
     const dependencies = createDependencies(gateway);
     dependencies.host.confirmReplace.mockResolvedValue(false);
     const controller = new GitReviewSessionController(dependencies);
@@ -89,7 +79,7 @@ describe('Git Review 会话控制器', () => {
     await controller.start();
 
     expect(dependencies.host.confirmReplace).toHaveBeenCalledTimes(1);
-    expect(gateway.execute).toHaveBeenCalledTimes(2);
+    expect(gateway.execute).toHaveBeenCalledTimes(1);
     expect(dependencies.presentation.render).toHaveBeenLastCalledWith(initial);
   });
 
@@ -103,10 +93,8 @@ describe('Git Review 会话控制器', () => {
     const refreshed = activeSnapshot('alpha.ts', [item('alpha.ts', 'b'.repeat(64))]);
     gateway.execute
       .mockResolvedValueOnce(success(initial))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'first' }))
       .mockResolvedValueOnce(success(stale))
-      .mockResolvedValueOnce(success(refreshed))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'second' }));
+      .mockResolvedValueOnce(success(refreshed));
     const dependencies = createDependencies(gateway);
     const controller = new GitReviewSessionController(dependencies);
 
@@ -115,41 +103,33 @@ describe('Git Review 会话控制器', () => {
     await controller.refresh();
 
     expect(gateway.execute).toHaveBeenNthCalledWith(
-      3,
+      2,
       'gitReview.markStale',
       {},
       expect.objectContaining({ source: 'extension-command' }),
     );
     expect(gateway.execute).toHaveBeenNthCalledWith(
-      4,
+      3,
       'gitReview.refresh',
       {},
       expect.objectContaining({ source: 'extension-command' }),
     );
     expect(dependencies.host.showStale).toHaveBeenCalledTimes(1);
-    expect(dependencies.presentation.openItem).toHaveBeenLastCalledWith(
+    expect(dependencies.presentation.focusItem).toHaveBeenLastCalledWith(
       expect.objectContaining({ contentIdentity: 'b'.repeat(64) }),
-      { kind: 'text', before: '', after: 'second' },
     );
   });
 
-  it('内容读取失败和释放不会清空其余队列，并取消 watcher', async () => {
+  it('释放不会清空已投影队列，并取消 watcher', async () => {
     const gateway = createGateway();
     const initial = activeSnapshot('alpha.ts', [item('alpha.ts')]);
-    gateway.execute
-      .mockResolvedValueOnce(success(initial))
-      .mockResolvedValueOnce(
-        failure('capability-unavailable', 'Current item is unavailable.'),
-      );
+    gateway.execute.mockResolvedValueOnce(success(initial));
     const dependencies = createDependencies(gateway);
     const controller = new GitReviewSessionController(dependencies);
 
     await controller.start();
     controller.dispose();
 
-    expect(dependencies.host.reportFailure).toHaveBeenCalledWith(
-      expect.objectContaining({ code: 'capability-unavailable' }),
-    );
     expect(dependencies.presentation.render).toHaveBeenCalledWith(initial);
     expect(dependencies.watch.dispose).toHaveBeenCalledTimes(1);
     expect(dependencies.presentation.dispose).toHaveBeenCalledTimes(1);
@@ -160,9 +140,7 @@ describe('Git Review 会话结束', () => {
   it('取消结束确认时保留当前队列且不发送 end', async () => {
     const gateway = createGateway();
     const initial = activeSnapshot('alpha.ts', [item('alpha.ts')]);
-    gateway.execute
-      .mockResolvedValueOnce(success(initial))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'after' }));
+    gateway.execute.mockResolvedValueOnce(success(initial));
     const dependencies = createDependencies(gateway);
     dependencies.host.confirmEnd.mockResolvedValue(false);
     const controller = new GitReviewSessionController(dependencies);
@@ -171,7 +149,7 @@ describe('Git Review 会话结束', () => {
     await controller.end();
 
     expect(dependencies.host.confirmEnd).toHaveBeenCalledTimes(1);
-    expect(gateway.execute).toHaveBeenCalledTimes(2);
+    expect(gateway.execute).toHaveBeenCalledTimes(1);
     expect(dependencies.presentation.render).toHaveBeenLastCalledWith(initial);
   });
 });
@@ -183,9 +161,7 @@ describe('Git Review 会话替换', () => {
     const replacement = activeSnapshot('beta.ts', [item('beta.ts', 'b'.repeat(64))]);
     gateway.execute
       .mockResolvedValueOnce(success(initial))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'alpha' }))
-      .mockResolvedValueOnce(success(replacement))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'beta' }));
+      .mockResolvedValueOnce(success(replacement));
     const dependencies = createDependencies(gateway);
     const controller = new GitReviewSessionController(dependencies);
 
@@ -197,7 +173,7 @@ describe('Git Review 会话替换', () => {
       state: 'inactive',
     });
     expect(gateway.execute).toHaveBeenNthCalledWith(
-      3,
+      2,
       'gitReview.start',
       { repositoryRoot: '/workspace/repository', replace: true },
       expect.objectContaining({ source: 'extension-command' }),
@@ -217,10 +193,8 @@ describe('Git Review 队列选择', () => {
     const third = activeSnapshot('gamma.ts', first.session.items);
     gateway.execute
       .mockResolvedValueOnce(success(first))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'alpha' }))
       .mockResolvedValueOnce(success(second))
-      .mockResolvedValueOnce(success(third))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'gamma' }));
+      .mockResolvedValueOnce(success(third));
     const dependencies = createDependencies(gateway);
     const controller = new GitReviewSessionController(dependencies);
 
@@ -228,13 +202,13 @@ describe('Git Review 队列选择', () => {
     await controller.select(first.session.items[2]!);
 
     expect(gateway.execute).toHaveBeenNthCalledWith(
-      3,
+      2,
       'gitReview.next',
       {},
       expect.objectContaining({ source: 'extension-command' }),
     );
     expect(gateway.execute).toHaveBeenNthCalledWith(
-      4,
+      3,
       'gitReview.next',
       {},
       expect.objectContaining({ source: 'extension-command' }),
@@ -260,7 +234,6 @@ describe('Git Review 会话完成', () => {
     const summary = { total: 1, reviewed: 1, skipped: 0 };
     gateway.execute
       .mockResolvedValueOnce(success(initial))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'after' }))
       .mockResolvedValueOnce(success({ state: 'completed', summary }));
     const dependencies = createDependencies(gateway);
     const controller = new GitReviewSessionController(dependencies);
@@ -276,38 +249,49 @@ describe('Git Review 会话完成', () => {
   });
 });
 
-describe('Git Review 请求代际', () => {
-  it('不让过期内容请求覆盖后续导航结果', async () => {
+describe('Git Review 队列条目写操作', () => {
+  it('只把当前库存中 identity 一致的条目转成 typed Gateway 输入', async () => {
     const gateway = createGateway();
-    const initial = activeSnapshot('alpha.ts', [item('alpha.ts'), item('beta.ts')]);
-    const navigated = activeSnapshot('beta.ts', initial.session.items);
-    const initialContent = createDeferred<{
-      readonly ok: true;
-      readonly data: {
-        readonly kind: 'text';
-        readonly before: string;
-        readonly after: string;
-      };
-    }>();
+    const initial = activeSnapshot('alpha.ts', [item('alpha.ts')]);
+    const refreshed = activeSnapshot('alpha.ts', [item('alpha.ts', 'b'.repeat(64))]);
     gateway.execute
       .mockResolvedValueOnce(success(initial))
-      .mockReturnValueOnce(initialContent.promise)
-      .mockResolvedValueOnce(success(navigated))
-      .mockResolvedValueOnce(success({ kind: 'text', before: '', after: 'beta' }));
+      .mockResolvedValueOnce(success(refreshed));
     const dependencies = createDependencies(gateway);
     const controller = new GitReviewSessionController(dependencies);
 
-    const starting = controller.start();
-    await vi.waitFor(() => expect(gateway.execute).toHaveBeenCalledTimes(2));
-    await controller.next();
-    initialContent.resolve(success({ kind: 'text', before: '', after: 'alpha' }));
-    await starting;
+    await controller.start();
+    await controller.stageItem({ item: initial.session.items[0] });
 
-    expect(dependencies.presentation.openItem).toHaveBeenCalledTimes(1);
-    expect(dependencies.presentation.openItem).toHaveBeenCalledWith(
-      expect.objectContaining({ path: 'beta.ts' }),
-      { kind: 'text', before: '', after: 'beta' },
+    expect(gateway.execute).toHaveBeenNthCalledWith(
+      2,
+      'gitReview.stageItem',
+      {
+        itemId: 'unstaged:alpha.ts',
+        contentIdentity: 'a'.repeat(64),
+      },
+      expect.objectContaining({ source: 'extension-command' }),
     );
+    await controller.unstageItem({ item: initial.session.items[0] });
+    expect(gateway.execute).toHaveBeenCalledTimes(2);
+    expect(dependencies.host.reportFailure).toHaveBeenCalledWith(
+      expect.objectContaining({ code: 'invalid-input' }),
+    );
+  });
+
+  it('用户取消 Discard 时不执行 Git 写操作', async () => {
+    const gateway = createGateway();
+    const initial = activeSnapshot('alpha.ts', [item('alpha.ts')]);
+    gateway.execute.mockResolvedValueOnce(success(initial));
+    const dependencies = createDependencies(gateway);
+    dependencies.host.confirmDiscard.mockResolvedValue(false);
+    const controller = new GitReviewSessionController(dependencies);
+
+    await controller.start();
+    await controller.discardItem({ item: initial.session.items[0] });
+
+    expect(dependencies.host.confirmDiscard).toHaveBeenCalledWith('alpha.ts');
+    expect(gateway.execute).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -319,12 +303,12 @@ function createDependencies(gateway: ToolboxGateway): {
   readonly presentation: GitReviewPresentation & {
     readonly render: ReturnType<typeof vi.fn>;
     readonly focusItem: ReturnType<typeof vi.fn>;
-    readonly openItem: ReturnType<typeof vi.fn>;
     readonly dispose: ReturnType<typeof vi.fn>;
   };
   readonly host: GitReviewControllerHost & {
     readonly confirmReplace: ReturnType<typeof vi.fn>;
     readonly confirmEnd: ReturnType<typeof vi.fn>;
+    readonly confirmDiscard: ReturnType<typeof vi.fn>;
     readonly reportFailure: ReturnType<typeof vi.fn>;
     readonly showStale: ReturnType<typeof vi.fn>;
     readonly showSummary: ReturnType<typeof vi.fn>;
@@ -348,12 +332,12 @@ function createDependencies(gateway: ToolboxGateway): {
   const presentation = {
     render: vi.fn<(snapshot: GitReviewSessionSnapshot) => void>(),
     focusItem: vi.fn<(item: GitReviewItem) => boolean>().mockReturnValue(false),
-    openItem: vi.fn<GitReviewPresentation['openItem']>().mockResolvedValue(undefined),
     dispose: vi.fn<() => void>(),
   } satisfies GitReviewPresentation;
   const host = {
     confirmReplace: vi.fn<() => Promise<boolean>>().mockResolvedValue(true),
     confirmEnd: vi.fn<() => Promise<boolean>>().mockResolvedValue(true),
+    confirmDiscard: vi.fn<() => Promise<boolean>>().mockResolvedValue(true),
     reportFailure: vi
       .fn<GitReviewControllerHost['reportFailure']>()
       .mockResolvedValue(undefined),
@@ -421,32 +405,4 @@ function item(path: string, contentIdentity = 'a'.repeat(64)): GitReviewItem {
 
 function success<TData>(data: TData): { readonly ok: true; readonly data: TData } {
   return { ok: true, data };
-}
-
-function failure(
-  code: 'capability-unavailable',
-  message: string,
-): {
-  readonly ok: false;
-  readonly error: {
-    readonly code: 'capability-unavailable';
-    readonly message: string;
-    readonly retryable: boolean;
-  };
-} {
-  return { ok: false, error: { code, message, retryable: true } };
-}
-
-function createDeferred<TValue>(): {
-  readonly promise: Promise<TValue>;
-  resolve(value: TValue): void;
-} {
-  let resolvePromise: ((value: TValue) => void) | undefined;
-  const promise = new Promise<TValue>((resolve) => {
-    resolvePromise = resolve;
-  });
-  return {
-    promise,
-    resolve: (value) => resolvePromise?.(value),
-  };
 }

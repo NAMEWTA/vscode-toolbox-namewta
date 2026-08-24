@@ -10,7 +10,7 @@ import type { VscodeToolboxNamewtaExtensionApi } from '../../src/core/contracts'
 const executeFile = promisify(execFile);
 
 suite('Git Commit Compare integration', () => {
-  test('lists HEAD ancestors and compares snapshots including rename and binary files', async () => {
+  test('lists HEAD ancestors, searches side refs and compares snapshots including rename and binary files', async () => {
     const repository = await createRepository();
     try {
       const extension =
@@ -28,6 +28,19 @@ suite('Git Commit Compare integration', () => {
       assert.equal(firstPage.data.commits.length, 2);
       assert.equal(firstPage.data.commits[0]?.sha, repository.target);
       assert.equal(firstPage.data.complete, true);
+
+      const search = await api.execute('gitCompare.searchCommits', {
+        repositoryRoot: repository.root,
+        query: 'comparison-side',
+        limit: 10,
+      });
+      assert.equal(search.ok, true);
+      if (!search.ok) return;
+      const sideMatch = search.data.matches.find(
+        (match) => match.commit.sha === repository.side,
+      );
+      assert.ok(sideMatch);
+      assert.ok(sideMatch.refs.includes('comparison-side'));
 
       const resolved = await api.execute('gitCompare.resolveRevision', {
         repositoryRoot: repository.root,

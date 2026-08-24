@@ -27,23 +27,6 @@ describe('Webview message contract', () => {
       }),
     ).toBe(false);
     expect(isWebviewToExtensionMessage('invalid')).toBe(false);
-    expect(
-      isWebviewToExtensionMessage({
-        type: 'gitReview.action',
-        action: 'copy-reference',
-        itemId: 'unstaged:src/main.ts',
-        contentIdentity: 'a'.repeat(64),
-        line: 12,
-      }),
-    ).toBe(true);
-    expect(
-      isWebviewToExtensionMessage({
-        type: 'gitReview.action',
-        action: 'discard-without-confirmation',
-        itemId: 'unstaged:src/main.ts',
-        contentIdentity: 'a'.repeat(64),
-      }),
-    ).toBe(false);
   });
 
   it('validates results and capability events', () => {

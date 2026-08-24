@@ -229,13 +229,28 @@ function verifyReleaseSurface(manifest, contributedCommands) {
     );
   }
   const keybindings = manifest.contributes?.keybindings ?? [];
-  if (
-    keybindings.length !== 1 ||
-    keybindings[0]?.command !== 'vscodeToolboxNamewta.gitBlame.toggle' ||
-    keybindings[0]?.key !== 'ctrl+alt+b' ||
-    keybindings[0]?.mac !== 'cmd+alt+b'
-  ) {
-    failures.push('默认快捷键必须只分配给 Git Blame Toggle。');
+  const expectedKeybindings = [
+    {
+      command: 'vscodeToolboxNamewta.copyReference.relative',
+      key: 'ctrl+alt+c',
+      mac: 'cmd+alt+c',
+      when: 'editorTextFocus && resourceScheme != untitled',
+    },
+    {
+      command: 'vscodeToolboxNamewta.copyReference.absolute',
+      key: 'ctrl+alt+v',
+      mac: 'cmd+alt+v',
+      when: 'editorTextFocus && resourceScheme != untitled',
+    },
+    {
+      command: 'vscodeToolboxNamewta.gitBlame.toggle',
+      key: 'ctrl+alt+b',
+      mac: 'cmd+alt+b',
+      when: 'editorTextFocus && resourceScheme == file',
+    },
+  ];
+  if (JSON.stringify(keybindings) !== JSON.stringify(expectedKeybindings)) {
+    failures.push('默认快捷键必须符合 Copy Reference 与 Git Blame 的固定合同。');
   }
   const lineMenuCommands = (
     manifest.contributes?.menus?.['editor/lineNumber/context'] ?? []
