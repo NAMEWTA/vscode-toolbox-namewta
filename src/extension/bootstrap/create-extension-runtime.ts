@@ -203,6 +203,8 @@ function createCopyReferenceCommands(
     new CopyReferenceCommand('absolute', gateway, source),
     new CopyReferenceCommand('relative', gateway, source, 'editor-context'),
     new CopyReferenceCommand('absolute', gateway, source, 'editor-context'),
+    new CopyReferenceCommand('relative', gateway, source, 'explorer-context'),
+    new CopyReferenceCommand('absolute', gateway, source, 'explorer-context'),
   ];
 }
 

@@ -2,7 +2,7 @@
   "name": "vscode-toolbox-namewta",
   "displayName": "vscode-toolbox-namewta",
   "description": "%extension.description%",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "publisher": "NAMEWTA",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -71,6 +71,14 @@
       {
         "command": "vscodeToolboxNamewta.copyReference.editor.absolute",
         "title": "%commands.copyReference.editor.absolute%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.copyReference.explorer.relative",
+        "title": "%commands.copyReference.relative%"
+      },
+      {
+        "command": "vscodeToolboxNamewta.copyReference.explorer.absolute",
+        "title": "%commands.copyReference.absolute%"
       },
       {
         "command": "vscodeToolboxNamewta.gitBlame.toggle",
@@ -176,11 +184,11 @@
       ],
       "explorer/context": [
         {
-          "command": "vscodeToolboxNamewta.copyReference.relative",
+          "command": "vscodeToolboxNamewta.copyReference.explorer.relative",
           "group": "navigation@90"
         },
         {
-          "command": "vscodeToolboxNamewta.copyReference.absolute",
+          "command": "vscodeToolboxNamewta.copyReference.explorer.absolute",
           "group": "navigation@91"
         }
       ],
@@ -228,6 +236,14 @@
           "when": "false"
         },
         {
+          "command": "vscodeToolboxNamewta.copyReference.explorer.relative",
+          "when": "false"
+        },
+        {
+          "command": "vscodeToolboxNamewta.copyReference.explorer.absolute",
+          "when": "false"
+        },
+        {
           "command": "vscodeToolboxNamewta.gitCompare.openHistory",
           "when": "false"
         }
@@ -257,16 +273,28 @@
     },
     "keybindings": [
       {
-        "command": "vscodeToolboxNamewta.copyReference.relative",
+        "command": "vscodeToolboxNamewta.copyReference.editor.relative",
         "key": "ctrl+alt+c",
         "mac": "cmd+alt+c",
         "when": "editorTextFocus && resourceScheme != untitled"
       },
       {
-        "command": "vscodeToolboxNamewta.copyReference.absolute",
+        "command": "vscodeToolboxNamewta.copyReference.editor.absolute",
         "key": "ctrl+alt+v",
         "mac": "cmd+alt+v",
         "when": "editorTextFocus && resourceScheme != untitled"
+      },
+      {
+        "command": "vscodeToolboxNamewta.copyReference.explorer.relative",
+        "key": "ctrl+alt+c",
+        "mac": "cmd+alt+c",
+        "when": "filesExplorerFocus && resourceScheme == file"
+      },
+      {
+        "command": "vscodeToolboxNamewta.copyReference.explorer.absolute",
+        "key": "ctrl+alt+v",
+        "mac": "cmd+alt+v",
+        "when": "filesExplorerFocus && resourceScheme == file"
       },
       {
         "command": "vscodeToolboxNamewta.gitBlame.toggle",

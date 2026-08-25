@@ -23,7 +23,7 @@
 
 ## 安装
 
-当前开发版本为 `0.1.11`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
+当前开发版本为 `0.1.12`。项目暂不发布到 VS Code Marketplace，请从 [GitHub Releases](https://github.com/NAMEWTA/vscode-toolbox-namewta/releases) 下载对应的 `vscode-toolbox-namewta-<version>.vsix`。
 
 在 VS Code 中打开命令面板，执行 **Extensions: Install from VSIX...**，选择下载的 VSIX。安装完成后重新加载窗口；命令面板中应能看到以 `toolbox-` 开头的命令。
 
@@ -47,7 +47,7 @@
 - Explorer 支持单个或多个资源，多个资源保持用户选择顺序。
 - 相对引用以工作区根为基准；绝对引用保留平台路径，但会移除 URI 的 query 和 fragment。
 - 支持可稳定表示的虚拟资源；Untitled 文档和不具备稳定路径的资源不会生成引用。
-- `Ctrl/Cmd+Alt+C` 复制相对引用，`Ctrl/Cmd+Alt+V` 复制绝对引用；快捷键只在可稳定表示的活动编辑器资源中生效。
+- `Ctrl/Cmd+Alt+C` 复制相对引用，`Ctrl/Cmd+Alt+V` 复制绝对引用；快捷键在可稳定表示的活动编辑器和 Explorer 文件、文件夹或多选资源中生效。
 
 ### Git Blame
 

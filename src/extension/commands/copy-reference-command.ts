@@ -15,6 +15,10 @@ const COMMAND_IDS = {
     relative: 'vscodeToolboxNamewta.copyReference.editor.relative',
     absolute: 'vscodeToolboxNamewta.copyReference.editor.absolute',
   },
+  'explorer-context': {
+    relative: 'vscodeToolboxNamewta.copyReference.explorer.relative',
+    absolute: 'vscodeToolboxNamewta.copyReference.explorer.absolute',
+  },
 } as const;
 
 export class CopyReferenceCommand {
@@ -30,7 +34,7 @@ export class CopyReferenceCommand {
   }
 
   public async execute(...args: readonly unknown[]): Promise<void> {
-    const input = this.sourceAdapter.resolve(this.mode, args, this.route);
+    const input = await this.sourceAdapter.resolve(this.mode, args, this.route);
     if (input === undefined) {
       void vscode.window.showErrorMessage(
         vscode.l10n.t('No stable resource is available to copy.'),

@@ -52,6 +52,12 @@ suite('vscode-toolbox-namewta extension', () => {
     assert.ok(commands.includes('vscodeToolboxNamewta.copyReference.absolute'));
     assert.ok(commands.includes('vscodeToolboxNamewta.copyReference.editor.relative'));
     assert.ok(commands.includes('vscodeToolboxNamewta.copyReference.editor.absolute'));
+    assert.ok(
+      commands.includes('vscodeToolboxNamewta.copyReference.explorer.relative'),
+    );
+    assert.ok(
+      commands.includes('vscodeToolboxNamewta.copyReference.explorer.absolute'),
+    );
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.toggle'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.show'));
     assert.ok(commands.includes('vscodeToolboxNamewta.gitBlame.hide'));
@@ -98,7 +104,7 @@ suite('vscode-toolbox-namewta extension', () => {
     }
   });
 
-  test('copies relative and absolute editor references', async () => {
+  test('copies relative and absolute editor references from keyboard commands', async () => {
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     assert.ok(workspaceFolder);
     const uri = vscode.Uri.joinPath(workspaceFolder.uri, 'README.md');
@@ -106,10 +112,14 @@ suite('vscode-toolbox-namewta extension', () => {
     const editor = await vscode.window.showTextDocument(document);
     editor.selection = new vscode.Selection(0, 0, 0, 0);
 
-    await vscode.commands.executeCommand('vscodeToolboxNamewta.copyReference.relative');
+    await vscode.commands.executeCommand(
+      'vscodeToolboxNamewta.copyReference.editor.relative',
+    );
     assert.equal(await vscode.env.clipboard.readText(), '`README.md:1`');
 
-    await vscode.commands.executeCommand('vscodeToolboxNamewta.copyReference.absolute');
+    await vscode.commands.executeCommand(
+      'vscodeToolboxNamewta.copyReference.editor.absolute',
+    );
     assert.equal(await vscode.env.clipboard.readText(), `\`${uri.fsPath}:1\``);
   });
 
@@ -127,6 +137,19 @@ suite('vscode-toolbox-namewta extension', () => {
     );
 
     assert.equal(await vscode.env.clipboard.readText(), '`README.md:2(5-9)`');
+  });
+
+  test('copies an Explorer resource from the Explorer context route', async () => {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    assert.ok(workspaceFolder);
+    const uri = vscode.Uri.joinPath(workspaceFolder.uri, 'README.md');
+
+    await vscode.commands.executeCommand(
+      'vscodeToolboxNamewta.copyReference.explorer.relative',
+      uri,
+    );
+
+    assert.equal(await vscode.env.clipboard.readText(), '`README.md`');
   });
 
   test('does not fall back to the active editor for invalid explorer input', async () => {

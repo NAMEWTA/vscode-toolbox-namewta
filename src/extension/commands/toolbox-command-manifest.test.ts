@@ -18,7 +18,7 @@ describe('Toolbox 命令清单', () => {
     const english = readJson('package.nls.json');
     const chinese = readJson('package.nls.zh-cn.json');
 
-    expect(commands).toHaveLength(25);
+    expect(commands).toHaveLength(27);
     for (const command of commands) {
       expect(command.command).toEqual(
         expect.stringMatching(/^vscodeToolboxNamewta\./u),
@@ -65,6 +65,11 @@ describe('Toolbox 命令清单', () => {
         'vscodeToolboxNamewta.copyReference.editor.absolute',
       ]),
     );
+    const explorerContext = records(menus['explorer/context']);
+    expect(explorerContext.map((item) => item.command)).toEqual([
+      'vscodeToolboxNamewta.copyReference.explorer.relative',
+      'vscodeToolboxNamewta.copyReference.explorer.absolute',
+    ]);
     const commandPalette = records(menus.commandPalette);
     expect(commandPalette).toEqual(
       expect.arrayContaining([
@@ -77,23 +82,51 @@ describe('Toolbox 命令清单', () => {
           when: 'false',
         }),
         expect.objectContaining({
+          command: 'vscodeToolboxNamewta.copyReference.explorer.relative',
+          when: 'false',
+        }),
+        expect.objectContaining({
+          command: 'vscodeToolboxNamewta.copyReference.explorer.absolute',
+          when: 'false',
+        }),
+        expect.objectContaining({
           command: 'vscodeToolboxNamewta.gitCompare.openHistory',
           when: 'false',
         }),
       ]),
     );
+  });
+});
+
+describe('Toolbox 快捷键清单', () => {
+  it('为编辑器与 Explorer 声明上下文一致的复制快捷键', () => {
+    const manifest = readJson('package.json');
+    const contributes = record(manifest.contributes);
+
     expect(records(contributes.keybindings)).toEqual([
       {
-        command: 'vscodeToolboxNamewta.copyReference.relative',
+        command: 'vscodeToolboxNamewta.copyReference.editor.relative',
         key: 'ctrl+alt+c',
         mac: 'cmd+alt+c',
         when: 'editorTextFocus && resourceScheme != untitled',
       },
       {
-        command: 'vscodeToolboxNamewta.copyReference.absolute',
+        command: 'vscodeToolboxNamewta.copyReference.editor.absolute',
         key: 'ctrl+alt+v',
         mac: 'cmd+alt+v',
         when: 'editorTextFocus && resourceScheme != untitled',
+      },
+      {
+        command: 'vscodeToolboxNamewta.copyReference.explorer.relative',
+        key: 'ctrl+alt+c',
+        mac: 'cmd+alt+c',
+        when: 'filesExplorerFocus && resourceScheme == file',
+      },
+      {
+        command: 'vscodeToolboxNamewta.copyReference.explorer.absolute',
+        key: 'ctrl+alt+v',
+        mac: 'cmd+alt+v',
+        when: 'filesExplorerFocus && resourceScheme == file',
       },
       {
         command: 'vscodeToolboxNamewta.gitBlame.toggle',

@@ -1,3 +1,4 @@
+import path from 'node:path';
 import * as vscode from 'vscode';
 import type {
   CopyReferenceInput,
@@ -6,20 +7,25 @@ import type {
   ResourceSnapshot,
 } from '../../core/domains/copy-reference/public-api';
 
-export type CopyReferenceSourceRoute = 'automatic' | 'editor-context';
+export type CopyReferenceSourceRoute =
+  | 'automatic'
+  | 'editor-context'
+  | 'explorer-context';
 
 export class VscodeCopyReferenceSourceAdapter {
-  public resolve(
+  public async resolve(
     mode: CopyReferenceMode,
     commandArguments: readonly unknown[],
     route: CopyReferenceSourceRoute = 'automatic',
-  ): CopyReferenceInput | undefined {
+  ): Promise<CopyReferenceInput | undefined> {
     const source =
       route === 'editor-context'
         ? resolveEditorContextSource(commandArguments, vscode.window.activeTextEditor)
-        : commandArguments.length > 0
-          ? resolveExplorerSource(commandArguments)
-          : resolveEditorSource(vscode.window.activeTextEditor);
+        : route === 'explorer-context'
+          ? await resolveExplorerContextSource(commandArguments)
+          : commandArguments.length > 0
+            ? resolveExplorerSource(commandArguments)
+            : resolveEditorSource(vscode.window.activeTextEditor);
     if (source === undefined) {
       return undefined;
     }
@@ -34,10 +40,59 @@ export class VscodeCopyReferenceSourceAdapter {
   }
 }
 
+async function resolveExplorerContextSource(
+  commandArguments: readonly unknown[],
+): Promise<CopyReferenceSource | undefined> {
+  if (commandArguments.length > 0) {
+    return resolveExplorerSource(commandArguments);
+  }
+
+  const resources = await readFocusedExplorerResources();
+  if (resources === undefined) {
+    return undefined;
+  }
+  return { kind: 'explorer', resources: resources.map(snapshotResource) };
+}
+
+async function readFocusedExplorerResources(): Promise<
+  readonly vscode.Uri[] | undefined
+> {
+  let previousClipboard: string | undefined;
+  try {
+    previousClipboard = await vscode.env.clipboard.readText();
+    await vscode.env.clipboard.writeText('');
+    await vscode.commands.executeCommand('copyFilePath');
+    const copiedPaths = await vscode.env.clipboard.readText();
+    const filePaths = copiedPaths.split(/\r?\n/u);
+    if (
+      copiedPaths.length === 0 ||
+      filePaths.some((filePath) => !path.isAbsolute(filePath))
+    ) {
+      await vscode.env.clipboard.writeText(previousClipboard);
+      return undefined;
+    }
+    const resources = filePaths.map((filePath) => vscode.Uri.file(filePath));
+    await vscode.env.clipboard.writeText(previousClipboard);
+    return resources;
+  } catch {
+    if (previousClipboard !== undefined) {
+      try {
+        await vscode.env.clipboard.writeText(previousClipboard);
+      } catch {
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+}
+
 function resolveEditorContextSource(
   commandArguments: readonly unknown[],
   editor: vscode.TextEditor | undefined,
 ): CopyReferenceSource | undefined {
+  if (commandArguments.length === 0) {
+    return resolveEditorSource(editor);
+  }
   if (
     commandArguments.length !== 1 ||
     !isUri(commandArguments[0]) ||

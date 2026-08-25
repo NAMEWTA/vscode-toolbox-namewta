@@ -201,9 +201,9 @@ function verifyReleaseSurface(manifest, contributedCommands) {
       (command.startsWith('vscodeToolboxNamewta.gitBlame.') &&
         command !== 'vscodeToolboxNamewta.gitBlame.openReader'),
   );
-  if (changeCommands.length !== 9) {
+  if (changeCommands.length !== 11) {
     failures.push(
-      `Copy/Blame 用户命令必须恰好为 9 个，当前为 ${changeCommands.length} 个。`,
+      `Copy/Blame 用户命令必须恰好为 11 个，当前为 ${changeCommands.length} 个。`,
     );
   }
   if (contributedCommands.some((command) => command.includes('.internal.'))) {
@@ -231,16 +231,28 @@ function verifyReleaseSurface(manifest, contributedCommands) {
   const keybindings = manifest.contributes?.keybindings ?? [];
   const expectedKeybindings = [
     {
-      command: 'vscodeToolboxNamewta.copyReference.relative',
+      command: 'vscodeToolboxNamewta.copyReference.editor.relative',
       key: 'ctrl+alt+c',
       mac: 'cmd+alt+c',
       when: 'editorTextFocus && resourceScheme != untitled',
     },
     {
-      command: 'vscodeToolboxNamewta.copyReference.absolute',
+      command: 'vscodeToolboxNamewta.copyReference.editor.absolute',
       key: 'ctrl+alt+v',
       mac: 'cmd+alt+v',
       when: 'editorTextFocus && resourceScheme != untitled',
+    },
+    {
+      command: 'vscodeToolboxNamewta.copyReference.explorer.relative',
+      key: 'ctrl+alt+c',
+      mac: 'cmd+alt+c',
+      when: 'filesExplorerFocus && resourceScheme == file',
+    },
+    {
+      command: 'vscodeToolboxNamewta.copyReference.explorer.absolute',
+      key: 'ctrl+alt+v',
+      mac: 'cmd+alt+v',
+      when: 'filesExplorerFocus && resourceScheme == file',
     },
     {
       command: 'vscodeToolboxNamewta.gitBlame.toggle',
