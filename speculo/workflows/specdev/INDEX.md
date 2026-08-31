@@ -3,18 +3,8 @@ id: specdev
 type: workflow
 workflow: specdev
 name: SpecDev Workflow
-description: 以本地工件为唯一开发权威，从来源冻结、诊断、设计、原型、规格、Ticket、编排和审查推进到证据驱动实现、远程 reconcile 与知识归档。
-keywords:
-  [
-    specdev,
-    local-first,
-    规格驱动开发,
-    decision-complete,
-    prototype,
-    code-review,
-    TDD,
-    证据,
-  ]
+description: 以本地工件为唯一开发权威，从来源冻结、诊断、设计、零基础新生图解、原型、规格、Ticket、编排和审查推进到证据驱动实现、远程 reconcile 与知识归档。
+keywords: [specdev, local-first, 规格驱动开发, decision-complete, eli5, prototype, code-review, TDD, 证据]
 ---
 
 # SpecDev Workflow
@@ -35,7 +25,7 @@ SpecDev 将“理解、决定、规划、执行、验证、沉淀”拆成职责
         ↓
 Triage 冻结为本地 Source
         ↓
-Diagnose / Grill / Wayfinder / Prototype / Code Review / Architecture Review
+Diagnose / Grill / ELI5 / Wayfinder / Prototype / Code Review / Architecture Review
         ↓
 Spec             外部行为、范围、验收合同与关键约束
         ↓
@@ -69,6 +59,7 @@ Archive          归档历史并将经验证知识提升为当前长期知识
 - `<Path>{roots.state}/specdev/changes/{change}/reviews/</Path>`
 - `<Path>{roots.state}/specdev/changes/{change}/prototypes/</Path>`
 - `<Path>{roots.state}/specdev/changes/{change}/questionnaires/</Path>`
+- `<Path>{roots.state}/specdev/changes/{change}/eli_index.md</Path>` 与 `<Path>{roots.state}/specdev/changes/{change}/<number>_<topic>.md</Path>`
 
 工件职责和冲突裁决位于 `<Path>{roots.workflows}/specdev/common/rules/artifact-contract.md</Path>`。
 
@@ -79,6 +70,8 @@ Archive          归档历史并将经验证知识提升为当前长期知识
 - 全局状态：`<Path>{roots.state}/specdev/status.json</Path>`
 - 活跃 change：`<Path>{roots.state}/specdev/changes/</Path>`
 - 历史归档：`<Path>{roots.state}/specdev/archive/</Path>`
+
+刷新时 CLI 依据 `<Path>{roots.workflows}/specdev/runtime-contract.json</Path>` 处理持久化数据：配置使用 baseline 三方合并，登记的状态 schema 使用显式 migrator，其他 runtime 文件按字节保留。只有字段删除或结构迁移时才在 `<Path>{roots.state}/back/</Path>` 写入 targeted backup；冲突在替换 active 安装前阻塞。`<Path>{roots.state}/back/</Path>`、`<Path>{roots.state}/install.json</Path>`、`<Path>{roots.state}/managed.json</Path>` 与 `<Path>{roots.state}/baselines/</Path>` 均不属于 SpecDev 写入 namespace。
 
 初始化设置 work 首次运行时生成配置并创建空的永久 namespace：
 
@@ -115,6 +108,7 @@ Archive          归档历史并将经验证知识提升为当前长期知识
 - `<Path>{roots.state}/specdev/changes/{change}/reviews/</Path>`
 - `<Path>{roots.state}/specdev/changes/{change}/prototypes/</Path>`
 - `<Path>{roots.state}/specdev/changes/{change}/questionnaires/</Path>`
+- `<Path>{roots.state}/specdev/changes/{change}/eli_index.md</Path>` 与 `<Path>{roots.state}/specdev/changes/{change}/<number>_<topic>.md</Path>`
 
 ## 全局治理原则
 
@@ -130,6 +124,8 @@ Archive          归档历史并将经验证知识提升为当前长期知识
 10. **恢复依赖权威工件**：跨 Work 或 Agent 边界时同步 active change 的 `current_work`，成功完成后去重更新 `works_run`，返回下一 Work 和权威工件的完整路径。
 11. **本地执行权威**：远程 Issue/PR/URL 只作为来源或完成投影；Spec、Ticket、Map、Goal Plan、Evidence 和状态始终以本地工件为准。
 12. **完成与归档分离**：本地完成按 change completion 合同决定；远程 close 失败不回滚完成，但必须 reconcile 或 waive 后才归档。
+13. **Lead 与隔离正交**：Lead 固定拥有 SpecDev 状态、Evidence 与父分支；是否派遣 subagent 由 Lead 动态决定。Goal Plan 创建时询问 Ticket 是否开启 worktree，默认不开启；选择只作用于当前 Goal Plan。
+14. **策略化验收**：current 模式使用当前 workspace 严格串行、direct-parent 验证；required 模式使用 source worktree 与 parent-candidate。只有 required 模式创建独立 Ticket worktree。
 
 共享规则：
 
@@ -152,11 +148,11 @@ Archive          归档历史并将经验证知识提升为当前长期知识
 5. 只加载当前步骤需要的 work 子文件和共享规则。
 6. 完成后写入产物、运行适用校验、更新状态和 `works_run`。
 
-Change 从 active/blocked 转为 completed 时加载 `<Path>{roots.workflows}/specdev/common/rules/change-completion.md</Path>`：Goal Plan 含完整委派附录时由 Lead 拥有转换；普通 Goal Plan 或无 Goal Plan 的实现由最后一个 I 拥有；非实现型终点由最终验收工件 owner 拥有。Archive 不补造 completed。
+Change 从 active/blocked 转为 completed 时加载 `<Path>{roots.workflows}/specdev/common/rules/change-completion.md</Path>`：有 Goal Plan 时由其中唯一 Lead 拥有转换；无 Goal Plan 的 Ticket/Direct Spec 由当前 I owner 拥有；非实现型终点由最终验收工件 owner 拥有。Archive 不补造 completed。
 
 ## 状态字段
 
-`<Path>{roots.state}/specdev/status.json</Path>` 使用全局 schema v4；Spec、Ticket 和 `<Path>{roots.state}/specdev/changes/{change}/.status.json</Path>` 等领域工件仍使用各自现有 schema：
+`<Path>{roots.state}/specdev/status.json</Path>` 使用全局 schema v5；Spec/Ticket/Tickets Map 继续使用各自 schema v3，config 使用 schema v5，Goal Plan 使用 schema v6，`<Path>{roots.state}/specdev/changes/{change}/.status.json</Path>` 使用 schema v6：
 
 - `schema_version`（数字）：全局状态 schema 版本，固定为 `4`。
 - `workflow`（字符串）：workflow 标识，固定为 `"specdev"`。
@@ -169,7 +165,9 @@ Change 从 active/blocked 转为 completed 时加载 `<Path>{roots.workflows}/sp
 
 `active[].change` 必须唯一，且不得同时出现在 `archived`。开始 Work 时设置 `current_work`；暂停或可恢复阻塞时保留；成功完成时加入 `works_run` 并清空；取消时清空但不加入。逐次时间、结果和审计证据由 change 自有状态、Work 主产物、Evidence 或 LOG 承载，不写入全局索引。
 
-`<Path>{roots.state}/specdev/changes/{change}/.status.json</Path>` 的 `worktrees` 保存 Ticket 级 `base_sha`、分支、可迁移 `workspace_ref` 和生命周期状态。
+`<Path>{roots.state}/specdev/config.json</Path>` 的 `execution.max_implementation_agents`、`max_integration_attempts` 和 planning 原型变体字段均为可配置正整数，初始化时写入默认值；仅 implementation subagent 受前者约束且不含 Lead，current workspace 仍保持单 writer 串行安全不变量；只读 review/research/test-observation agent 不设 SpecDev 数字上限。
+
+`<Path>{roots.state}/specdev/changes/{change}/.status.json</Path>` 的 `worktrees` 保存 Ticket 级 `base_sha`、父分支、workspace/implementation/integration owner、workspace locator、implementation/source checkpoint、适用 candidate/result SHA、验证、E2E disposition 与生命周期状态。current 记录使用 `workspace_ref=current` 和 direct-parent；required 记录使用 source/parent-candidate。每个实现 Ticket 都有一条记录；父分支只有在对应策略的验证通过后推进。`removed` 是 required 集成后来源 branch/worktree 完成清理的终态，必须保留全部集成与 E2E 证据。
 
 领域状态枚举：
 
@@ -178,7 +176,7 @@ Change 从 active/blocked 转为 completed 时加载 `<Path>{roots.workflows}/sp
 - Investigation status：`open | closed`
 - Investigation resolution：`answered | out-of-scope | superseded | cancelled | null`
 - Planning Depth：`lite | standard | deep`
-- Worktree：`planned | active | review | integrated | removed | blocked`
+- Worktree：`planned | active | review | integrating | integrated | removed | blocked`
 
 ## 路径分配
 
@@ -189,24 +187,25 @@ Change 从 active/blocked 转为 completed 时加载 `<Path>{roots.workflows}/sp
 
 ## 副作用边界
 
-未经用户明确授权不得提交、推送、合并、删除分支或 worktree、部署、发布、移动归档、写入/关闭远程 Issue 或执行不可逆迁移。只读探索、生成 change 工件和已授权验证可以进行。远程开发投影仅由 Triage reconcile 执行；Retro command 的 Speculo 反馈 Issue 是独立 command 边界。敏感值不得写入 `<Path>{roots.state}/specdev/</Path>`。
+未经用户明确授权不得提交、推送、合并、删除来源 branch/worktree、部署、发布、移动归档、写入/关闭远程 Issue 或执行不可逆迁移。Ready Goal Plan/Ticket 执行必须明确取得 implementation commit 与所选 direct-parent/candidate integration/父分支更新授权；required 模式该授权包含 transient candidate checkout/branch 生命周期，不扩展到来源 cleanup、远端或生产动作。只读探索、change 工件生成和已授权验证可以进行。远程开发投影仅由 Triage reconcile 执行；Retro command 的 Speculo 反馈 Issue 是独立 command 边界。敏感值不得写入 `<Path>{roots.state}/specdev/</Path>`。
 
 ## 场景路由
 
-| 场景                             | 入口                  | 正常出口                         |
-| -------------------------------- | --------------------- | -------------------------------- |
-| 远程 Issue、URL、文件或对话摄入  | T-triage intake       | D / G / W / P / S / C / T        |
-| 本地 change 完成且来源可关闭     | T-triage reconcile    | A                                |
-| 疑难 bug 或性能回归              | D-diagnose-bugs       | S / T / I / R / W                |
-| 模糊但可通过决策访谈收敛         | G-grill-with-docs     | P / S / T / W                    |
-| 路径超出单次上下文               | W-wayfinder           | G / P / D / S / T                |
-| 需要用代码回答逻辑/UI 问题       | P-prototype           | G / S / T / I                    |
-| 固定点 diff、branch 或 PR review | C-code-review         | completed / T / S / G            |
-| 外部行为已清楚                   | S-spec                | T-tickets                        |
-| Ready Spec 需要垂直切片          | T-tickets             | P-goal-plan / I                  |
-| 多 Ticket 协调                   | P-goal-plan           | I / Triage / A                   |
-| Ready 执行                       | I-implement           | Triage / A / blocked / deviation |
-| 架构健康扫描                     | R-review-architecture | G / T                            |
+| 场景 | 入口 | 正常出口 |
+|---|---|---|
+| 远程 Issue、URL、文件或对话摄入 | T-triage intake | D / G / W / P / S / C / T |
+| 本地 change 完成且来源可关闭 | T-triage reconcile | A |
+| 疑难 bug 或性能回归 | D-diagnose-bugs | S / T / I / R / W |
+| 模糊但可通过决策访谈收敛 | G-grill-with-docs | P / S / T / W |
+| 需要向刚上大一、没有专业背景的读者做 Markdown 与 ASCII 图解 | E-eli5 | 返回用户 / 继续当前 change |
+| 路径超出单次上下文 | W-wayfinder | G / P / D / S / T |
+| 需要用代码回答逻辑/UI 问题 | P-prototype | G / S / T / I |
+| 固定点 diff、branch 或 PR review | C-code-review | completed / T / S / G |
+| 外部行为已清楚 | S-spec | T-tickets |
+| Ready Spec 需要垂直切片 | T-tickets | P-goal-plan / I |
+| 多 Ticket 协调 | P-goal-plan | I / Triage / A |
+| Ready 执行 | I-implement | Triage / A / blocked / deviation |
+| 架构健康扫描 | R-review-architecture | G / T |
 
 同 change 下一阶段需要当前一手推理且上下文健康时继续；切换 repo/person/harness 或旁路时使用 `<Path>{roots.commands}/handoff.md</Path>`；严格限定且可独立派单时使用 Dispatch Packet；其他长上下文以权威工件路径恢复。平台不支持 clear/compact 时不虚构操作。
 
@@ -217,11 +216,12 @@ Change 从 active/blocked 转为 completed 时加载 `<Path>{roots.workflows}/sp
 - **A-archive-and-consolidate** — 归档与沉淀：校验本地完成与远程 reconcile 门，复用全局归档能力移动 completed change 并提升当前知识，或从代码访谈形成可归档知识 change。
 - **C-code-review** — 代码审查：将 commit、branch、tag、merge-base 或 PR 解析为本地不可变固定点，执行隔离的标准轴与规范轴审查并持久化可恢复报告。
 - **D-diagnose-bugs** — 诊断 Bug：先建立会在精确症状上变红的紧凑反馈回路，再通过最小化、排名假设和单变量探针确认根因，输出修复契约而不实施生产修复。
+- **E-eli5** — 零基础新生解释：面向刚上大一、没有专业背景的读者解释一个主题；用 Markdown 和 ASCII 图解说明概念、数据与调用如何流动。
 - **E-engineering-cognitive-mentor** — 工程认知导师：面向 Bug、项目源码、需求技术方案、架构设计与陌生技术领域的非执行型认知指导 Work；以证据、因果 Why、候选方案对比和逐轮澄清帮助用户形成可复述理解，并将完整问答轨迹持续持久化到当前 change。
 - **G-grill-with-docs** — 设计访谈（带文档）：以完整 frontier 逐轮推进设计树，直到每个决策分支都已关闭并获得用户共识，同时持续维护当前 change 的设计树、日志、领域上下文和架构决策。
-- **I-implement** — 实现：基于 Ready Ticket 或获批的小型 Spec 执行设计检查、TDD 红绿循环、持续验证、双轴审查、证据回写和提交。
+- **I-implement** — 实现：基于 Ready Ticket 或获批小型 Spec 执行设计检查、TDD、动态派单、双轴审查、按 Goal Plan 选择的 current workspace 或 Ticket worktree 提交、直接父分支或候选合并验证和 Lead Evidence 回写。
 - **I-init-setup** — 初始化设置：初始化 SpecDev 的语言、配置、全局状态、本地 change 追踪、领域知识布局、验证命令和并发治理。
-- **P-goal-plan** — 目标规划：在协调复杂度需要时，将 Ready Spec、Tickets、架构决策与外部约束综合为决策完备的跨 Ticket 计划，并仅在用户选择时加入严格角色委派。
+- **P-goal-plan** — 目标规划：在跨 Ticket 协调复杂度需要时，以固定 Lead、动态派单、DAG/Gate 和候选合并门禁生成决策完备且可恢复的执行计划。
 - **P-prototype** — 原型：在获授权的临时 branch/worktree 中构建一次性 Logic 或 UI 原型，回答一个明确设计问题并持久化答案、资产定位和清理状态。
 - **R-review-architecture** — 架构审查：从用户指定范围或 Git 热点扫描代码库的深化机会，以持久化可视化 HTML 呈现候选，并对用户选择的一个方案运行设计树访谈。
 - **S-spec** — 编写 Spec：综合已知事实、设计决定、诊断与代码现状，产出以外部行为和验收合同为权威的 Ready Spec。
@@ -245,7 +245,7 @@ Change 从 active/blocked 转为 completed 时加载 `<Path>{roots.workflows}/sp
 
 ```bash
 node <Path>{roots.workflows}/specdev/common/tools/validate-specdev.mjs</Path> \
-  --stage <triage|diagnosis|grill|spec|tickets|goal-plan|implement|review|prototype|wayfinder|complete> \
+  --stage <triage|diagnosis|grill|eli5|spec|tickets|goal-plan|implement|review|prototype|wayfinder|complete> \
   <Path>{roots.state}/specdev/changes/{change}</Path>
 ```
 

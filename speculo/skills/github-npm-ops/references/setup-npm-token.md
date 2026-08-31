@@ -8,15 +8,15 @@ npm 现在强制要求发布时通过 2FA 或等效机制。Classic token 在多
 2. 点 **Generate New Token** → 选择 **Granular Access Token**
 3. 关键字段：
 
-   | 字段                   | 推荐值                                                                      |
-   | ---------------------- | --------------------------------------------------------------------------- |
-   | Token name             | `<package>-ci-release`（可识别用途）                                        |
-   | Expiration             | 90–365 天；设提醒到期前轮换                                                 |
-   | Packages and scopes    | 选 `Only select packages and scopes`，勾选目标包或整个 scope（如 `@scope`） |
-   | Permissions            | **Read and write**                                                          |
-   | Allowed organizations  | 如果在组织下发布，勾选对应组织                                              |
-   | Bypass two-factor auth | 勾选（CI 无法交互完成 2FA）                                                 |
-   | Allowed IP ranges      | 留空（GitHub Actions runner IP 不固定）                                     |
+   | 字段                    | 推荐值                                                                                     |
+   | ----------------------- | ------------------------------------------------------------------------------------------ |
+   | Token name              | `<package>-ci-release`（可识别用途）                                                       |
+   | Expiration              | 90–365 天；设提醒到期前轮换                                                                 |
+   | Packages and scopes     | 选 `Only select packages and scopes`，勾选目标包或整个 scope（如 `@scope`）                |
+   | Permissions             | **Read and write**                                                                         |
+   | Allowed organizations   | 如果在组织下发布，勾选对应组织                                                             |
+   | Bypass two-factor auth  | 勾选（CI 无法交互完成 2FA）                                                                |
+   | Allowed IP ranges       | 留空（GitHub Actions runner IP 不固定）                                                    |
 
 4. 点 **Generate**，**立刻复制** token，关掉页面就再也看不到了
 

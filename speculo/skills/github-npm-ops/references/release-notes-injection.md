@@ -8,10 +8,10 @@
 
 两种典型场景下生成器会"贫瘠":
 
-| 场景                                   | 生成器输出                             | 原因                                     |
-| -------------------------------------- | -------------------------------------- | ---------------------------------------- |
-| 直 push main(无 PR 流程)               | 仅 `Full Changelog: vA...vB` 一行      | 生成器没有 PR 可分类,只能给 compare 链接 |
-| 有 PR 但仓库没有 `.github/release.yml` | 全部 PR 都被塞进 "What's Changed" 一节 | 没有 label → 章节映射                    |
+| 场景 | 生成器输出 | 原因 |
+|------|----------|------|
+| 直 push main(无 PR 流程) | 仅 `Full Changelog: vA...vB` 一行 | 生成器没有 PR 可分类,只能给 compare 链接 |
+| 有 PR 但仓库没有 `.github/release.yml` | 全部 PR 都被塞进 "What's Changed" 一节 | 没有 label → 章节映射 |
 
 而仓库通常已经维护了 `CHANGELOG.md`(Keep a Changelog 格式)。**正确做法是把 CHANGELOG 段落作为 Release 正文的事实来源**,自动生成器仅作为补充链接。
 
@@ -49,8 +49,8 @@
   with:
     tag_name: ${{ github.ref_name }}
     name: Release ${{ github.ref_name }}
-    body_path: release-notes.md # ← 关键
-    generate_release_notes: true # ← 与 body_path 共存,不冲突
+    body_path: release-notes.md          # ← 关键
+    generate_release_notes: true         # ← 与 body_path 共存,不冲突
     draft: false
     prerelease: false
   env:
@@ -88,7 +88,7 @@ GitHub Release 的正文(body)**事后可改**(tag 不可改、npm 包不可改�
 
 ### 3.1 命令行(推荐)
 
-`notes_file` 只是一次性传给 `gh --notes-file` 的中间文件；若需要保留回填记录或 release notes，由调用方写入 `speculo/.speculo/commands/<command>/<YYYY-MM-DD>-<scope>-<topic>[-NN].md`。
+`notes_file` 只是一次性传给 `gh --notes-file` 的中间文件；若需要保留回填记录或 release notes，由调用方写入 `<Path>{roots.state}/commands/{command}/{date}-{scope}-{topic}[-NN].md</Path>`。
 
 ```bash
 VERSION="0.0.10"
@@ -143,7 +143,7 @@ changelog:
   exclude:
     labels:
       - ignore-for-release
-      - dependencies # 可选:依赖升级单独成节
+      - dependencies      # 可选:依赖升级单独成节
   categories:
     - title: 🚀 Features
       labels:
@@ -170,7 +170,7 @@ changelog:
         - ci
     - title: Other Changes
       labels:
-        - '*'
+        - "*"
 ```
 
 效果:`generate_release_notes` 自动产出的 "What's Changed" 会被分类到上述章节中,与 CHANGELOG 段落叠加在 Release 正文内。
@@ -213,13 +213,13 @@ changelog:
 
 ## 6. 常见坑位
 
-| 坑                           | 现象                                       | 解法                                                               |
-| ---------------------------- | ------------------------------------------ | ------------------------------------------------------------------ |
-| `body_path` 文件不存在       | action 失败 `Could not find the body_path` | 加 `if [ ! -s release-notes.md ]` 兜底写入                         |
-| awk 没匹配到                 | release-notes.md 为空,Release 正文兜底文案 | 检查 CHANGELOG 段落标题与 tag 是否对应(`v0.0.10` ↔ `## [0.0.10]`) |
-| awk 多匹配(同一版本写了两次) | Release 正文重复内容                       | CHANGELOG 是 source of truth,先去重                                |
-| 全角中括号 `【】` 被当锚点   | 抽取失败                                   | CHANGELOG 标题统一用半角 `[`                                       |
-| body_path 文件含 BOM         | Release 渲染异常                           | 用 `sed -i '1s/^\xef\xbb\xbf//' release-notes.md` 去 BOM           |
+| 坑 | 现象 | 解法 |
+|---|------|------|
+| `body_path` 文件不存在 | action 失败 `Could not find the body_path` | 加 `if [ ! -s release-notes.md ]` 兜底写入 |
+| awk 没匹配到 | release-notes.md 为空,Release 正文兜底文案 | 检查 CHANGELOG 段落标题与 tag 是否对应(`v0.0.10` ↔ `## [0.0.10]`) |
+| awk 多匹配(同一版本写了两次) | Release 正文重复内容 | CHANGELOG 是 source of truth,先去重 |
+| 全角中括号 `【】` 被当锚点 | 抽取失败 | CHANGELOG 标题统一用半角 `[` |
+| body_path 文件含 BOM | Release 渲染异常 | 用 `sed -i '1s/^\xef\xbb\xbf//' release-notes.md` 去 BOM |
 
 ## 7. 验证
 

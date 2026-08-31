@@ -24,12 +24,12 @@ created_at: <ISO-8601>
 ## 标准
 
 | Severity | Path / block | Finding | Authority | Satisfied when |
-| -------- | ------------ | ------- | --------- | -------------- |
+|---|---|---|---|---|
 
 ## 规范
 
 | Severity | Requirement | Finding | Source | Satisfied when |
-| -------- | ----------- | ------- | ------ | -------------- |
+|---|---|---|---|---|
 
 规范不存在时写 `skipped:no-spec`，不伪造通过。
 

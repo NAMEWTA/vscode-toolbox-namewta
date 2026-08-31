@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 6,
   "artifact": "change-status",
   "change": "2026-08-10-copy-ranges-and-aggregate-git-review",
   "change_status": "archived",
@@ -11,5 +11,33 @@
   "archive_path": "<Path>{roots.state}/specdev/archive/2026-08/2026-08-10-copy-ranges-and-aggregate-git-review</Path>",
   "blockers": [],
   "deviations": [],
-  "worktrees": []
+  "worktrees": [],
+  "works_run": [],
+  "claimed_investigations": [],
+  "execution_authorization": {
+    "implementation_commit": {
+      "status": "not-authorized",
+      "source": null,
+      "granted_at": null,
+      "scope": "Ticket implementation commits"
+    },
+    "local_candidate_integration": {
+      "status": "not-authorized",
+      "source": null,
+      "granted_at": null,
+      "scope": "Lead-owned local integration and parent update"
+    },
+    "source_cleanup": {
+      "status": "not-authorized",
+      "source": null,
+      "granted_at": null,
+      "scope": "Source worktree and branch cleanup"
+    }
+  },
+  "leadership": {
+    "current": "unassigned",
+    "epoch": 1,
+    "assigned_at": "2026-08-12T14:36:00+08:00",
+    "history": []
+  }
 }

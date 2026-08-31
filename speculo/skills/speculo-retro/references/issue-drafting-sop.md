@@ -8,17 +8,15 @@
 
 ```jsonc
 {
-  "title": "string, 见标题规范",
-  "type": "bug | enhancement | documentation | feature-request",
-  "priority": "priority:critical | priority:high | priority:medium | priority:low",
-  "area": "string|null, 例 area:commands / area:workflows / area:skills / area:cli / area:contract",
-  "body": "string, 见正文结构",
-  "affected": ["相对路径，例 speculo/commands/archive-and-consolidate.md"],
-  "evidence": [
-    "证据出处，例 speculo/.speculo/<workflow>/changes/<change>/.status.json#phase_history",
-  ],
-  "disposition": "file-issue | record-lesson | drop",
-  "dup_of": "number|null, 疑似重复的已存在 issue 编号",
+  "title":        "string, 见标题规范",
+  "type":         "bug | enhancement | documentation | feature-request",
+  "priority":     "priority:critical | priority:high | priority:medium | priority:low",
+  "area":         "string|null, 例 area:commands / area:workflows / area:skills / area:cli / area:contract",
+  "body":         "string, 见正文结构",
+  "affected":     ["相对路径，例 speculo/commands/archive-and-consolidate.md"],
+  "evidence":     ["证据出处，例 <Path>{roots.state}/{workflow}/changes/{change}/.status.json</Path>#phase_history"],
+  "disposition":  "file-issue | record-lesson | drop",
+  "dup_of":       "number|null, 疑似重复的已存在 issue 编号"
 }
 ```
 
@@ -30,15 +28,15 @@
 
 ## 类型 → 标签映射
 
-复用 `../github-npm-ops/references/issue-pr-triage.md` 的标签体系，每条至少一个**类型**标签，外加**优先级**，可选**领域**：
+复用 `<Path>{roots.skills}/github-npm-ops/references/issue-pr-triage.md</Path>` 的标签体系，每条至少一个**类型**标签，外加**优先级**，可选**领域**：
 
-| 提案 type            | issue 类型标签    |
-| -------------------- | ----------------- |
-| `bug`                | `bug`             |
-| `friction`           | `enhancement`     |
+| 提案 type | issue 类型标签 |
+|-----------|---------------|
+| `bug` | `bug` |
+| `friction` | `enhancement` |
 | `missing-capability` | `feature-request` |
-| `doc-gap`            | `documentation`   |
-| `ergonomics`         | `enhancement`     |
+| `doc-gap` | `documentation` |
+| `ergonomics` | `enhancement` |
 
 不确定改动方向的额外加 `needs-design`。
 
@@ -48,27 +46,21 @@
 
 ```markdown
 ## 问题
-
 [一句话说清痛点 / 不符合预期的行为。]
 
 ## 证据
-
-[引用具体出处：对话节点、`speculo/.speculo/...` 产物路径、`.status.json` 字段、文档段落。可附最小复现。]
+[引用具体出处：对话节点、`<Path>{roots.state}/...</Path>` 产物路径、`.status.json` 字段、文档段落。可附最小复现。]
 
 ## 根因
-
 [判断是 asset 设计 / 持久化契约 / 文档 / 工具问题，指明根因而非表象。]
 
 ## 建议改动
-
 [改哪个 asset、怎么改。给相对路径与具体方向，不要泛泛而谈。]
 
 ## 验收标准
-
 [可验证的完成判据，例如断言、命名、契约符合点。]
 
 ## 受影响资产
-
 [列出相关相对路径。]
 ```
 
@@ -77,9 +69,9 @@
 起草后、交给调用方提交前，对每条做去重判定：
 
 1. 提取标题与根因的关键词。
-2. 由调用方用 `gh issue list --repo <owner/repo> --search "<关键词>" --state all --limit 20` 检索（机制见 `../github-npm-ops/references/issue-pr-triage.md`）。
+2. 由调用方用 `gh issue list --repo <owner/repo> --search "<关键词>" --state all --limit 20` 检索（机制见 `<Path>{roots.skills}/github-npm-ops/references/issue-pr-triage.md</Path>`）。
 3. 命中语义重复：把 `disposition` 设为 `drop` 或在 `dup_of` 记录已存在编号，默认不重复提；仅当用户明确要求才补提。
 
 ## 交接契约
 
-本 skill 只返回上面的结构化提案清单 + 丢弃/合并说明，**不写文件、不调用 `gh`、不创建 issue**。落盘到 `speculo/.speculo/commands/retro/<YYYY-MM-DD>-<scope>-<topic>[-NN].md` 与实际 `gh issue create` 由调用方 command 在用户确认后执行。
+本 skill 只返回上面的结构化提案清单 + 丢弃/合并说明，**不写文件、不调用 `gh`、不创建 issue**。落盘到 `<Path>{roots.state}/commands/retro/{date}-{scope}-{topic}[-NN].md</Path>` 与实际 `gh issue create` 由调用方 command 在用户确认后执行。

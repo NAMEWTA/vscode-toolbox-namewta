@@ -4,8 +4,7 @@ type: workflow-entry
 workflow: specdev
 name: 寻路
 description: 为超出单次会话且路径尚不可见的工作建立本地共享地图，逐个解决 research、prototype、grilling 或 task Ticket，直到目的地路线决策完备。
-keywords:
-  [wayfinder, 寻路, shared-map, research, prototype, grilling, task, 战争迷雾, 前沿]
+keywords: [wayfinder, 寻路, shared-map, research, prototype, grilling, task, 战争迷雾, 前沿]
 ---
 
 # 寻路

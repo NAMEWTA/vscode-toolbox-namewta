@@ -28,13 +28,11 @@ description: 为调用 Work 的具体决定研究外部技术、依赖、标准�
 
 ```markdown
 ## Research: <问题>
-
 - Decision / target:
 - Scope / version:
 - Stop condition:
 
 ### R-001
-
 - Claim:
 - Type: official fact / code fact / inference / recommendation
 - Source:
@@ -43,7 +41,6 @@ description: 为调用 Work 的具体决定研究外部技术、依赖、标准�
 - Artifact impact:
 
 ### Conflicts and Unknowns
-
 ### Recommendation
 ```
 

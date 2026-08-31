@@ -4,19 +4,7 @@ type: workflow-entry
 workflow: specdev
 name: 架构审查
 description: 从用户指定范围或 Git 热点扫描代码库的深化机会，以持久化可视化 HTML 呈现候选，并对用户选择的一个方案运行设计树访谈。
-keywords:
-  [
-    architecture,
-    review,
-    module,
-    interface,
-    depth,
-    seam,
-    adapter,
-    leverage,
-    locality,
-    HTML,
-  ]
+keywords: [architecture, review, module, interface, depth, seam, adapter, leverage, locality, HTML]
 ---
 
 # 改善代码库架构

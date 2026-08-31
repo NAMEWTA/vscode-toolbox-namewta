@@ -186,7 +186,7 @@ Error: Unable to find 'pnpm' executable
 ```yaml
 - uses: pnpm/action-setup@v2
   with:
-    version: 9 # 匹配 packageManager 字段或 lockfile 格式
+    version: 9     # 匹配 packageManager 字段或 lockfile 格式
 ```
 
 如果 `package.json` 里写了 `packageManager: "pnpm@9.x.x"`，`pnpm/action-setup` 可不传 `version`，它会自动读取。

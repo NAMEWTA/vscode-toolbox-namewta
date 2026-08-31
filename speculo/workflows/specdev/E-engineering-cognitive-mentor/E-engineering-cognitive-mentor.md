@@ -4,8 +4,7 @@ type: workflow-entry
 workflow: specdev
 name: 工程认知导师
 description: 面向 Bug、项目源码、需求技术方案、架构设计与陌生技术领域的非执行型认知指导 Work；以证据、因果 Why、候选方案对比和逐轮澄清帮助用户形成可复述理解，并将完整问答轨迹持续持久化到当前 change。
-keywords:
-  [认知导师, 教学, why, bug, 源码研究, 技术方案, 架构, 技术选型, 新领域, 决策日志]
+keywords: [认知导师, 教学, why, bug, 源码研究, 技术方案, 架构, 技术选型, 新领域, 决策日志]
 ---
 
 # 工程认知导师
@@ -238,16 +237,16 @@ keywords:
 
 按需加载，禁止一次性全量读取：
 
-| 文件                                                                                                 | 触发条件                                     |
-| ---------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/persistence-and-resume.md</Path>`    | 启动、恢复、每轮落盘、暂停、关闭或状态异常时 |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/mode-routing.md</Path>`              | 选择或调整主模式时                           |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/interaction-protocol.md</Path>`      | 建立用户模型、提问、逐轮交互和 MLOG 记录时   |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/evidence-and-options.md</Path>`      | 形成结论、外部研究、技术选型或多方案比较时   |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/bug-guidance.md</Path>`              | 主模式为 Bug 或故障理解时                    |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/codebase-guidance.md</Path>`         | 主模式为项目或源码研究时                     |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/requirements-guidance.md</Path>`     | 主模式为需求与技术方案时                     |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/architecture-guidance.md</Path>`     | 主模式为架构设计或评审时                     |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/domain-learning-guidance.md</Path>`  | 主模式为陌生领域或技术知识时                 |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/comprehension-and-closure.md</Path>` | 总结、理解确认、暂停、导出或关闭时           |
-| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/mentor-report-template.md</Path>`    | 初始化或修复主产物结构时                     |
+| 文件 | 触发条件 |
+|---|---|
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/persistence-and-resume.md</Path>` | 启动、恢复、每轮落盘、暂停、关闭或状态异常时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/mode-routing.md</Path>` | 选择或调整主模式时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/interaction-protocol.md</Path>` | 建立用户模型、提问、逐轮交互和 MLOG 记录时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/evidence-and-options.md</Path>` | 形成结论、外部研究、技术选型或多方案比较时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/bug-guidance.md</Path>` | 主模式为 Bug 或故障理解时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/codebase-guidance.md</Path>` | 主模式为项目或源码研究时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/requirements-guidance.md</Path>` | 主模式为需求与技术方案时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/architecture-guidance.md</Path>` | 主模式为架构设计或评审时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/domain-learning-guidance.md</Path>` | 主模式为陌生领域或技术知识时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/comprehension-and-closure.md</Path>` | 总结、理解确认、暂停、导出或关闭时 |
+| `<Path>{roots.workflows}/specdev/E-engineering-cognitive-mentor/mentor-report-template.md</Path>` | 初始化或修复主产物结构时 |

@@ -1,11 +1,14 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "workflow": "specdev",
   "active": [
     {
       "change": "2026-08-13-git-blame-reader-native-selection",
       "current_work": null,
-      "works_run": ["specdev/spec", "specdev/tickets"],
+      "works_run": [
+        "specdev/spec",
+        "specdev/tickets"
+      ],
       "claimed_investigations": []
     }
   ],

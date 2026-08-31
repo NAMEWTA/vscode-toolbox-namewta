@@ -2,7 +2,6 @@
 
 ```markdown
 ## LOG-### — <时间> — <主题>
-
 - **设计树节点：** D-### / 不适用
 - **轮次与依赖：** round <n> / D-###, D-### / 无
 - **状态：** confirmed / deferred / rejected / superseded

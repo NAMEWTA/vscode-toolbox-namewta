@@ -27,7 +27,7 @@ generated_at: <ISO-8601>
 ## Evidence And Lifecycle
 
 | Target | Action | Evidence | Result |
-| ------ | ------ | -------- | ------ |
+|---|---|---|---|
 
 ## Workflow Sources
 

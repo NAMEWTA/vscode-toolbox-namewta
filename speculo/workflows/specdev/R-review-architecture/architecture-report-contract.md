@@ -12,25 +12,15 @@
     <title>Architecture review — {{repo name}}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({
-        startOnLoad: true,
-        theme: 'neutral',
-        securityLevel: 'loose',
-      });
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
     </script>
     <style>
       /* Tailwind 无法很好覆盖的小型自定义层：
          虚线接缝线、手绘感箭头等。 */
-      .seam {
-        stroke-dasharray: 4 4;
-      }
-      .leak {
-        stroke: #dc2626;
-      }
-      .deep {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-      }
+      .seam { stroke-dasharray: 4 4; }
+      .leak { stroke: #dc2626; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
     </style>
   </head>
   <body class="bg-stone-50 text-slate-900 font-sans">
@@ -128,6 +118,6 @@ Before：嵌套框呈现的函数调用树。After：同一棵树坍缩成一个
 - "Deepen: one interface, one place to test."
 - "Two adapters justify the seam: HTTP in prod, in-memory in tests."
 
-**Wins 要点**用术语表命名收益：_"locality: bugs concentrate in one module"_、_"leverage: one interface, N call sites"_、_"interface shrinks; implementation absorbs the wrappers"_。不要写 _"easier to maintain"_ 或 _"cleaner code"_ — 这些术语不在术语表中，不值得留下。
+**Wins 要点**用术语表命名收益：*"locality: bugs concentrate in one module"*、*"leverage: one interface, N call sites"*、*"interface shrinks; implementation absorbs the wrappers"*。不要写 *"easier to maintain"* 或 *"cleaner code"* — 这些术语不在术语表中，不值得留下。
 
 不模糊其词，不清喉咙，不说"值得注意的是……"。如果一句话可以变成一个要点，就变成要点。如果一个要点可以删除，就删除它。如果一个术语不在 `<Path>{roots.workflows}/specdev/common/rules/codebase-design.md</Path>` 中，在发明新术语之前先用术语表中已有的。

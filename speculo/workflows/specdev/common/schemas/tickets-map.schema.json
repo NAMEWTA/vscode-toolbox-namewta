@@ -5,10 +5,10 @@
   "type": "object",
   "required": ["schema_version", "artifact", "change", "status"],
   "properties": {
-    "schema_version": { "const": 3 },
-    "artifact": { "const": "tickets-map" },
-    "change": { "type": "string", "minLength": 1 },
-    "status": { "enum": ["draft", "ready", "in_progress", "completed", "blocked"] }
+    "schema_version": {"const": 3},
+    "artifact": {"const": "tickets-map"},
+    "change": {"type": "string", "minLength": 1},
+    "status": {"enum": ["draft", "ready", "in_progress", "completed", "blocked"]}
   },
   "additionalProperties": true
 }

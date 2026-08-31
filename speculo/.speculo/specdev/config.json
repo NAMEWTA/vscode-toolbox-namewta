@@ -1,26 +1,27 @@
 {
-  "schema_version": 3,
-  "interaction_language": "zh-CN",
   "artifact_language": "zh-CN",
-  "git": {
-    "auto_commit": false,
-    "default_branch": "main",
-    "worktree_for_parallel": true
-  },
   "execution": {
-    "max_parallel": 3,
     "deep_ticket_human_approval": true,
+    "max_implementation_agents": 3,
+    "max_integration_attempts": 3,
     "shared_path_owner": "explicit"
   },
-  "verification": {
-    "test": "pnpm test",
-    "typecheck": "pnpm typecheck",
-    "lint": "pnpm lint",
-    "build": "pnpm build"
+  "git": {
+    "default_branch": "main"
   },
+  "interaction_language": "zh-CN",
   "planning": {
     "default_depth": "standard",
+    "require_evidence": true,
     "require_ready_gate": true,
-    "require_evidence": true
+    "ui_prototype_default_variants": 3,
+    "ui_prototype_max_variants": 5
+  },
+  "schema_version": 5,
+  "verification": {
+    "build": "pnpm build",
+    "lint": "pnpm lint",
+    "test": "pnpm test",
+    "typecheck": "pnpm typecheck"
   }
 }

@@ -16,6 +16,7 @@ export default tseslint.config(
       'artifacts/**',
       '.vscode-test/**',
       'node_modules/**',
+      'speculo/**',
       '*.config.cjs',
     ],
   },

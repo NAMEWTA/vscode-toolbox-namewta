@@ -2,15 +2,15 @@
 
 最新版 Wayfinder 以 issue tracker 为物理载体。SpecDev 的默认 tracker 是 change state 内的本地 Markdown/JSON；本文件只映射物理原语，不改写 Wayfinder 的地图、Ticket、战争迷雾或遍历语义。
 
-| Tracker 原语     | 本地实现                                                                                                       |
-| ---------------- | -------------------------------------------------------------------------------------------------------------- | --------- | -------- | ----- |
-| 地图 issue       | `<Path>{roots.state}/specdev/changes/{change}/wayfinder-map.md</Path>`                                         |
-| 子 issue         | `<Path>{roots.state}/specdev/changes/{change}/investigation/{investigation-id}.md</Path>`                      |
-| label            | Ticket frontmatter 的 `wayfinder:research                                                                      | prototype | grilling | task` |
-| 阻塞关系         | Ticket frontmatter 的 `blocked_by`                                                                             |
-| assignment       | `<Path>{roots.state}/specdev/status.json</Path>` 当前 change 的 `claimed_investigations`                       |
+| Tracker 原语 | 本地实现 |
+|---|---|
+| 地图 issue | `<Path>{roots.state}/specdev/changes/{change}/wayfinder-map.md</Path>` |
+| 子 issue | `<Path>{roots.state}/specdev/changes/{change}/investigation/{investigation-id}.md</Path>` |
+| label | Ticket frontmatter 的 `wayfinder:research|prototype|grilling|task` |
+| 阻塞关系 | Ticket frontmatter 的 `blocked_by` |
+| assignment | `<Path>{roots.state}/specdev/status.json</Path>` 当前 change 的 `claimed_investigations` |
 | solution comment | `<Path>{roots.state}/specdev/changes/{change}/investigation/comments/{investigation-id}/NN-solution.md</Path>` |
-| 关闭 issue       | Ticket frontmatter 的 `status: closed` 与 `resolution`                                                         |
+| 关闭 issue | Ticket frontmatter 的 `status: closed` 与 `resolution` |
 
 ## 查询前沿
 
@@ -33,3 +33,4 @@ Ticket 文件不重复保存 assignee，地图不重复保存 claim。全局 ass
 Ticket 正文只保存问题。答案写入下一个未占用的 solution comment 文件，资产从评论链接，不粘贴进 Ticket。关闭 Ticket 后，地图的“已做出的决策”只追加名称链接和一句概括；`out-of-scope` 不进入决策索引。
 
 **完成标准**：地图、Ticket、claim、阻塞和 solution comment 可以重建相同前沿；同一事实没有第二份可写副本。
+

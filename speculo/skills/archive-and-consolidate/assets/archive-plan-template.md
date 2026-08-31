@@ -6,21 +6,21 @@
 
 ## 预检摘要
 
-| 检查项              | 状态        |
-| ------------------- | ----------- |
+| 检查项 | 状态 |
+|--------|------|
 | changes_root 可访问 | <pass/fail> |
 | archive_root 可访问 | <pass/fail> |
-| status.json 可解析  | <pass/fail> |
-| 候选 change 数量    | <N>         |
-| 预检通过数          | <N>         |
-| 预检阻塞数          | <N>         |
+| status.json 可解析 | <pass/fail> |
+| 候选 change 数量 | <N> |
+| 预检通过数 | <N> |
+| 预检阻塞数 | <N> |
 
 ## 逐项归档计划
 
-| #   | Change                  | 源路径                           | 目标路径                                 | 状态    | 备注                   |
-| --- | ----------------------- | -------------------------------- | ---------------------------------------- | ------- | ---------------------- |
-| 1   | 2026-07-15-add-auth     | changes/2026-07-15-add-auth/     | archive/2026-07/2026-07-15-add-auth/     | ready   | verification: verified |
-| 2   | 2026-07-10-fix-timezone | changes/2026-07-10-fix-timezone/ | archive/2026-07/2026-07-10-fix-timezone/ | blocked | target already exists  |
+| # | Change | 源路径 | 目标路径 | 状态 | 备注 |
+|---|--------|--------|---------|------|------|
+| 1 | 2026-07-15-add-auth | changes/2026-07-15-add-auth/ | archive/2026-07/2026-07-15-add-auth/ | ready | verification: verified |
+| 2 | 2026-07-10-fix-timezone | changes/2026-07-10-fix-timezone/ | archive/2026-07/2026-07-10-fix-timezone/ | blocked | target already exists |
 
 ## 状态变更
 
