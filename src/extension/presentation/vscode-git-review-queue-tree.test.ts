@@ -24,6 +24,7 @@ const vscodeState = vi.hoisted(() => {
     public iconPath: unknown;
     public contextValue: string | undefined;
     public accessibilityInformation: unknown;
+    public command: unknown;
 
     public constructor(
       public readonly label: string,
@@ -40,9 +41,10 @@ const vscodeState = vi.hoisted(() => {
     TreeItem,
     ThemeIcon,
     createTreeView: vi.fn(),
-    selectionDisposable: { dispose: vi.fn() },
+    registerCommand: vi.fn(),
+    commandDisposable: { dispose: vi.fn() },
     treeView: {
-      onDidChangeSelection: vi.fn(),
+      reveal: vi.fn(),
       dispose: vi.fn(),
     },
   };
@@ -52,7 +54,8 @@ vi.mock('vscode', () => ({
   EventEmitter: vscodeState.EventEmitter,
   ThemeIcon: vscodeState.ThemeIcon,
   TreeItem: vscodeState.TreeItem,
-  TreeItemCollapsibleState: { None: 0 },
+  TreeItemCollapsibleState: { None: 0, Collapsed: 1, Expanded: 2 },
+  commands: { registerCommand: vscodeState.registerCommand },
   l10n: {
     t: (message: string, ...values: readonly unknown[]): string =>
       values.reduce<string>(
@@ -65,75 +68,97 @@ vi.mock('vscode', () => ({
 
 beforeEach(() => {
   vscodeState.createTreeView.mockReturnValue(vscodeState.treeView);
-  vscodeState.treeView.onDidChangeSelection.mockReturnValue(
-    vscodeState.selectionDisposable,
-  );
+  vscodeState.registerCommand.mockReturnValue(vscodeState.commandDisposable);
 });
 
 describe('VS Code Git Review 队列树', () => {
-  it('投影当前条目、处理状态和可访问标签，并转义控制字符路径', () => {
+  it('按变更层和目录投影文件，并保留状态、可访问标签与控制字符转义', () => {
     const queue = new VscodeGitReviewQueueTree(
       vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     );
-    const current = item('src/\ncurrent.ts', 'unreviewed');
-    const skipped = item('src/skipped.ts', 'skipped');
+    const current = item('unstaged', 'src/feature/\ncurrent.ts', 'unreviewed');
+    const skipped = item('unstaged', 'src/feature/skipped.ts', 'skipped');
+    const staged = item('staged', 'README.md', 'reviewed');
 
-    queue.render(activeSnapshot(current.path, [current, skipped]));
-    const entries = queue.getChildren();
+    queue.render(activeSnapshot(current.itemId, [current, skipped, staged]));
+    const roots = queue.getChildren();
+    const stagedRoot = roots[0]!;
+    const unstagedRoot = roots[1]!;
+    const stagedFile = queue.getChildren(stagedRoot)[0]!;
+    const directory = queue.getChildren(unstagedRoot)[0]!;
+    const entries = queue.getChildren(directory);
     const treeItem = queue.getTreeItem(entries[0]!);
 
     expect(vscodeState.createTreeView).toHaveBeenCalledWith(
       'vscodeToolboxNamewta.gitReview.queue',
-      expect.objectContaining({ treeDataProvider: queue }),
+      expect.objectContaining({ treeDataProvider: queue, showCollapseAll: true }),
     );
-    expect(treeItem.label).toBe('src/\\u000acurrent.ts');
+    expect(roots.map((entry) => queue.getTreeItem(entry).label)).toEqual([
+      'Staged',
+      'Unstaged',
+    ]);
+    expect(queue.getTreeItem(stagedFile).label).toBe('README.md');
+    expect(queue.getTreeItem(directory).label).toBe('src/feature');
+    expect(treeItem.label).toBe('\\u000acurrent.ts');
     expect(treeItem.description).toBe('Current - Unreviewed');
     expect(treeItem.contextValue).toBe('gitReview.unstaged');
     expect(treeItem.accessibilityInformation).toEqual({
-      label: 'Current, src/\\u000acurrent.ts, Unreviewed',
+      label: 'Current, src/feature/\\u000acurrent.ts, Unreviewed',
     });
     expect(queue.getTreeItem(entries[1]!).description).toBe('Skipped');
+    expect(queue.getParent(entries[0]!)).toBe(directory);
+    expect(queue.getParent(directory)).toBe(unstagedRoot);
   });
 
-  it('只在活动会话中将键盘选择转为普通导航请求，并在释放时清理资源', async () => {
+  it('只在活动会话中将文件叶节点转为导航请求，并在释放时清理资源', async () => {
     const onSelect = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
     const queue = new VscodeGitReviewQueueTree(onSelect);
-    const current = item('src/current.ts', 'unreviewed');
-    const target = item('src/target.ts', 'reviewed');
-    queue.render(activeSnapshot(current.path, [current, target]));
-    const entries = queue.getChildren();
-    const listener = vscodeState.treeView.onDidChangeSelection.mock.calls[0]?.[0] as
-      | ((event: { readonly selection: readonly (typeof entries)[number][] }) => void)
+    const current = item('unstaged', 'src/current.ts', 'unreviewed');
+    const target = item('unstaged', 'src/target.ts', 'reviewed');
+    queue.render(activeSnapshot(current.itemId, [current, target]));
+    const layer = queue.getChildren()[0]!;
+    const directory = queue.getChildren(layer)[0]!;
+    const entries = queue.getChildren(directory);
+    const command = vscodeState.registerCommand.mock.calls[0]?.[1] as
+      | ((item: unknown) => void)
       | undefined;
 
-    listener?.({ selection: [entries[1]!] });
+    expect(queue.getTreeItem(directory).command).toBeUndefined();
+    expect(queue.getTreeItem(entries[1]!).command).toEqual(
+      expect.objectContaining({
+        command: 'vscodeToolboxNamewta.gitReview.openQueueItemDiff',
+        arguments: [target],
+      }),
+    );
+    command?.(directory);
+    command?.(target);
     await Promise.resolve();
     queue.render({
       state: 'stale',
-      session: activeSnapshot(current.path, [current, target]).session,
+      session: activeSnapshot(current.itemId, [current, target]).session,
     });
-    listener?.({ selection: [entries[1]!] });
+    command?.(target);
     await Promise.resolve();
     queue.dispose();
 
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect).toHaveBeenCalledWith(target);
-    expect(vscodeState.selectionDisposable.dispose).toHaveBeenCalledTimes(1);
+    expect(vscodeState.commandDisposable.dispose).toHaveBeenCalledTimes(1);
     expect(vscodeState.treeView.dispose).toHaveBeenCalledTimes(1);
   });
 });
 
 function activeSnapshot(
-  currentItemPath: string,
+  currentItemId: string,
   items: readonly GitReviewItem[],
 ): ActiveGitReviewSessionSnapshot {
   return {
     state: 'active',
     session: {
       repositoryRoot: '/private/repository',
-      currentItemId:
-        items.find((candidate) => candidate.path === currentItemPath)?.itemId ?? '',
-      currentItemPath,
+      currentItemId,
+      currentItemPath:
+        items.find((candidate) => candidate.itemId === currentItemId)?.path ?? '',
       items,
       progress: {
         total: items.length,
@@ -145,10 +170,14 @@ function activeSnapshot(
   };
 }
 
-function item(path: string, reviewState: GitReviewItem['reviewState']): GitReviewItem {
+function item(
+  layer: GitReviewItem['layer'],
+  path: string,
+  reviewState: GitReviewItem['reviewState'],
+): GitReviewItem {
   return {
-    itemId: `unstaged:${path}`,
-    layer: 'unstaged',
+    itemId: `${layer}:${path}`,
+    layer,
     path,
     contentIdentity: `${path.length}`.padStart(64, '0'),
     change: 'modified',

@@ -65,7 +65,8 @@
 - 从 Source Control 标题栏进入，直接复用与 Git Commit Compare 相同的 VS Code 原生 Changes 多文件界面。
 - 冲突、已暂存、未暂存和未跟踪内容按 `layer/path` 标题区分；同一路径的 staged/unstaged 变更保持独立。
 - HEAD、index 与 worktree 内容在原生 Diff 打开时延迟读取；刷新库存会取消旧请求并使旧文档 token 失效。
-- Review Queue 保留上一项、下一项、标记已审核和跳过；条目上下文提供 Stage、Unstage 与确认后的 Discard。
+- Review Queue 按冲突、已暂存、未暂存和目录展示文件树，并压缩单一路径目录；点击文件会打开对应的原生单文件 Diff。
+- Review Queue 保留上一项、下一项、标记已审核和跳过；文件上下文提供 Stage、Unstage 与确认后的 Discard。
 
 ### Git Commit Compare
 

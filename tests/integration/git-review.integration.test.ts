@@ -208,7 +208,7 @@ suite('Git Review Extension Host 命令集成', () => {
     }
   });
 
-  test('通过公开命令打开单一原生 Changes 页并执行普通导航', async () => {
+  test('通过公开命令打开单一原生 Changes、队列文件 Diff 并执行普通导航', async () => {
     const fixture = await createUiReviewRepository();
     try {
       const api = await extensionApi();
@@ -221,8 +221,21 @@ suite('Git Review Extension Host 命令集成', () => {
       await vscode.commands.executeCommand('vscodeToolboxNamewta.gitReview.start');
       await waitForNativeReviewChanges();
       assert.equal(reviewChangesCount(), 1);
+      const current = await api.execute('gitReview.refresh', {});
+      assert.equal(current.ok, true);
+      if (!current.ok) return;
+      const session = requireSession(current.data);
+      const currentItem = session.items.find(
+        (item) => item.itemId === session.currentItemId,
+      );
+      assert.ok(currentItem);
+      await vscode.commands.executeCommand(
+        'vscodeToolboxNamewta.gitReview.openQueueItemDiff',
+        currentItem,
+      );
+      await waitForReviewFileDiff();
       await vscode.commands.executeCommand('vscodeToolboxNamewta.gitReview.next');
-      assert.equal(reviewChangesCount(), 1);
+      assert.equal(hasReviewFileDiff(), true);
 
       const stale = await api.execute('gitReview.markStale', {});
       assert.equal(stale.ok, true);
@@ -286,6 +299,27 @@ async function waitForNativeReviewChanges(): Promise<void> {
   throw new Error(
     `没有在预期时间内打开单一 Git 审核原生 Changes 页。当前标签：${JSON.stringify(tabSnapshot())}`,
   );
+}
+
+async function waitForReviewFileDiff(): Promise<void> {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    if (hasReviewFileDiff()) return;
+    await new Promise<void>((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error(
+    `没有在预期时间内打开 Git 审核文件 Diff。当前标签：${JSON.stringify(tabSnapshot())}`,
+  );
+}
+
+function hasReviewFileDiff(): boolean {
+  return vscode.window.tabGroups.all
+    .flatMap((group) => group.tabs)
+    .some(
+      (tab) =>
+        tab.input instanceof vscode.TabInputTextDiff &&
+        tab.input.original.scheme === 'vscode-toolbox-namewta-git-review' &&
+        tab.input.modified.scheme === 'vscode-toolbox-namewta-git-review',
+    );
 }
 
 async function finishCommandReview(

@@ -27,6 +27,7 @@ describe('Git Review 原生 Changes 定位', () => {
     expect(dependencies.presentation.focusItem).toHaveBeenCalledWith(
       expect.objectContaining({ itemId: 'unstaged:alpha.ts' }),
     );
+    expect(dependencies.presentation.openItemDiff).not.toHaveBeenCalled();
     expect(gateway.execute).toHaveBeenCalledTimes(1);
   });
 });
@@ -65,6 +66,7 @@ describe('Git Review 会话控制器', () => {
       expect.objectContaining({ path: 'beta.ts', reviewState: 'unreviewed' }),
     );
     expect(dependencies.presentation.render).toHaveBeenLastCalledWith(navigated);
+    expect(dependencies.presentation.openItemDiff).not.toHaveBeenCalled();
   });
 
   it('在用户取消替换时保留现有会话且不发出新的 start', async () => {
@@ -224,6 +226,10 @@ describe('Git Review 队列选择', () => {
         expect.objectContaining({ path: 'gamma.ts', reviewState: 'unreviewed' }),
       ]),
     );
+    expect(dependencies.presentation.openItemDiff).toHaveBeenCalledOnce();
+    expect(dependencies.presentation.openItemDiff).toHaveBeenCalledWith(
+      first.session.items[2],
+    );
   });
 });
 
@@ -303,6 +309,7 @@ function createDependencies(gateway: ToolboxGateway): {
   readonly presentation: GitReviewPresentation & {
     readonly render: ReturnType<typeof vi.fn>;
     readonly focusItem: ReturnType<typeof vi.fn>;
+    readonly openItemDiff: ReturnType<typeof vi.fn>;
     readonly dispose: ReturnType<typeof vi.fn>;
   };
   readonly host: GitReviewControllerHost & {
@@ -332,6 +339,9 @@ function createDependencies(gateway: ToolboxGateway): {
   const presentation = {
     render: vi.fn<(snapshot: GitReviewSessionSnapshot) => void>(),
     focusItem: vi.fn<(item: GitReviewItem) => boolean>().mockReturnValue(false),
+    openItemDiff: vi
+      .fn<(item: GitReviewItem) => Promise<boolean>>()
+      .mockResolvedValue(true),
     dispose: vi.fn<() => void>(),
   } satisfies GitReviewPresentation;
   const host = {

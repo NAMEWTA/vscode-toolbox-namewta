@@ -13,4 +13,12 @@ export class VscodeNativeChangesPresenter {
   ): Promise<void> {
     await vscode.commands.executeCommand('vscode.changes', title, resources);
   }
+
+  public async openDiff(
+    title: string,
+    original: vscode.Uri,
+    modified: vscode.Uri,
+  ): Promise<void> {
+    await vscode.commands.executeCommand('vscode.diff', original, modified, title);
+  }
 }

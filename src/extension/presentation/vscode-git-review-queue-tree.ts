@@ -5,94 +5,175 @@ import type {
 } from '../../core/domains/git-review/public-api';
 import { DisposableStore } from '../../core/kernel/disposable';
 import { displayGitReviewText } from './git-review-display-text';
+import {
+  createGitReviewQueueTree,
+  type GitReviewQueueItemNode,
+  type GitReviewQueueLayerNode,
+  type GitReviewQueueTreeNode,
+} from './git-review-queue-tree-model';
 import { getGitReviewSession } from './git-review-session-snapshot';
 
 const GIT_REVIEW_QUEUE_VIEW_ID = 'vscodeToolboxNamewta.gitReview.queue';
-
-export type GitReviewQueueEntry = {
-  readonly item: GitReviewItem;
-  readonly isCurrent: boolean;
-};
+const OPEN_GIT_REVIEW_ITEM_COMMAND = 'vscodeToolboxNamewta.gitReview.openQueueItemDiff';
 
 export type GitReviewQueueSelectionHandler = (item: GitReviewItem) => Promise<void>;
 
 export class VscodeGitReviewQueueTree
-  implements vscode.TreeDataProvider<GitReviewQueueEntry>, vscode.Disposable
+  implements vscode.TreeDataProvider<GitReviewQueueTreeNode>, vscode.Disposable
 {
   readonly #disposables = new DisposableStore();
   readonly #onDidChangeTreeData = new vscode.EventEmitter<void>();
-  readonly #view: vscode.TreeView<GitReviewQueueEntry>;
   #snapshot: GitReviewSessionSnapshot = { state: 'inactive' };
+  #roots: GitReviewQueueLayerNode[] = [];
 
   public readonly onDidChangeTreeData = this.#onDidChangeTreeData.event;
 
   public constructor(private readonly onSelect: GitReviewQueueSelectionHandler) {
-    this.#view = this.#disposables.add(
+    this.#disposables.add(
       vscode.window.createTreeView(GIT_REVIEW_QUEUE_VIEW_ID, {
         treeDataProvider: this,
-        showCollapseAll: false,
+        showCollapseAll: true,
       }),
     );
     this.#disposables.add(
-      this.#view.onDidChangeSelection((event) => this.handleSelection(event)),
+      vscode.commands.registerCommand(OPEN_GIT_REVIEW_ITEM_COMMAND, (item) =>
+        this.handleOpenItem(item),
+      ),
     );
     this.#disposables.add(this.#onDidChangeTreeData);
   }
 
   public render(snapshot: GitReviewSessionSnapshot): void {
     this.#snapshot = snapshot;
+    const session = getGitReviewSession(snapshot);
+    this.#roots = session === undefined ? [] : createGitReviewQueueTree(session);
     this.#onDidChangeTreeData.fire();
   }
 
-  public getTreeItem(entry: GitReviewQueueEntry): vscode.TreeItem {
-    const item = entry.item;
-    const state = reviewStateLabel(item.reviewState);
-    const treeItem = new vscode.TreeItem(
-      displayGitReviewText(item.path),
-      vscode.TreeItemCollapsibleState.None,
-    );
-    treeItem.id = `${item.itemId}:${item.contentIdentity}`;
-    treeItem.description = entry.isCurrent
-      ? `${vscode.l10n.t('Current')} - ${state}`
-      : state;
-    treeItem.tooltip = createTooltip(item, entry.isCurrent, state);
-    treeItem.iconPath = new vscode.ThemeIcon(iconName(item, entry.isCurrent));
-    treeItem.contextValue = createContextValue(item);
-    treeItem.accessibilityInformation = {
-      label: createAccessibilityLabel(item, entry.isCurrent, state),
-    };
-    return treeItem;
+  public getTreeItem(entry: GitReviewQueueTreeNode): vscode.TreeItem {
+    switch (entry.kind) {
+      case 'layer':
+        return createLayerTreeItem(entry);
+      case 'directory': {
+        const treeItem = new vscode.TreeItem(
+          displayGitReviewText(entry.name),
+          vscode.TreeItemCollapsibleState.Collapsed,
+        );
+        treeItem.id = `directory:${entry.layer}:${entry.path}`;
+        treeItem.tooltip = displayGitReviewText(entry.path);
+        treeItem.iconPath = new vscode.ThemeIcon('folder');
+        treeItem.contextValue = 'gitReview.directory';
+        return treeItem;
+      }
+      case 'item':
+        return createItemTreeItem(entry, OPEN_GIT_REVIEW_ITEM_COMMAND);
+    }
   }
 
-  public getChildren(entry?: GitReviewQueueEntry): GitReviewQueueEntry[] {
-    if (entry !== undefined) {
-      return [];
-    }
-    const session = getGitReviewSession(this.#snapshot);
-    if (session === undefined) {
-      return [];
-    }
-    return session.items.map((item) => ({
-      item,
-      isCurrent: item.itemId === session.currentItemId,
-    }));
+  public getChildren(entry?: GitReviewQueueTreeNode): GitReviewQueueTreeNode[] {
+    if (entry === undefined) return this.#roots;
+    return entry.kind === 'item' ? [] : entry.children;
+  }
+
+  public getParent(entry: GitReviewQueueTreeNode): GitReviewQueueTreeNode | undefined {
+    return entry.kind === 'layer' ? undefined : entry.parent;
   }
 
   public dispose(): void {
     this.#disposables.dispose();
   }
 
-  private handleSelection(
-    event: vscode.TreeViewSelectionChangeEvent<GitReviewQueueEntry>,
-  ): void {
-    if (this.#snapshot.state !== 'active') {
-      return;
-    }
-    const [selected] = event.selection;
-    if (selected !== undefined) {
-      void this.onSelect(selected.item);
-    }
+  private handleOpenItem(candidate: unknown): void {
+    if (this.#snapshot.state !== 'active') return;
+    const identity = readItemIdentity(candidate);
+    if (identity === undefined) return;
+    const item = this.#snapshot.session.items.find(
+      (entry) =>
+        entry.itemId === identity.itemId &&
+        entry.contentIdentity === identity.contentIdentity,
+    );
+    if (item !== undefined) void this.onSelect(item);
   }
+}
+
+function createLayerTreeItem(entry: GitReviewQueueLayerNode): vscode.TreeItem {
+  const treeItem = new vscode.TreeItem(
+    layerLabel(entry.layer),
+    vscode.TreeItemCollapsibleState.Expanded,
+  );
+  treeItem.id = `layer:${entry.layer}`;
+  treeItem.description = String(entry.itemCount);
+  treeItem.iconPath = new vscode.ThemeIcon(layerIcon(entry.layer));
+  treeItem.contextValue = 'gitReview.layer';
+  return treeItem;
+}
+
+function createItemTreeItem(
+  entry: GitReviewQueueItemNode,
+  command: string,
+): vscode.TreeItem {
+  const item = entry.item;
+  const state = reviewStateLabel(item.reviewState);
+  const treeItem = new vscode.TreeItem(
+    displayGitReviewText(fileName(item.path)),
+    vscode.TreeItemCollapsibleState.None,
+  );
+  treeItem.id = `${item.itemId}:${item.contentIdentity}`;
+  treeItem.description = entry.isCurrent
+    ? `${vscode.l10n.t('Current')} - ${state}`
+    : state;
+  treeItem.tooltip = createTooltip(item, entry.isCurrent, state);
+  treeItem.iconPath = new vscode.ThemeIcon(iconName(item, entry.isCurrent));
+  treeItem.contextValue = createContextValue(item);
+  treeItem.accessibilityInformation = {
+    label: createAccessibilityLabel(item, entry.isCurrent, state),
+  };
+  treeItem.command = {
+    command,
+    title: vscode.l10n.t('Git Review: {0}', displayGitReviewText(item.path)),
+    arguments: [item],
+  };
+  return treeItem;
+}
+
+function readItemIdentity(
+  candidate: unknown,
+): Pick<GitReviewItem, 'itemId' | 'contentIdentity'> | undefined {
+  if (typeof candidate !== 'object' || candidate === null) return undefined;
+  const values = candidate as {
+    readonly itemId?: unknown;
+    readonly contentIdentity?: unknown;
+  };
+  const { itemId, contentIdentity } = values;
+  return typeof itemId === 'string' && typeof contentIdentity === 'string'
+    ? { itemId, contentIdentity }
+    : undefined;
+}
+
+function layerLabel(layer: GitReviewItem['layer']): string {
+  switch (layer) {
+    case 'conflict':
+      return vscode.l10n.t('Conflicts');
+    case 'staged':
+      return vscode.l10n.t('Staged');
+    case 'unstaged':
+      return vscode.l10n.t('Unstaged');
+  }
+}
+
+function layerIcon(layer: GitReviewItem['layer']): string {
+  switch (layer) {
+    case 'conflict':
+      return 'warning';
+    case 'staged':
+      return 'checklist';
+    case 'unstaged':
+      return 'edit';
+  }
+}
+
+function fileName(path: string): string {
+  return path.split('/').at(-1) ?? path;
 }
 
 function reviewStateLabel(state: GitReviewItem['reviewState']): string {

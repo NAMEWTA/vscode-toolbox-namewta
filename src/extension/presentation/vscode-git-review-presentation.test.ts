@@ -33,7 +33,6 @@ const vscodeState = vi.hoisted(() => {
     ThemeIcon,
     providerDisposable: { dispose: vi.fn() },
     treeView: {
-      onDidChangeSelection: vi.fn(() => ({ dispose: vi.fn() })),
       dispose: vi.fn(),
     },
     statusBarItem: {
@@ -48,7 +47,9 @@ const vscodeState = vi.hoisted(() => {
     createTreeView: vi.fn(),
     createStatusBarItem: vi.fn(),
     registerProvider: vi.fn(),
-    executeCommand: vi.fn(),
+    registerCommand: vi.fn(() => ({ dispose: vi.fn() })),
+    executeCommand:
+      vi.fn<(command: string, ...args: readonly unknown[]) => Promise<unknown>>(),
     showErrorMessage: vi.fn(),
   };
 });
@@ -72,7 +73,10 @@ vi.mock('vscode', () => {
         toString: (): string => `file://${[base.value, ...parts].join('/')}`,
       }),
     },
-    commands: { executeCommand: vscodeState.executeCommand },
+    commands: {
+      executeCommand: vscodeState.executeCommand,
+      registerCommand: vscodeState.registerCommand,
+    },
     l10n: {
       t: (message: string, ...values: readonly unknown[]): string =>
         values.reduce<string>(
@@ -128,6 +132,28 @@ describe('VS Code Git Review 投影', () => {
     );
   });
 
+  it.each(['added', 'deleted'] as const)(
+    '从队列打开 %s 文件时复用双侧受控文档 URI 调用公共单文件 Diff',
+    async (change) => {
+      const presentation = new VscodeGitReviewPresentation(
+        vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
+      );
+      const reviewItem = item('src/main.ts', change);
+
+      presentation.render(activeSnapshot(reviewItem));
+      await expect(presentation.openItemDiff(reviewItem)).resolves.toBe(true);
+
+      const diffCall = vscodeState.executeCommand.mock.calls[1];
+      const original = diffCall?.[1] as { readonly value: string };
+      const modified = diffCall?.[2] as { readonly value: string };
+
+      expect(diffCall?.[0]).toBe('vscode.diff');
+      expect(original.value).toContain('/unstaged/src/main.ts');
+      expect(modified.value).toContain('/unstaged/src/main.ts');
+      expect(diffCall?.[3]).toEqual(expect.stringContaining('src/main.ts'));
+    },
+  );
+
   it('inactive 时清理全部原生 Review UI 资源', () => {
     const presentation = new VscodeGitReviewPresentation(
       vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
@@ -154,13 +180,16 @@ function activeSnapshot(item: GitReviewItem): GitReviewSessionSnapshot {
   };
 }
 
-function item(path: string): GitReviewItem {
+function item(
+  path: string,
+  change: GitReviewItem['change'] = 'modified',
+): GitReviewItem {
   return {
     itemId: `unstaged:${path}`,
     layer: 'unstaged',
     path,
     contentIdentity: 'a'.repeat(64),
-    change: 'modified',
+    change,
     presentation: 'text',
     reviewState: 'unreviewed',
   };

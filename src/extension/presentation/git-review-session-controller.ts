@@ -148,6 +148,9 @@ export class GitReviewSessionController implements Disposable {
         snapshot = nextSnapshot;
       }
       await this.applySnapshot(snapshot, operation, true);
+      if (this.isCurrent(operation)) {
+        await this.dependencies.presentation.openItemDiff?.(item);
+      }
     } catch (error: unknown) {
       await this.reportException(operation, error);
     } finally {

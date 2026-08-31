@@ -11,6 +11,7 @@ import {
   createGitReviewNativeChanges,
   gitReviewInventoryIdentity,
 } from './git-review-native-changes';
+import { displayGitReviewText } from './git-review-display-text';
 import { getGitReviewSession } from './git-review-session-snapshot';
 import {
   GIT_REVIEW_DOCUMENT_SCHEME,
@@ -33,6 +34,11 @@ type GitReviewPresentationResources = {
   readonly statusBar: VscodeGitReviewStatusBar;
 };
 
+type GitReviewItemDiffResources = {
+  readonly original: vscode.Uri;
+  readonly modified: vscode.Uri;
+};
+
 export type VscodeGitReviewPresentationDependencies = {
   readonly gateway: ToolboxGateway;
   readonly logger: ToolLogger;
@@ -42,6 +48,7 @@ export class VscodeGitReviewPresentation implements GitReviewPresentation {
   #resources: GitReviewPresentationResources | undefined;
   #snapshot: GitReviewSessionSnapshot = { state: 'inactive' };
   #inventoryIdentity: string | undefined;
+  #itemDiffResources = new Map<string, GitReviewItemDiffResources>();
   #isDisposed = false;
 
   public constructor(
@@ -79,6 +86,26 @@ export class VscodeGitReviewPresentation implements GitReviewPresentation {
     );
   }
 
+  public async openItemDiff(item: GitReviewItem): Promise<boolean> {
+    if (!this.focusItem(item)) return false;
+    const resources = this.#itemDiffResources.get(itemResourceKey(item));
+    if (resources === undefined) return false;
+    try {
+      await this.nativeChanges.openDiff(
+        vscode.l10n.t('Git Review · {0}', displayGitReviewText(item.path)),
+        resources.original,
+        resources.modified,
+      );
+      return true;
+    } catch (error: unknown) {
+      this.dependencies?.logger.error('Git Review file Diff failed.', error);
+      await vscode.window.showErrorMessage(
+        vscode.l10n.t('Git Review could not open the selected file Diff.'),
+      );
+      return false;
+    }
+  }
+
   public dispose(): void {
     if (this.#isDisposed) return;
     this.#isDisposed = true;
@@ -90,28 +117,27 @@ export class VscodeGitReviewPresentation implements GitReviewPresentation {
     session: GitReviewSession,
   ): void {
     documentProvider.clear();
+    const itemDiffResources = new Map<string, GitReviewItemDiffResources>();
     const resources: VscodeNativeChangeResource[] = createGitReviewNativeChanges(
       session,
-    ).map((change) => [
-      vscode.Uri.joinPath(
-        vscode.Uri.file(session.repositoryRoot),
-        ...change.labelPath.split('/'),
-      ),
-      change.original === undefined
-        ? undefined
-        : documentProvider.createItemUri(
-            change.original.item,
-            change.original.side,
-            change.labelPath,
-          ),
-      change.modified === undefined
-        ? undefined
-        : documentProvider.createItemUri(
-            change.modified.item,
-            change.modified.side,
-            change.labelPath,
-          ),
-    ]);
+    ).map((change) => {
+      const item = change.original?.item ?? change.modified?.item;
+      if (item === undefined) {
+        throw new Error(vscode.l10n.t('Git Review change is missing an item.'));
+      }
+      const original = documentProvider.createItemUri(item, 'before', change.labelPath);
+      const modified = documentProvider.createItemUri(item, 'after', change.labelPath);
+      itemDiffResources.set(itemResourceKey(item), { original, modified });
+      return [
+        vscode.Uri.joinPath(
+          vscode.Uri.file(session.repositoryRoot),
+          ...change.labelPath.split('/'),
+        ),
+        change.original === undefined ? undefined : original,
+        change.modified === undefined ? undefined : modified,
+      ];
+    });
+    this.#itemDiffResources = itemDiffResources;
     void this.nativeChanges
       .open(createReviewTitle(session), resources)
       .catch((error: unknown) => {
@@ -153,8 +179,13 @@ export class VscodeGitReviewPresentation implements GitReviewPresentation {
     const resources = this.#resources;
     this.#resources = undefined;
     this.#inventoryIdentity = undefined;
+    this.#itemDiffResources.clear();
     resources?.disposables.dispose();
   }
+}
+
+function itemResourceKey(item: GitReviewItem): string {
+  return `${item.itemId}\0${item.contentIdentity}`;
 }
 
 function createReviewTitle(session: GitReviewSession): string {

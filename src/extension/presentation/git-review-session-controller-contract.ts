@@ -14,6 +14,7 @@ export type GitReviewRepositoryResolver = {
 export type GitReviewPresentation = Disposable & {
   render(snapshot: GitReviewSessionSnapshot): void;
   focusItem?(item: GitReviewItem): boolean;
+  openItemDiff?(item: GitReviewItem): Promise<boolean>;
 };
 
 export type GitReviewControllerHost = {
